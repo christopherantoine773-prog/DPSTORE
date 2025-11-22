@@ -25,28 +25,28 @@ button:hover {background:#fff700;}
 <input type="text" id="username" placeholder="Nom d'utilisateur" required />
 <input type="email" id="email" placeholder="Adresse email" required />
 <input type="password" id="password" placeholder="Mot de passe" required />
-<button onclick="sendVerificationCode()">📧 Recevoir le code</button>
-
+<button id="sendCodeBtn">📧 Recevoir le code</button>
 <input type="text" id="code" placeholder="Entre le code reçu" style="margin-top:15px;" />
-<button onclick="verifyCode()">✅ Vérifier le code</button>
-<p class="switch" onclick="toggleForms()">Déjà un compte ? Se connecter</p>
+<button id="verifyBtn">✅ Vérifier le code</button>
+<p class="switch" id="toLogin">Déjà un compte ? Se connecter</p>
 </div>
 
 <div id="login" style="display: none;">
 <p>Connexion à ton compte</p>
 <input type="email" id="loginEmail" placeholder="Adresse email" required />
 <input type="password" id="loginPassword" placeholder="Mot de passe" required />
-<button onclick="loginUser()">🚀 Se connecter</button>
-<p class="switch" onclick="toggleForms()">Pas encore inscrit ? Créer un compte</p>
+<button id="loginBtn">🚀 Se connecter</button>
+<p class="switch" id="toSignup">Pas encore inscrit ? Créer un compte</p>
 </div>
 </div>
 
 <p class="footer">© 2025 DPSTORE — Technologie avancée</p>
 
-<!-- Firebase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
@@ -62,50 +62,7 @@ const db = getFirestore(app);
 window.firebaseDB = db;
 
 const CREATOR_EMAIL = "christopherantoine773@gmail.com";
-
-async function syncUsers() {
-  const usersCol = collection(db,"users");
-  const snapshot = await getDocs(usersCol);
-  let accounts = [];
-  let creatorExists = false;
-
-  for(const docSnap of snapshot.docs){
-    const data = docSnap.data();
-    accounts.push(data);
-    if(data.email.toLowerCase()===CREATOR_EMAIL) creatorExists=true;
-  }
-
-  // Ajouter creator si absent
-  if(!creatorExists){
-    const creator = {
-      username:"DPSTORE",
-      email:CREATOR_EMAIL,
-      password:"Blondy200ky444",
-      role:"creator",
-      credits:0,
-      dp:"DP000001",
-      photo:"https://i.imgur.com/2XnKZ9R.png",
-      lastLogin:new Date().toLocaleString()
-    };
-    await addDoc(usersCol,creator);
-    accounts.push(creator);
-  }
-
-  // Stockage local temporaire pour session
-  localStorage.setItem("dp_last_number","1");
-  localStorage.setItem("dpstore_accounts",JSON.stringify(accounts));
-  const creatorUser = accounts.find(u=>u.email.toLowerCase()===CREATOR_EMAIL);
-  localStorage.setItem("user_"+CREATOR_EMAIL,JSON.stringify(creatorUser));
-  localStorage.setItem("dpstore_user",JSON.stringify(creatorUser));
-}
-syncUsers();
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-<script>
-emailjs.init("5gObExmJ85l0pSXC3");
-
-const CREATOR_EMAILS = ["christopherantoine773@gmail.com"];
+const CREATOR_EMAILS = [CREATOR_EMAIL];
 const EMPLOYEE_EMAILS = [
   "pilotecitizen@gmail.com",
   "ladouceurlorvynsky@gmail.com",
@@ -117,94 +74,131 @@ function generateDP() {
   let last = parseInt(localStorage.getItem("dp_last_number") || "1");
   last++;
   localStorage.setItem("dp_last_number", last);
-  return "DP"+String(last).padStart(6,"0");
+  return "DP" + String(last).padStart(6, "0");
 }
 
 function generateCode() {
-  return Math.floor(100000 + Math.random()*900000);
+  return Math.floor(100000 + Math.random() * 900000);
 }
 
-function getRoleByEmail(email){
-  if(CREATOR_EMAILS.includes(email)) return "creator";
-  if(EMPLOYEE_EMAILS.includes(email)) return "employee";
+function getRoleByEmail(email) {
+  if (CREATOR_EMAILS.includes(email)) return "creator";
+  if (EMPLOYEE_EMAILS.includes(email)) return "employee";
   return "user";
 }
 
-async function sendVerificationCode(){
-  const email = document.getElementById("email").value.trim().toLowerCase();
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
+// 🔹 Synchronisation Firebase au chargement
+async function syncUsers() {
+  const usersCol = collection(db, "users");
+  const snapshot = await getDocs(usersCol);
+  let accounts = [];
+  let creatorExists = false;
 
-  if(!email||!username||!password){ alert("⚠️ Remplis tous les champs !"); return; }
-
-  const q = query(collection(window.firebaseDB,"users"), where("email","==",email));
-  const snapshot = await getDocs(q);
-  if(!snapshot.empty){ alert("⚠️ Ce compte existe déjà !"); return; }
-
-  const code = generateCode();
-  localStorage.setItem("verificationCode",code);
-  localStorage.setItem("pendingEmail",email);
-  localStorage.setItem("pendingUsername",username);
-  localStorage.setItem("pendingPassword",password);
-
-  emailjs.send("service_1tnwnvu","template_7o06ag8",{user_email:email,to_name:username,message:code})
-  .then(()=>alert("✅ Code envoyé !"))
-  .catch(err=>alert("❌ Erreur : "+JSON.stringify(err)));
-}
-
-async function verifyCode(){
-  const entered = document.getElementById("code").value.trim();
-  const saved = localStorage.getItem("verificationCode");
-
-  if(entered===saved){
-    const email = localStorage.getItem("pendingEmail").toLowerCase();
-    const username = localStorage.getItem("pendingUsername");
-    const password = localStorage.getItem("pendingPassword");
-    const role = getRoleByEmail(email);
-
-    let dp;
-    do { dp = generateDP(); } while(JSON.parse(localStorage.getItem("dpstore_accounts")||"[]").some(u=>u.dp===dp));
-
-    const user = {username,email,password,role,credits:0,dp,photo:"https://i.imgur.com/2XnKZ9R.png",lastLogin:new Date().toLocaleString()};
-
-    await addDoc(collection(window.firebaseDB,"users"),user);
-
-    localStorage.setItem("user_"+email,JSON.stringify(user));
-    let accounts = JSON.parse(localStorage.getItem("dpstore_accounts")||"[]");
-    accounts.push(user);
-    localStorage.setItem("dpstore_accounts",JSON.stringify(accounts));
-    localStorage.setItem("dpstore_user",JSON.stringify(user));
-
-    alert("🎉 Compte créé !");
-    window.location.href="profil.html";
-  } else {
-    alert("❌ Code incorrect !");
+  for (const docSnap of snapshot.docs) {
+    const data = docSnap.data();
+    accounts.push(data);
+    if (data.email.toLowerCase() === CREATOR_EMAIL) creatorExists = true;
   }
+
+  if (!creatorExists) {
+    const creator = {
+      username: "DPSTORE",
+      email: CREATOR_EMAIL,
+      password: "Blondy200ky444",
+      role: "creator",
+      credits: 0,
+      dp: "DP000001",
+      photo: "https://i.imgur.com/2XnKZ9R.png",
+      lastLogin: new Date().toLocaleString()
+    };
+    await addDoc(usersCol, creator);
+    accounts.push(creator);
+  }
+
+  localStorage.setItem("dp_last_number", "1");
+  localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+  const creatorUser = accounts.find(u => u.email.toLowerCase() === CREATOR_EMAIL);
+  localStorage.setItem("user_" + CREATOR_EMAIL, JSON.stringify(creatorUser));
+  localStorage.setItem("dpstore_user", JSON.stringify(creatorUser));
 }
 
-function toggleForms(){
-  const s=document.getElementById("signup");
-  const l=document.getElementById("login");
-  s.style.display=s.style.display==="none"?"block":"none";
-  l.style.display=l.style.display==="none"?"block":"none";
-}
+syncUsers();
 
-function loginUser(){
-  const email=document.getElementById("loginEmail").value.trim().toLowerCase();
-  const password=document.getElementById("loginPassword").value.trim();
+document.addEventListener("DOMContentLoaded", () => {
+  emailjs.init("5gObExmJ85l0pSXC3");
 
-  const accounts = JSON.parse(localStorage.getItem("dpstore_accounts")||"[]");
-  const user = accounts.find(u=>u.email.toLowerCase()===email);
-  if(!user){alert("⚠️ Aucun compte trouvé !"); return;}
-  if(user.password!==password){alert("❌ Mot de passe incorrect !"); return;}
-  
-  user.lastLogin = new Date().toLocaleString();
-  localStorage.setItem("dpstore_user",JSON.stringify(user));
-  localStorage.setItem("dpstore_accounts",JSON.stringify(accounts));
+  const sendBtn = document.getElementById("sendCodeBtn");
+  sendBtn.addEventListener("click", async () => {
+    const email = document.getElementById("email").value.trim().toLowerCase();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    if (!email || !username || !password) { alert("⚠️ Remplis tous les champs !"); return; }
 
-  alert("✅ Connexion !");
-  window.location.href="profil.html";
-}
+    const q = query(collection(db, "users"), where("email", "==", email));
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) { alert("⚠️ Ce compte existe déjà !"); return; }
+
+    const code = generateCode();
+    localStorage.setItem("verificationCode", code);
+    localStorage.setItem("pendingEmail", email);
+    localStorage.setItem("pendingUsername", username);
+    localStorage.setItem("pendingPassword", password);
+
+    emailjs.send("service_1tnwnvu", "template_7o06ag8", { user_email: email, to_name: username, message: code })
+      .then(() => alert("✅ Code envoyé !"))
+      .catch(err => alert("❌ Erreur : " + JSON.stringify(err)));
+  });
+
+  document.getElementById("verifyBtn").addEventListener("click", async () => {
+    const entered = document.getElementById("code").value.trim();
+    const saved = localStorage.getItem("verificationCode");
+    if (entered === saved) {
+      const email = localStorage.getItem("pendingEmail").toLowerCase();
+      const username = localStorage.getItem("pendingUsername");
+      const password = localStorage.getItem("pendingPassword");
+      const role = getRoleByEmail(email);
+
+      let dp;
+      const accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+      do { dp = generateDP(); } while (accounts.some(u => u.dp === dp));
+
+      const user = { username, email, password, role, credits: 0, dp, photo: "https://i.imgur.com/2XnKZ9R.png", lastLogin: new Date().toLocaleString() };
+      await addDoc(collection(db, "users"), user);
+
+      localStorage.setItem("user_" + email, JSON.stringify(user));
+      accounts.push(user);
+      localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+      localStorage.setItem("dpstore_user", JSON.stringify(user));
+
+      alert("🎉 Compte créé !");
+      window.location.href = "profil.html";
+    } else { alert("❌ Code incorrect !"); }
+  });
+
+  document.getElementById("loginBtn").addEventListener("click", () => {
+    const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+    const password = document.getElementById("loginPassword").value.trim();
+    const accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+    const user = accounts.find(u => u.email.toLowerCase() === email);
+    if (!user) { alert("⚠️ Aucun compte trouvé !"); return; }
+    if (user.password !== password) { alert("❌ Mot de passe incorrect !"); return; }
+    user.lastLogin = new Date().toLocaleString();
+    localStorage.setItem("dpstore_user", JSON.stringify(user));
+    localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+    alert("✅ Connexion !");
+    window.location.href = "profil.html";
+  });
+
+  document.getElementById("toLogin").addEventListener("click", () => {
+    document.getElementById("signup").style.display = "none";
+    document.getElementById("login").style.display = "block";
+  });
+
+  document.getElementById("toSignup").addEventListener("click", () => {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("signup").style.display = "block";
+  });
+});
 </script>
 </body>
 </html>
