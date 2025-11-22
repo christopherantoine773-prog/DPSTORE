@@ -63,37 +63,41 @@ window.firebaseDB = db;
 
 const CREATOR_EMAIL = "christopherantoine773@gmail.com";
 
-// 🔹 Réinitialisation temporaire et création du creator
-async function initFirebaseUsers() {
+async function syncUsers() {
   const usersCol = collection(db, "users");
   const snapshot = await getDocs(usersCol);
+  let accounts = [];
+  let creatorExists = false;
 
-  // Supprimer tous les utilisateurs (pour cette mise à jour)
   for(const docSnap of snapshot.docs){
-    await deleteDoc(doc(usersCol, docSnap.id));
+    const data = docSnap.data();
+    accounts.push(data);
+    if(data.email.toLowerCase()===CREATOR_EMAIL) creatorExists=true;
   }
 
-  // Ajouter creator
-  const creator = {
-    username: "DPSTORE",
-    email: CREATOR_EMAIL,
-    password: "Blondy200ky444",
-    role: "creator",
-    credits: 0,
-    dp: "DP000001",
-    photo: "https://i.imgur.com/2XnKZ9R.png",
-    lastLogin: new Date().toLocaleString()
-  };
-  await addDoc(usersCol, creator);
+  if(!creatorExists){
+    const creator = {
+      username:"DPSTORE",
+      email:CREATOR_EMAIL,
+      password:"Blondy200ky444",
+      role:"creator",
+      credits:0,
+      dp:"DP000001",
+      photo:"https://i.imgur.com/2XnKZ9R.png",
+      lastLogin:new Date().toLocaleString()
+    };
+    await addDoc(usersCol, creator);
+    accounts.push(creator);
+  }
 
-  // Stockage local
   localStorage.setItem("dp_last_number","1");
-  localStorage.setItem("dpstore_accounts", JSON.stringify([creator]));
-  localStorage.setItem("user_"+CREATOR_EMAIL, JSON.stringify(creator));
-  localStorage.setItem("dpstore_user", JSON.stringify(creator));
+  localStorage.setItem("dpstore_accounts",JSON.stringify(accounts));
+  const creatorUser = accounts.find(u=>u.email.toLowerCase()===CREATOR_EMAIL);
+  localStorage.setItem("user_"+CREATOR_EMAIL,JSON.stringify(creatorUser));
+  localStorage.setItem("dpstore_user",JSON.stringify(creatorUser));
 }
 
-initFirebaseUsers();
+syncUsers();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
@@ -132,20 +136,23 @@ async function sendVerificationCode(){
 
   if(!email||!username||!password){ alert("⚠️ Remplis tous les champs !"); return; }
 
-  // Vérification Firebase
-  const q = query(collection(window.firebaseDB,"users"), where("email","==",email));
-  const snapshot = await getDocs(q);
-  if(!snapshot.empty){ alert("⚠️ Ce compte existe déjà !"); return; }
+  try{
+    const q = query(collection(window.firebaseDB,"users"), where("email","==",email));
+    const snapshot = await getDocs(q);
+    if(!snapshot.empty){ alert("⚠️ Ce compte existe déjà !"); return; }
 
-  const code = generateCode();
-  localStorage.setItem("verificationCode",code);
-  localStorage.setItem("pendingEmail",email);
-  localStorage.setItem("pendingUsername",username);
-  localStorage.setItem("pendingPassword",password);
+    const code = generateCode();
+    localStorage.setItem("verificationCode", code);
+    localStorage.setItem("pendingEmail", email);
+    localStorage.setItem("pendingUsername", username);
+    localStorage.setItem("pendingPassword", password);
 
-  emailjs.send("service_1tnwnvu","template_7o06ag8",{user_email:email,to_name:username,message:code})
-  .then(()=>alert("✅ Code envoyé !"))
-  .catch(err=>alert("❌ Erreur : "+JSON.stringify(err)));
+    await emailjs.send("service_1tnwnvu","template_7o06ag8",{user_email:email,to_name:username,message:code});
+    alert("✅ Code envoyé !");
+  } catch(err){
+    console.error(err);
+    alert("❌ Erreur lors de l'envoi du code. Vérifie ta connexion et la configuration EmailJS.");
+  }
 }
 
 async function verifyCode(){
@@ -163,10 +170,8 @@ async function verifyCode(){
 
     const user = {username,email,password,role,credits:0,dp,photo:"https://i.imgur.com/2XnKZ9R.png",lastLogin:new Date().toLocaleString()};
 
-    // Ajout Firebase
     await addDoc(collection(window.firebaseDB,"users"),user);
 
-    // Stockage local
     localStorage.setItem("user_"+email,JSON.stringify(user));
     let accounts = JSON.parse(localStorage.getItem("dpstore_accounts")||"[]");
     accounts.push(user);
