@@ -46,7 +46,7 @@ button:hover {background:#fff700;}
 <!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
@@ -64,7 +64,7 @@ window.firebaseDB = db;
 const CREATOR_EMAIL = "christopherantoine773@gmail.com";
 
 async function syncUsers() {
-  const usersCol = collection(db, "users");
+  const usersCol = collection(db,"users");
   const snapshot = await getDocs(usersCol);
   let accounts = [];
   let creatorExists = false;
@@ -75,6 +75,7 @@ async function syncUsers() {
     if(data.email.toLowerCase()===CREATOR_EMAIL) creatorExists=true;
   }
 
+  // Ajouter creator si absent
   if(!creatorExists){
     const creator = {
       username:"DPSTORE",
@@ -86,17 +87,17 @@ async function syncUsers() {
       photo:"https://i.imgur.com/2XnKZ9R.png",
       lastLogin:new Date().toLocaleString()
     };
-    await addDoc(usersCol, creator);
+    await addDoc(usersCol,creator);
     accounts.push(creator);
   }
 
+  // Stockage local temporaire pour session
   localStorage.setItem("dp_last_number","1");
   localStorage.setItem("dpstore_accounts",JSON.stringify(accounts));
   const creatorUser = accounts.find(u=>u.email.toLowerCase()===CREATOR_EMAIL);
   localStorage.setItem("user_"+CREATOR_EMAIL,JSON.stringify(creatorUser));
   localStorage.setItem("dpstore_user",JSON.stringify(creatorUser));
 }
-
 syncUsers();
 </script>
 
@@ -136,23 +137,19 @@ async function sendVerificationCode(){
 
   if(!email||!username||!password){ alert("⚠️ Remplis tous les champs !"); return; }
 
-  try{
-    const q = query(collection(window.firebaseDB,"users"), where("email","==",email));
-    const snapshot = await getDocs(q);
-    if(!snapshot.empty){ alert("⚠️ Ce compte existe déjà !"); return; }
+  const q = query(collection(window.firebaseDB,"users"), where("email","==",email));
+  const snapshot = await getDocs(q);
+  if(!snapshot.empty){ alert("⚠️ Ce compte existe déjà !"); return; }
 
-    const code = generateCode();
-    localStorage.setItem("verificationCode", code);
-    localStorage.setItem("pendingEmail", email);
-    localStorage.setItem("pendingUsername", username);
-    localStorage.setItem("pendingPassword", password);
+  const code = generateCode();
+  localStorage.setItem("verificationCode",code);
+  localStorage.setItem("pendingEmail",email);
+  localStorage.setItem("pendingUsername",username);
+  localStorage.setItem("pendingPassword",password);
 
-    await emailjs.send("service_1tnwnvu","template_7o06ag8",{user_email:email,to_name:username,message:code});
-    alert("✅ Code envoyé !");
-  } catch(err){
-    console.error(err);
-    alert("❌ Erreur lors de l'envoi du code. Vérifie ta connexion et la configuration EmailJS.");
-  }
+  emailjs.send("service_1tnwnvu","template_7o06ag8",{user_email:email,to_name:username,message:code})
+  .then(()=>alert("✅ Code envoyé !"))
+  .catch(err=>alert("❌ Erreur : "+JSON.stringify(err)));
 }
 
 async function verifyCode(){
@@ -185,25 +182,28 @@ async function verifyCode(){
   }
 }
 
-function loginUser(){
-  const email=document.getElementById("loginEmail").value.trim().toLowerCase();
-  const password=document.getElementById("loginPassword").value.trim();
-  let accounts = JSON.parse(localStorage.getItem("dpstore_accounts")||"[]");
-  const user = accounts.find(u=>u.email.toLowerCase()===email);
-  if(!user){alert("⚠️ Aucun compte trouvé !"); return;}
-  if(user.password!==password){alert("❌ Mot de passe incorrect !"); return;}
-  user.lastLogin = new Date().toLocaleString();
-  localStorage.setItem("dpstore_user",JSON.stringify(user));
-  localStorage.setItem("dpstore_accounts",JSON.stringify(accounts));
-  alert("✅ Connexion !");
-  window.location.href="profil.html";
-}
-
 function toggleForms(){
   const s=document.getElementById("signup");
   const l=document.getElementById("login");
   s.style.display=s.style.display==="none"?"block":"none";
   l.style.display=l.style.display==="none"?"block":"none";
+}
+
+function loginUser(){
+  const email=document.getElementById("loginEmail").value.trim().toLowerCase();
+  const password=document.getElementById("loginPassword").value.trim();
+
+  const accounts = JSON.parse(localStorage.getItem("dpstore_accounts")||"[]");
+  const user = accounts.find(u=>u.email.toLowerCase()===email);
+  if(!user){alert("⚠️ Aucun compte trouvé !"); return;}
+  if(user.password!==password){alert("❌ Mot de passe incorrect !"); return;}
+  
+  user.lastLogin = new Date().toLocaleString();
+  localStorage.setItem("dpstore_user",JSON.stringify(user));
+  localStorage.setItem("dpstore_accounts",JSON.stringify(accounts));
+
+  alert("✅ Connexion !");
+  window.location.href="profil.html";
 }
 </script>
 </body>
