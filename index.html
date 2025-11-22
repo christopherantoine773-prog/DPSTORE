@@ -46,7 +46,7 @@ button:hover {background:#fff700;}
 <!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
@@ -63,45 +63,37 @@ window.firebaseDB = db;
 
 const CREATOR_EMAIL = "christopherantoine773@gmail.com";
 
-// 🔹 Synchronisation Firebase au chargement
-async function syncUsers() {
+// 🔹 Réinitialisation temporaire et création du creator
+async function initFirebaseUsers() {
   const usersCol = collection(db, "users");
   const snapshot = await getDocs(usersCol);
-  let accounts = [];
-  let creatorExists = false;
 
+  // Supprimer tous les utilisateurs (pour cette mise à jour)
   for(const docSnap of snapshot.docs){
-    const data = docSnap.data();
-    accounts.push(data);
-    if(data.email.toLowerCase()===CREATOR_EMAIL) creatorExists=true;
+    await deleteDoc(doc(usersCol, docSnap.id));
   }
 
-  // Ajouter creator si absent
-  if(!creatorExists){
-    const creator = {
-      username:"DPSTORE",
-      email:CREATOR_EMAIL,
-      password:"Blondy200ky444",
-      role:"creator",
-      credits:0,
-      dp:"DP000001",
-      photo:"https://i.imgur.com/2XnKZ9R.png",
-      lastLogin:new Date().toLocaleString()
-    };
-    await addDoc(usersCol, creator);
-    accounts.push(creator);
-  }
+  // Ajouter creator
+  const creator = {
+    username: "DPSTORE",
+    email: CREATOR_EMAIL,
+    password: "Blondy200ky444",
+    role: "creator",
+    credits: 0,
+    dp: "DP000001",
+    photo: "https://i.imgur.com/2XnKZ9R.png",
+    lastLogin: new Date().toLocaleString()
+  };
+  await addDoc(usersCol, creator);
 
   // Stockage local
   localStorage.setItem("dp_last_number","1");
-  localStorage.setItem("dpstore_accounts",JSON.stringify(accounts));
-  const creatorUser = accounts.find(u=>u.email.toLowerCase()===CREATOR_EMAIL);
-  localStorage.setItem("user_"+CREATOR_EMAIL,JSON.stringify(creatorUser));
-  localStorage.setItem("dpstore_user",JSON.stringify(creatorUser));
+  localStorage.setItem("dpstore_accounts", JSON.stringify([creator]));
+  localStorage.setItem("user_"+CREATOR_EMAIL, JSON.stringify(creator));
+  localStorage.setItem("dpstore_user", JSON.stringify(creator));
 }
 
-syncUsers();
-
+initFirebaseUsers();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
