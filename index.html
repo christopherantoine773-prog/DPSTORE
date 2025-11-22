@@ -150,13 +150,12 @@
       return "DP" + String(last).padStart(6, "0");
     }
 
-    // ✔ Correction ici : ton email en entier
     const CREATOR_EMAILS = ["christopherantoine773@gmail.com"];
 
     const EMPLOYEE_EMAILS = [
-      "Pilotecitizen@gmail.com",
-      "Ladouceurlorvynsky@gmail.com",
-      "Doresmaworldens@gmail.com",
+      "pilotecitizen@gmail.com",
+      "ladouceurlorvynsky@gmail.com",
+      "doresmaworldens@gmail.com",
       "mathieulherisson99@gmail.com"
     ];
 
@@ -193,7 +192,7 @@
 
     function getRoleByEmail(email) {
       if (CREATOR_EMAILS.includes(email)) return "creator";
-      if (EMPLOYEE_EMAILS.some(e => email === e.toLowerCase())) return "employee";
+      if (EMPLOYEE_EMAILS.includes(email)) return "employee";
       return "user";
     }
 
@@ -207,9 +206,7 @@
         const password = localStorage.getItem("pendingPassword");
 
         let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-
-        // ✔ Correction ici : ton email en entier
-        const role = email === "christopherantoine773@gmail.com" ? "creator" : getRoleByEmail(email);
+        const role = getRoleByEmail(email);
 
         let dp;
         do { dp = generateDP(); } while (accounts.some(u => u.dp === dp));
@@ -262,6 +259,36 @@
       s.style.display = s.style.display === "none" ? "block" : "none";
       l.style.display = l.style.display === "none" ? "block" : "none";
     }
+
+    /* 🔧 FIX AUTOMATIQUE DES DP DUPLIQUÉS */
+    (function fixDuplicateDP() {
+      let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+      if (!accounts.length) return;
+
+      const usedDP = new Set();
+      let changed = false;
+
+      for (let i = 0; i < accounts.length; i++) {
+        const dp = accounts[i].dp;
+
+        if (usedDP.has(dp)) {
+          let newDP;
+          do { newDP = generateDP(); } 
+          while (accounts.some(u => u.dp === newDP));
+
+          accounts[i].dp = newDP;
+          changed = true;
+        }
+
+        usedDP.add(accounts[i].dp);
+      }
+
+      if (changed) {
+        localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+        console.log("✔ Correction DP dupliqués appliquée.");
+      }
+    })();
+
   </script>
 </body>
 </html>
