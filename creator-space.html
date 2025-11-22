@@ -223,6 +223,12 @@ h2{
     <div id="rechargeList"></div>
 </div>
 
+<!-- 🔵 BOUTON VERIFIER LES DP -->
+<button style="background:#005eff; margin-top:20px;"
+        onclick="location.href='verifi.html'">
+🔍 Vérifier tous les DP
+</button>
+
 <!-- BOUTONS EXISTANTS -->
 <button style="background:#00eaff; margin-top:20px;" onclick="location.href='Archi.html'">
 📁 Voir l'historique (Archive)
@@ -382,7 +388,7 @@ function loadRecharges(){
     let globalList = [];
 
     allKeys.forEach(key => {
-        let arr = JSON.parse(localStorage.getItem(key) || "[]");
+        let arr = JSON.parse(localStorage.getItem(key) || "[]" );
         arr.forEach(r => {
             r._storageKey = key;
             globalList.push(r);
