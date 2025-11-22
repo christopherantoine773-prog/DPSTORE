@@ -2,93 +2,185 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>DPSTORE — Vérification des Comptes</title>
+<title>DPSTORE — Tous les DP</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-    body {
-        background:#000;
-        color:white;
-        font-family:Arial;
-        padding:20px;
-        text-align:center;
-    }
-    h1 {
-        color:#f9d71c;
-        margin-bottom:20px;
-    }
-    table {
-        width:100%;
-        border-collapse:collapse;
-        margin-top:20px;
-        background:#111;
-    }
-    th, td {
-        padding:10px;
-        border:1px solid #333;
-        font-size:14px;
-    }
-    th {
-        background:#f9d71c;
-        color:#000;
-    }
-    tr:nth-child(even) {
-        background:#1a1a1a;
-    }
-    .btn {
-        margin-top:20px;
-        padding:10px 20px;
-        background:#f9d71c;
-        border:none;
-        color:#000;
-        font-weight:bold;
-        cursor:pointer;
-        border-radius:5px;
-    }
+body{
+    background:black;
+    color:white;
+    font-family:Arial;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+    color:#00eaff;
+    margin-bottom:20px;
+}
+
+.dpItem{
+    background:#1a1a1a;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:12px;
+    border-left:4px solid #00eaff;
+}
+
+.dpItem p{
+    margin:3px 0;
+}
+
+.role{
+    padding:3px 8px;
+    border-radius:6px;
+    font-weight:bold;
+}
+
+.role.user{ background:#555; }
+.role.employee{ background:#ffbb00; color:black; }
+.role.creator{ background:#00ff88; color:black; }
+.role.admin{ background:#ff4444; color:white; }
+
+button{
+    background:#00eaff;
+    color:black;
+    font-weight:bold;
+    padding:10px;
+    border:none;
+    width:95%;
+    margin:10px auto;
+    display:block;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.modifyBtn{
+    background:#ff4444 !important;
+    color:white !important;
+    margin-top:8px;
+}
+
+.searchBox{
+    width:95%;
+    margin:auto;
+    margin-bottom:20px;
+}
+
+input{
+    width:95%;
+    padding:10px;
+    border-radius:10px;
+    border:none;
+    margin-top:10px;
+    font-size:16px;
+}
 </style>
 </head>
-
 <body>
-<h1>📜 Vérification des Comptes DPSTORE</h1>
 
-<table>
-    <thead>
-        <tr>
-            <th>DP</th>
-            <th>Nom d'utilisateur</th>
-            <th>Email</th>
-            <th>Rôle</th>
-            <th>Crédits</th>
-            <th>Dernière connexion</th>
-        </tr>
-    </thead>
-    <tbody id="accountsTable"></tbody>
-</table>
+<h1>📋 Liste complète des DP</h1>
 
-<button class="btn" onclick="location.href='profil.html'">Retour</button>
+<div class="searchBox">
+    <input id="searchInput" placeholder="Rechercher un email, un DP ou un nom..." onkeyup="filterDP()">
+</div>
+
+<div id="dpList"></div>
+
+<button onclick="location.href='creator-space.html'">⬅️ Retour</button>
 
 <script>
-    function loadAccounts() {
-        let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-        const table = document.getElementById("accountsTable");
-        table.innerHTML = "";
+/* ============================================================
+   🔍 Récupérer tous les comptes
+============================================================ */
+function getAllAccounts(){
+    return JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
+}
 
-        accounts.forEach(acc => {
-            const row = `
-                <tr>
-                    <td>${acc.dp}</td>
-                    <td>${acc.username}</td>
-                    <td>${acc.email}</td>
-                    <td>${acc.role}</td>
-                    <td>${acc.credits}</td>
-                    <td>${acc.lastLogin || "Aucune"}</td>
-                </tr>
-            `;
-            table.innerHTML += row;
-        });
+/* ============================================================
+   🔧 Générer un DP unique
+============================================================ */
+function generateUniqueDP(){
+    return "DP" + Math.floor(100000 + Math.random() * 900000);
+}
+
+/* Vérifie si un DP est déjà utilisé */
+function isDPUsed(dp, email){
+    let accounts = getAllAccounts();
+    return accounts.some(acc => acc.dp === dp && acc.email !== email);
+}
+
+/* Forcer un DP unique */
+function fixDuplicateDP(email){
+    let accounts = getAllAccounts();
+    let user = accounts.find(a => a.email === email);
+
+    if(!user) return;
+
+    let newDP;
+    do {
+        newDP = generateUniqueDP();
+    } while(isDPUsed(newDP, email));
+
+    user.dp = newDP;
+
+    localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+    loadDP();
+    alert("Le DP a été modifié avec succès !");
+}
+
+/* ============================================================
+   📌 Affichage des DP
+============================================================ */
+function loadDP(){
+    let list = getAllAccounts();
+
+    // Trier alphabétiquement
+    list.sort((a,b) => (a.email || "").localeCompare(b.email || ""));
+
+    const container = document.getElementById("dpList");
+    container.innerHTML = "";
+
+    if(list.length === 0){
+        container.innerHTML = "<p>Aucun compte trouvé.</p>";
+        return;
     }
 
-    loadAccounts();
+    list.forEach(u => {
+
+        let duplicated = isDPUsed(u.dp, u.email);
+
+        container.innerHTML += `
+            <div class="dpItem">
+                <p><b>Nom :</b> ${u.username || "Non défini"}</p>
+                <p><b>Email :</b> ${u.email}</p>
+                <p><b>DP :</b> <span style="color:${duplicated ? "red" : "#00eaff"};">${u.dp}</span></p>
+                ${duplicated ? `<button class="modifyBtn" onclick="fixDuplicateDP('${u.email}')">Corriger DP en doublon</button>` : ""}
+                <p><b>Solde :</b> <span style="color:yellow;">${u.balance || 0} crédits</span></p>
+                <p><b>Rôle :</b> 
+                    <span class="role ${u.role || 'user'}">${u.role || "user"}</span>
+                </p>
+                <p><b>Créé le :</b> ${u.createdAt || "Non enregistré"}</p>
+            </div>
+        `;
+    });
+}
+
+/* ============================================================
+   🔎 Recherche
+============================================================ */
+function filterDP(){
+    let input = document.getElementById("searchInput").value.toLowerCase();
+    let items = document.querySelectorAll(".dpItem");
+
+    items.forEach(div => {
+        let text = div.innerText.toLowerCase();
+        div.style.display = text.includes(input) ? "block" : "none";
+    });
+}
+
+loadDP();
 </script>
 
 </body>
