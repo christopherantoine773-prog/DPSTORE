@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPSTORE | Reçus</title>
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(160deg, #000, #021220, #001a13);
+    margin: 0;
+    color: #e0ffe9;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background: rgba(0, 20, 10, 0.55);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(0,255,150,0.15);
+    box-shadow: 0 0 25px rgba(0,255,150,0.15);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #00ffb3;
+  }
+
+  .back-btn {
+    background: transparent;
+    border: 2px solid #00ffb3;
+    color: #00ffb3;
+    padding: 6px 16px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.25s;
+  }
+
+  .back-btn:hover {
+    background: #00ffb3;
+    color: #000;
+  }
+
+  .container {
+    padding: 30px 20px;
+    max-width: 800px;
+    margin: auto;
+  }
+
+  .receipt {
+    background: rgba(0,255,179,0.06);
+    border: 1px solid rgba(0,255,179,0.25);
+    border-radius: 16px;
+    margin-bottom: 18px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0,255,179,0.12);
+  }
+
+  .receipt strong {
+    color: #00ffb3;
+  }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    opacity: 0.5;
+    margin-top: 30px;
+  }
+
+  .missing {
+    color: #ff5555;
+    font-style: italic;
+    opacity: 0.8;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <button class="back-btn" onclick="goBack()">← Retour</button>
+  <h1>📄 Reçus DPSTORE</h1>
+  <div></div>
+</header>
+
+<div class="container">
+  <h2 style="color:#00ffb3; text-align:center;">Vos commandes validées</h2>
+
+  <div id="receipts"></div>
+</div>
+
+<footer>© 2025 DPSTORE — Tous droits réservés</footer>
+
+<script>
+/* USER CHECK */
+let user = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
+if (!user.email && !user.dp) {
+  alert("Aucun compte connecté !");
+  window.location.href = "index.html";
+}
+
+/* LOAD ORDERS */
+function loadReceipts(){
+  let orders = JSON.parse(localStorage.getItem("orders") || "[]");
+
+  let myOrders = orders.filter(o =>
+    (o.buyer || "").toLowerCase() === (user.email || user.dp || "").toLowerCase()
+  );
+
+  const box = document.getElementById("receipts");
+  box.innerHTML = "";
+
+  if (myOrders.length === 0){
+    box.innerHTML = "<p style='text-align:center; opacity:0.7;'>Aucun reçu pour le moment.</p>";
+    return;
+  }
+
+  myOrders.forEach(r => {
+
+    /* ---- AUTO-AFFICHAGE DES INFOS DU PRODUIT ---- */
+    let extraInfo = "";
+    let hasExtra = false;
+    
+    Object.keys(r).forEach(key => {
+      if (["name","price","date","status","buyer","id"].includes(key)) return;
+      hasExtra = true;
+      extraInfo += `<p><strong>${key} :</strong> ${r[key]}</p>`;
+    });
+
+    if (!hasExtra){
+      extraInfo = `<p class="missing">Aucune info supplémentaire enregistrée pour ce produit.</p>`;
+    }
+
+    box.innerHTML += `
+      <div class="receipt">
+        <p><strong>Produit :</strong> ${r.name}</p>
+        <p><strong>Prix :</strong> ${r.price} G</p>
+        ${extraInfo}
+        <p><strong>Date :</strong> ${r.date}</p>
+        <p><strong>Status :</strong> ${r.status}</p>
+      </div>
+    `;
+  });
+}
+
+function goBack(){
+  window.location.href = "cart.html";
+}
+
+loadReceipts();
+</script>
+
+</body>
+</html>

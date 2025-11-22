@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPSTORE | Prime Video</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: radial-gradient(circle at center, #02010a 0%, #000014 100%);
+    color: #fff;
+    overflow-x: hidden;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 25px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 20px rgba(0, 170, 255, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  header h1 {
+    background: linear-gradient(90deg, #00aaff, #FFD700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+  }
+
+  .back-btn {
+    color: #FFD700;
+    text-decoration: none;
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid #FFD700;
+    transition: 0.3s;
+  }
+
+  .balance-box {
+    background: rgba(0,255,150,0.1);
+    border: 1px solid #00ffb3;
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    color: #00ffb3;
+    margin-right: 10px;
+  }
+
+  .cart-btn {
+    background: rgba(255,255,255,0.1);
+    padding: 7px 14px;
+    border-radius: 10px;
+    border: 1px solid #00aaff;
+    cursor: pointer;
+    color: #00aaff;
+    font-weight: bold;
+  }
+
+  .title {
+    text-align: center;
+    margin-top: 60px;
+    font-size: 2.8rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+    background: linear-gradient(90deg, #00aaff, #00f7ff, #FFD700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 20px;
+    padding: 40px;
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 247, 255, 0.3);
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+  }
+
+  .status {
+    background: #00FF85;
+    color: #000;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 0.8em;
+  }
+
+  .price {
+    color: #FFD700;
+    font-weight: bold;
+  }
+
+  .btn-commander {
+    margin-top: 10px;
+    background: linear-gradient(90deg, #00f7ff, #00aaff);
+    color: #000;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <a href="produits.html" class="back-btn">← Retour</a>
+
+  <h1>DPSTORE — Prime Video</h1>
+
+  <div style="display:flex; align-items:center;">
+    <div class="balance-box" id="balanceBox">0 G</div>
+    <button class="cart-btn" onclick="gotoCart()">🛒 Panier</button>
+  </div>
+</header>
+
+<h2 class="title">PRIMEVIDEO</h2>
+
+<section class="products">
+
+  <div class="card">
+    <h3>PRIMEVIDEO 1 MOIS</h3>
+    <span class="status">Disponible</span>
+    <p class="price">600 G</p>
+    <button class="btn-commander" onclick="addToCart('Prime Video 1 Mois', 600)">Commander</button>
+  </div>
+
+  <div class="card">
+    <h3>PRIMEVIDEO 3 MOIS</h3>
+    <span class="status">Disponible</span>
+    <p class="price">1620 G</p>
+    <button class="btn-commander" onclick="addToCart('Prime Video 3 Mois', 1620)">Commander</button>
+  </div>
+
+  <div class="card">
+    <h3>PRIMEVIDEO 6 MOIS</h3>
+    <span class="status">Disponible</span>
+    <p class="price">3240 G</p>
+    <button class="btn-commander" onclick="addToCart('Prime Video 6 Mois', 3240)">Commander</button>
+  </div>
+
+</section>
+
+<script>
+/* 🔥 USER CONNECTÉ + PANIER PAR EMAIL 🔥 */
+let user = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
+
+if(!user.email){
+  alert("Aucun compte connecté !");
+  window.location.href = "index.html";
+}
+
+if(user.balance === undefined) user.balance = 0;
+
+function normalizeId(str){
+  return (str||"guest").toLowerCase().replace(/[^a-z0-9@.-]/g,"_").replace(/@/g,"_at_");
+}
+
+function getCartKey(){ return "cart_" + normalizeId(user.email); }
+
+function loadCart(){ return JSON.parse(localStorage.getItem(getCartKey())||"[]"); }
+
+function saveCart(cart){ localStorage.setItem(getCartKey(), JSON.stringify(cart)); }
+
+function updateBalanceUI(){
+  document.getElementById("balanceBox").textContent = user.balance + " G";
+  updateCartCount();
+}
+
+function updateCartCount(){
+  document.getElementById("cartCount")?.textContent = loadCart().length;
+}
+
+function gotoCart(){ window.location.href = "cart.html"; }
+
+function addToCart(name, price){
+  let cart = loadCart();
+  cart.push({name, price});
+  saveCart(cart);
+  alert("✅ " + name + " ajouté au panier !");
+  updateCartCount();
+}
+
+updateBalanceUI();
+</script>
+
+</body>
+</html>

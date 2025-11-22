@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPSTORE | Produits</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #000428, #004e92);
+    color: #fff;
+  }
+
+  header {
+    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.45);
+    padding: 14px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 174, 239, 0.4);
+    box-shadow: 0 0 12px rgba(0, 174, 239, 0.35);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+    background: linear-gradient(90deg, #FFD700, #00ADEF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .balance-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.07);
+    padding: 8px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(0,174,239,0.35);
+    box-shadow: 0 0 10px rgba(0,174,239,0.25);
+  }
+
+  #user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #FFD700;
+  }
+
+  #user-balance {
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(0,174,239,0.4);
+    box-shadow: 0 0 10px rgba(0,174,239,0.35);
+  }
+
+  select, button {
+    border: 1px solid #00aaff;
+    padding: 7px 12px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.35);
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.25s;
+  }
+
+  select:hover, button:hover {
+    background: #00aaff;
+    color: #000;
+    box-shadow: 0 0 12px #00aaff;
+  }
+
+  .profile-btn {
+    border: 1px solid #FFD700;
+    color: #FFD700;
+    padding: 7px 14px;
+    border-radius: 50px;
+    background: rgba(0,0,0,0.4);
+    font-weight: 600;
+    transition: 0.25s;
+  }
+
+  .profile-btn:hover {
+    background: #FFD700;
+    color: #000;
+    box-shadow: 0 0 15px #FFD700;
+  }
+
+  .container {
+    padding: 30px;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    margin: 20px 0 10px;
+    text-shadow: 0 0 10px #FFD700;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 0 10px #00aaff44;
+    transition: 0.3s;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 15px #00aaffaa;
+  }
+
+  .card h3 {
+    margin-bottom: 10px;
+    color: #FFD700;
+  }
+
+  .card p {
+    font-size: 0.9rem;
+    color: #ccc;
+  }
+
+  .btn-primary {
+    background: #FFD700;
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-weight: bold;
+  }
+
+  .btn-primary:hover {
+    background: #00aaff;
+    color: #fff;
+  }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    background: rgba(0,0,0,0.6);
+    font-size: 0.9rem;
+  }
+
+  .hidden { display: none; }
+
+  .verified-badge {
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+  }
+
+  /* 🔵 BOUTON MESSAGERIE */
+  #chatBtn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: #00aaff;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 0 15px #00aaff88;
+    transition: 0.3s;
+    z-index: 100;
+  }
+
+  #chatBtn:hover {
+    background: #FFD700;
+    color: black;
+    box-shadow: 0 0 20px #FFD700aa;
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>DPSTORE — Produits</h1>
+
+  <div class="balance-container">
+    <span id="user-name"></span>
+    <img id="badge" class="verified-badge hidden" src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg">
+
+    <span id="user-balance">Solde : 0 G</span>
+
+    <select id="currency-select">
+      <option value="HTG">HTG</option>
+      <option value="USD">USD</option>
+      <option value="EUR">EUR</option>
+    </select>
+
+    <button onclick="openRecharge()">💳 Recharger</button>
+    <button class="profile-btn" onclick="openProfile()">👤 Profil</button>
+    <button class="profile-btn" onclick="openCart()">🛒 Panier</button>
+    <button class="profile-btn" onclick="openContact()">📞 Contact</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- 🕹️ Jeux -->
+  <div class="section">
+    <h2 class="section-title">🎮 Jeux</h2>
+    <div class="grid">
+
+      <div class="card">
+        <h3>Free Fire</h3>
+        <p>Diamants, Pass et Offres</p>
+        <button class="btn-primary" onclick="openPage('freefire.html')">Voir plus</button>
+      </div>
+
+      <div class="card">
+        <h3>PUBG Mobile</h3>
+        <p>UC & Offres Spéciales</p>
+        <button class="btn-primary" onclick="openPage('pubgmobile.html')">Voir plus</button>
+      </div>
+
+      <div class="card">
+        <h3>Call of Duty Mobile</h3>
+        <p>Points CP</p>
+        <button class="btn-primary" onclick="openPage('CallofDutyMobile.html')">Voir plus</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 📺 Abonnements -->
+  <div class="section">
+    <h2 class="section-title">📺 Abonnements</h2>
+    <div class="grid">
+
+      <div class="card">
+        <h3>Netflix</h3>
+        <p>1 à 3 mois — Premium inclus</p>
+        <button class="btn-primary" onclick="openPage('abonnement_pro.html')">Voir plus</button>
+      </div>
+
+      <div class="card">
+        <h3>Amazon Prime Video</h3>
+        <p>Abonnement mensuel</p>
+        <button class="btn-primary" onclick="openPage('primevideo.html')">Voir plus</button>
+      </div>
+
+      <div class="card">
+        <h3>Crunchyroll</h3>
+        <p>Abonnement Premium 1 mois</p>
+        <button class="btn-primary" onclick="openPage('crunchyroll.html')">Voir plus</button>
+      </div>
+
+      <div class="card">
+        <h3>NordVPN</h3>
+        <p>Sécurité & confidentialité — 1 à 6 mois</p>
+        <button class="btn-primary" onclick="openPage('nordvpn.html')">Voir plus</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 🎁 Gift Cards -->
+  <div class="section">
+    <h2 class="section-title">🎁 Gift Cards</h2>
+    <div class="grid">
+
+      <div class="card">
+        <h3>Google Play</h3>
+        <p>10$ — 25$ — 50$</p>
+        <button class="btn-primary" onclick="openPage('googleplay.html')">Voir plus</button>
+      </div>
+
+      <div class="card">
+        <h3>Apple Gift Card</h3>
+        <p>Recharge iTunes & App Store</p>
+        <button class="btn-primary" onclick="openPage('apple.html')">Voir plus</button>
+      </div>
+
+      <div class="card">
+        <h3>PlayStation / Xbox</h3>
+        <p>PSN, Xbox Codes & Recharges</p>
+        <button class="btn-primary" onclick="openPage('playstation-xbox.html')">Voir plus</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ➕ PRODUITS + -->
+  <div class="section">
+    <h2 class="section-title">➕ Produits +</h2>
+    <div class="grid">
+
+      <div class="card">
+        <h3>Produits personnalisés</h3>
+        <p>Modifier, ajouter et gérer vos produits.</p>
+        <button class="btn-primary" onclick="openPage('prodp.html')">Ouvrir</button>
+      </div>
+
+      <!-- 🆕 AJOUT DEMANDÉ -->
+      <div class="card">
+        <h3>New Prod +</h3>
+        <p>Créer un nouveau produit instantanément.</p>
+        <button class="btn-primary" onclick="openPage('dpr.html')">Ouvrir</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<footer>© 2025 DPSTORE — Tous droits réservés</footer>
+
+<!-- 🔵 BOUTON MESSAGERIE UTILISATEUR -->
+<button id="chatBtn" title="Messagerie" onclick="openUserChat()">💬</button>
+
+<script>
+/* ===============================
+      🔥 SYNCHRONISATION COMPLÈTE  
+   =============================== */
+
+let user = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
+if (!user.email) {
+  alert("⚠️ Aucun compte connecté !");
+  window.location.href = "index.html";
+}
+
+let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+let mainAccount = accounts.find(a => a.email === user.email);
+
+if (!mainAccount) {
+  alert("⚠️ Compte introuvable dans la base !");
+  window.location.href = "index.html";
+}
+
+/* ⚡ Synchronisation correcte */
+user.balance = mainAccount.balance ?? user.balance;
+user.username = mainAccount.username ?? user.username;
+user.photo = mainAccount.photo ?? user.photo;
+user.dp = mainAccount.dp ?? user.dp;
+user.role = mainAccount.role ?? user.role;
+user.employeeType = mainAccount.employeeType ?? user.employeeType;
+
+/* 🔄 Mise à jour dpstore_user */
+localStorage.setItem("dpstore_user", JSON.stringify(user));
+
+/* 🔄 Mise à jour dpstore_accounts */
+let idx = accounts.findIndex(a => a.email === user.email);
+if (idx !== -1) {
+  accounts[idx] = user;
+  localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+}
+
+/* ===============================
+      🔥 AFFICHAGE UTILISATEUR
+   =============================== */
+
+const RATES = { HTG: 1, USD: 205, EUR: 205/1.4 };
+
+document.getElementById("user-name").textContent =
+  user.username || user.name || "Utilisateur";
+
+const balanceEl = document.getElementById("user-balance");
+const select = document.getElementById("currency-select");
+
+function updateBalance() {
+  let value = user.balance;
+  let unit = "G";
+
+  if (select.value === "USD") {
+    value = (value / RATES.USD).toFixed(2);
+    unit = "USD";
+  }
+
+  if (select.value === "EUR") {
+    value = (value / RATES.EUR).toFixed(2);
+    unit = "EUR";
+  }
+
+  balanceEl.innerText = `Solde : ${value} ${unit}`;
+}
+
+select.addEventListener("change", updateBalance);
+updateBalance();
+
+/* ===============================
+      ⭐ BOUTON RECHARGE
+   =============================== */
+
+function openRecharge() {
+  window.location.href = "rechargex.html";
+}
+
+/* ===============================
+      🌟 NAVIGATION
+   =============================== */
+
+function openPage(p) { window.location.href = p; }
+function openProfile() { window.location.href = "profil.html"; }
+function openCart() { window.location.href = "cart.html"; }
+function openContact() { window.location.href = "contact.html"; }
+
+/* ===============================
+      🔵 BOUTON MESSAGERIE
+   =============================== */
+
+function openUserChat() {
+    window.location.href = "user.html";
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPSTORE | Nouveaux Produits</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #000428, #004e92);
+    color: #fff;
+  }
+
+  header {
+    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.45);
+    padding: 14px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 174, 239, 0.4);
+    box-shadow: 0 0 12px rgba(0, 174, 239, 0.35);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+    background: linear-gradient(90deg, #FFD700, #00ADEF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-header {
+    padding: 7px 12px;
+    border-radius: 10px;
+    border: 2px solid #00aaff;
+    background: rgba(0,0,0,0.4);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s;
+  }
+  .btn-header:hover {
+    background: #00aaff;
+    color: #000;
+    box-shadow: 0 0 12px #00aaff;
+  }
+
+  #user-balance {
+    padding: 7px 14px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.1);
+    font-weight: bold;
+    border: 1px solid rgba(0,174,239,0.4);
+  }
+
+  .container {
+    padding: 25px;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #FFD700;
+  }
+
+  .product-box {
+    background: rgba(255,255,255,0.06);
+    padding: 20px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.12);
+    margin-bottom: 20px;
+    box-shadow: 0 0 15px rgba(0, 174, 239, 0.35);
+  }
+
+  .product-box h3 {
+    color: #FFD700;
+  }
+
+  .product-form {
+    display: none;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .product-form input {
+    width: 95%;
+    padding: 6px;
+    margin-top: 6px;
+    border-radius: 6px;
+    border: none;
+  }
+
+  .btn-cart {
+    margin-top: 12px;
+    padding: 10px;
+    width: 100%;
+    border-radius: 10px;
+    border: none;
+    background: #00ADEF;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.25s;
+  }
+
+  .btn-cart:hover {
+    background: #FFD700;
+    box-shadow: 0 0 12px #FFD700;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Nouveaux Produits</h1>
+
+  <div class="header-buttons">
+    <div id="user-balance">0 G</div>
+    <button class="btn-header" onclick="goBack()">← Retour</button>
+    <button class="btn-header" onclick="openProfile()">👤</button>
+    <button class="btn-header" onclick="openCart()">🛒</button>
+  </div>
+</header>
+
+<div class="container">
+  <h2 class="section-title">🆕 Produits ajoutés récemment</h2>
+
+  <div id="new-products"></div>
+</div>
+
+<footer style="text-align:center;padding:20px;opacity:0.6;">
+  © 2025 DPSTORE — Nouveaux Produits
+</footer>
+
+<script>
+let products = JSON.parse(localStorage.getItem("dp_products") || "[]");
+localStorage.setItem("products_data", JSON.stringify(products));
+
+function loadUser(){ try { return JSON.parse(localStorage.getItem("dpstore_user")||"{}"); } catch(e){ return {}; } }
+function normalizeId(str){ if(!str) return "guest"; return String(str).toLowerCase().trim().replace(/[^a-z0-9@.-]/g, "_").replace(/@/g,"_at_"); }
+function getCartKeyForUser(u){ const id=(u&&(u.email||u.dp))?(u.email||u.dp):"guest"; return "cart_"+normalizeId(id); }
+function escapeHtml(str){ if(!str) return ""; return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
+
+function addToCart(product){
+  if(!product){ return alert("Produit introuvable."); }
+  const currentUser = loadUser()||{};
+  const key = getCartKeyForUser(currentUser);
+
+  const cartItem = {
+    id: product.id||("prod_"+Date.now()),
+    name: product.name||"Produit",
+    price: Number(product.price)||0,
+    img: product.img||null,
+    addedAt: new Date().toISOString(),
+    extraInfo: product.extraInfo || {}
+  };
+
+  let cart=[];
+  try{ cart = JSON.parse(localStorage.getItem(key)||"[]"); if(!Array.isArray(cart)) cart=[]; } catch(e){ cart=[]; }
+
+  cart.push(cartItem);
+  try{
+    localStorage.setItem(key, JSON.stringify(cart));
+    localStorage.setItem("dpstore_cart", JSON.stringify(cart));
+    alert("🛒 Produit ajouté au panier !");
+  }catch(e){ alert("Erreur lors de l'ajout au panier."); }
+}
+
+function renderProducts(){
+  const box = document.getElementById("new-products");
+  box.innerHTML = "";
+  if(!products || products.length===0){ box.innerHTML="<p style='opacity:0.6;'>Aucun nouveau produit.</p>"; return; }
+
+  products.forEach((p, idx)=>{
+    if(!p.id){ p.id = "prod_"+idx+"_"+Date.now(); }
+
+    const div = document.createElement("div");
+    div.className = "product-box";
+
+    const imgHtml = p.img ? `<img src="${escapeHtml(p.img)}" width="140" style="border-radius:10px;margin-top:10px;">` : "";
+
+    div.innerHTML = `<h3>${escapeHtml(p.name)}</h3>
+                     <p>${escapeHtml(p.desc||"Pas de description.")}</p>
+                     <p><strong>Prix : ${escapeHtml(String(p.price||0))} HTG</strong></p>
+                     ${imgHtml}`;
+
+    const btn = document.createElement("button");
+    btn.className = "btn-cart"; btn.type="button"; btn.textContent="🛒 Ajouter au panier";
+
+    const formDiv = document.createElement("div");
+    formDiv.className = "product-form";
+
+    if(p.reqEmail) formDiv.innerHTML += `<input type="email" placeholder="Votre Email">`;
+    if(p.reqPassword) formDiv.innerHTML += `<input type="password" placeholder="Votre Password">`;
+    if(p.reqWhatsApp) formDiv.innerHTML += `<input type="text" placeholder="Votre WhatsApp">`;
+    if(p.reqID) formDiv.innerHTML += `<input type="text" placeholder="Votre ID">`;
+
+    // quand on clique sur le bouton, on affiche le formulaire
+    btn.addEventListener("click", ()=>{
+      if(formDiv.style.display === "none" || formDiv.style.display===""){
+        formDiv.style.display = "block";
+        btn.textContent = "✅ Confirmer et Ajouter au panier";
+      } else {
+        // récupérer les valeurs du formulaire
+        const inputs = formDiv.querySelectorAll("input");
+        const extraInfo = {};
+        if(inputs.length>0){
+          inputs.forEach(input=>{
+            const key = input.placeholder.replace("Votre ","").toLowerCase();
+            extraInfo[key] = input.value.trim();
+          });
+        }
+        const productWithInfo = {...p, extraInfo};
+        addToCart(productWithInfo);
+      }
+    });
+
+    div.appendChild(formDiv);
+    div.appendChild(btn);
+    box.appendChild(div);
+  });
+
+  localStorage.setItem("products_data", JSON.stringify(products));
+}
+
+function openCart(){ window.location.href="cart.html"; }
+function openProfile(){ window.location.href="profil.html"; }
+function goBack(){ window.location.href="produits.html"; }
+
+function updateBalanceUI(){
+  const u = loadUser();
+  const el = document.getElementById("user-balance");
+  if(el) el.textContent = ((u&&u.balance)?u.balance:0)+" G";
+}
+
+updateBalanceUI();
+renderProducts();
+</script>
+
+</body>
+</html>

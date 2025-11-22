@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mes recharges — DPSTORE</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Inter,Arial,sans-serif;
+  background:#020507;
+  color:#eaffea;
+}
+.header{
+  padding:14px 18px;
+  background:rgba(0,0,0,0.55);
+  border-bottom:1px solid rgba(0,255,200,0.08);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.header a{
+  color:#00ffd9;
+  text-decoration:none;
+  font-weight:600;
+  font-size:1.05rem;
+}
+.balance-badge{
+  background:rgba(0,255,200,0.10);
+  padding:6px 14px;
+  border-radius:20px;
+  color:#00ffd9;
+  font-weight:700;
+  border:1px solid rgba(0,255,200,0.25);
+  box-shadow:0 0 12px rgba(0,255,200,0.30);
+  letter-spacing:0.4px;
+  font-size:0.95rem;
+}
+.container{
+  max-width:900px;
+  margin:20px auto;
+  padding:16px;
+}
+.card{
+  background:rgba(0,25,25,0.22);
+  padding:20px;
+  border-radius:14px;
+  border:1px solid rgba(0,255,200,0.08);
+  box-shadow:0 0 18px rgba(0,255,200,0.07);
+}
+.item{
+  padding:20px;
+  border-radius:12px;
+  margin-bottom:15px;
+  background:rgba(0,0,0,0.28);
+  border:1px solid rgba(0,255,255,0.08);
+  box-shadow:0 0 25px rgba(0,255,255,0.06);
+}
+.meta h4{
+  margin:0;
+  color:#7efcff;
+  font-size:1.15rem;
+}
+.meta p{
+  margin:7px 0;
+  color:#cfeed0;
+}
+.small{
+  font-size:0.85rem;
+  color:#6cd6ff;
+}
+.status-badge{
+  display:inline-block;
+  padding:6px 14px;
+  border-radius:20px;
+  font-weight:700;
+  font-size:0.95rem;
+}
+.status-attente{
+  background:rgba(255,200,0,0.12);
+  border:1px solid rgba(255,200,0,0.25);
+  color:#ffd24a;
+  box-shadow:0 0 12px rgba(255,200,0,0.18);
+}
+.status-valide{
+  background:rgba(0,255,120,0.15);
+  border:1px solid rgba(0,255,120,0.30);
+  color:#00ff88;
+  box-shadow:0 0 12px rgba(0,255,120,0.25);
+}
+.status-refuse{
+  background:rgba(255,60,60,0.15);
+  border:1px solid rgba(255,60,60,0.30);
+  color:#ff4b4b;
+  box-shadow:0 0 12px rgba(255,60,60,0.22);
+}
+.empty{
+  opacity:0.7;
+  text-align:center;
+  padding:30px;
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+  <a href="profil.html">← Retour</a>
+  <span id="userBalance" class="balance-badge"></span>
+</header>
+
+<div class="container">
+  <div class="card">
+    <h2>📄 Mes demandes de recharge</h2>
+    <div id="list"></div>
+    <div id="empty" class="empty">Aucune demande trouvée.</div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  const listEl = document.getElementById('list');
+  const empty = document.getElementById('empty');
+
+  const account = JSON.parse(localStorage.getItem("dpstore_user"));
+  if(!account){
+    alert("Aucun compte détecté !");
+    location.href = "index.html";
+  }
+
+  const USER_DP = account.dp || "—";
+  const USER_SOLDE = account.balance || 0;
+
+  document.getElementById("userBalance").textContent = `Solde : ${USER_SOLDE} crédits`;
+
+  function render() {
+
+    const arr = JSON.parse(localStorage.getItem("dp_recharges_" + USER_DP) || "[]");
+
+    listEl.innerHTML = '';
+
+    if (!arr.length) { 
+        empty.style.display = 'block'; 
+        return; 
+    }
+
+    empty.style.display = 'none';
+
+    arr.forEach((r) => {
+
+      let statusClass = "status-attente";
+      let statusText = "⏳ EN ATTENTE";
+
+      if(r.status === "validé" || r.status === "valide"){
+        statusClass = "status-valide";
+        statusText = "✔ VALIDÉ";
+      }
+      else if(r.status === "refusé"){
+        statusClass = "status-refuse";
+        statusText = "❌ REFUSÉ";
+      }
+
+      const div = document.createElement('div');
+      div.className = 'item';
+
+      div.innerHTML = `
+        <div class="meta">
+
+          <h4>${escapeHtml(r.name)} — 
+          <span class="small">${r.created}</span></h4>
+
+          <p><b>DP-ID :</b> ${escapeHtml(r.dpID || USER_DP)}</p>
+
+          <p><b>Solde actuel :</b> ${USER_SOLDE} crédits</p>
+
+          <p><b>Montant :</b> ${r.amount} G</p>
+          <p><b>Transcode :</b> ${escapeHtml(r.transcode)}</p>
+          <p><b>Email :</b> ${escapeHtml(r.email)}</p>
+          ${r.phone ? `<p><b>WhatsApp :</b> ${escapeHtml(r.phone)}</p>` : ''}
+
+          <p><b>Statut :</b> 
+            <span class="status-badge ${statusClass}">
+              ${statusText}
+            </span>
+          </p>
+        </div>
+      `;
+
+      listEl.appendChild(div);
+    });
+  }
+
+  function escapeHtml(str){
+    if(!str) return '';
+    return String(str).replace(/[&<>"']/g, m => (
+      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
+    ));
+  }
+
+  render();
+})();
+</script>
+
+</body>
+</html>

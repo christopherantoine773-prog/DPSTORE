@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPSTORE | Gestion Commandes</title>
+
+<style>
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(160deg, #000, #021220, #001a13);
+  margin: 0;
+  color: #e0ffe9;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 25px;
+  background: rgba(0, 20, 10, 0.55);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(0,255,150,0.15);
+  box-shadow: 0 0 25px rgba(0,255,150,0.15);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #00ffb3;
+}
+
+.back-btn {
+  background: transparent;
+  border: 2px solid #00ffb3;
+  color: #00ffb3;
+  padding: 6px 16px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.25s;
+}
+
+.back-btn:hover {
+  background: #00ffb3;
+  color: #000;
+}
+
+.container {
+  padding: 30px 20px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.dp-list, .order-list {
+  margin-top: 20px;
+}
+
+.dp-item {
+  background: rgba(0,255,179,0.06);
+  border: 1px solid rgba(0,255,179,0.25);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.dp-item:hover {
+  background: rgba(0,255,179,0.15);
+}
+
+.receipt {
+  background: rgba(0,255,179,0.06);
+  border: 1px solid rgba(0,255,179,0.25);
+  border-radius: 16px;
+  margin-bottom: 18px;
+  padding: 20px;
+  box-shadow: 0 0 20px rgba(0,255,179,0.12);
+}
+
+.receipt strong {
+  color: #00ffb3;
+}
+
+.btn-status {
+  margin-top: 8px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  margin-right: 5px;
+  color: #000;
+}
+
+.btn-await { background: #ffd700; }
+.btn-confirm { background: #00ffb3; }
+.btn-refund { background: #ff5555; }
+
+.btn-await:hover { opacity: 0.8; }
+.btn-confirm:hover { opacity: 0.8; }
+.btn-refund:hover { opacity: 0.8; }
+
+footer {
+  text-align: center;
+  padding: 20px;
+  opacity: 0.5;
+  margin-top: 30px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <button class="back-btn" onclick="goBack()">← Retour</button>
+  <h1>🛠️ Gestion Commandes DPSTORE</h1>
+  <div></div>
+</header>
+
+<div class="container">
+  <h2 style="color:#00ffb3; text-align:center;">Commandes par DP</h2>
+
+  <div class="dp-list" id="dpList"></div>
+  <div class="order-list" id="orderList"></div>
+</div>
+
+<footer>© 2025 DPSTORE — Tous droits réservés</footer>
+
+<script>
+/* Vérification rôle */
+let user = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
+if(!user.role || !["creator","admin","employee"].includes(user.role.toLowerCase())){
+  alert("🚫 Accès refusé ! Creator/Admin/Employé seulement.");
+  window.location.href = "index.html";
+}
+
+/* Chargement commandes */
+let orders = JSON.parse(localStorage.getItem("orders") || "[]");
+let dpList = document.getElementById("dpList");
+let orderList = document.getElementById("orderList");
+
+/* Obtenir DP uniques */
+let dpUnique = [...new Set(orders.map(o => o.dp || o.buyer))];
+
+function renderDPs(){
+  dpList.innerHTML = "";
+  orderList.innerHTML = "";
+  dpUnique.forEach(dp => {
+    let div = document.createElement("div");
+    div.className = "dp-item";
+    div.textContent = dp;
+    div.onclick = () => renderOrders(dp);
+    dpList.appendChild(div);
+  });
+}
+
+function renderOrders(dp){
+  orderList.innerHTML = `<h3 style="color:#00ffb3;">Commandes de ${dp}</h3>`;
+  let userOrders = orders.filter(o => (o.dp || o.buyer) === dp);
+
+  if(userOrders.length === 0){
+    orderList.innerHTML += "<p>Aucune commande pour ce DP.</p>";
+    return;
+  }
+
+  userOrders.forEach((r,index)=>{
+    let extraInfo = "";
+    let hasExtra = false;
+    Object.keys(r).forEach(key=>{
+      if(["name","price","date","status","buyer","id","dp"].includes(key)) return;
+      hasExtra = true;
+      extraInfo += `<p><strong>${key} :</strong> ${r[key]}</p>`;
+    });
+    if(!hasExtra) extraInfo = `<p style="color:#ff5555; font-style:italic;">Aucune info supplémentaire enregistrée.</p>`;
+
+    let div = document.createElement("div");
+    div.className = "receipt";
+    div.innerHTML = `
+      <p><strong>Produit :</strong> ${r.name}</p>
+      <p><strong>Prix :</strong> ${r.price} G</p>
+      ${extraInfo}
+      <p><strong>Date :</strong> ${r.date}</p>
+      <p><strong>Status :</strong> ${r.status}</p>
+      <button class="btn-status btn-await" onclick="updateStatus(${orders.indexOf(r)},'En attente')">⏳ En attente</button>
+      <button class="btn-status btn-confirm" onclick="updateStatus(${orders.indexOf(r)},'Validé')">✔ Confirmer</button>
+      <button class="btn-status btn-refund" onclick="updateStatus(${orders.indexOf(r)},'Remboursé')">💸 Rembourser</button>
+    `;
+    orderList.appendChild(div);
+  });
+}
+
+function updateStatus(index, status){
+  orders[index].status = status;
+  localStorage.setItem("orders", JSON.stringify(orders));
+  renderOrders(orders[index].dp || orders[index].buyer);
+  alert(`✅ Statut mis à jour : ${status}`);
+}
+
+function goBack(){ window.location.href="index.html"; }
+
+renderDPs();
+</script>
+
+</body>
+</html>

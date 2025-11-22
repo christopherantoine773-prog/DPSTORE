@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFF/ON — DPSTORE</title>
+<style>
+body { background:black; color:white; font-family:Arial; text-align:center; padding:30px; }
+button { padding:15px 30px; margin:20px; font-size:18px; border:none; border-radius:10px; cursor:pointer; font-weight:bold; }
+#btnOn { background:green; color:black; }
+#btnOff { background:red; color:white; }
+</style>
+</head>
+<body>
+
+<h2>⚡ Contrôle d'accès Pub</h2>
+<p>Activer ou désactiver l’accès à pub.html</p>
+
+<button id="btnOn">🔓 Activer l'accès</button>
+<button id="btnOff">🔒 Désactiver l'accès</button>
+
+<p id="statusText" style="margin-top:20px;font-size:18px;"></p>
+
+<script>
+// Initialiser l'état
+function updateStatus(){
+    const status = localStorage.getItem("pub_access") || "OFF";
+    document.getElementById("statusText").textContent = 
+        status === "ON" ? "✅ Accès activé" : "❌ Accès désactivé";
+}
+
+// Bouton activer
+document.getElementById("btnOn").addEventListener("click", () => {
+    localStorage.setItem("pub_access","ON");
+    updateStatus();
+});
+
+// Bouton désactiver
+document.getElementById("btnOff").addEventListener("click", () => {
+    localStorage.setItem("pub_access","OFF");
+    updateStatus();
+});
+
+updateStatus();
+</script>
+
+</body>
+</html>

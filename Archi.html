@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Archives — DPSTORE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    body {
+        background: #0d0d0f;
+        color: white;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+    h1 {
+        text-align: center;
+        color: #00eaff;
+        margin-bottom: 15px;
+    }
+    .filter-box {
+        background: #141419;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #00eaff44;
+    }
+    .archive-section {
+        margin-bottom: 30px;
+        padding: 15px;
+        background: #131318;
+        border-radius: 10px;
+        border: 1px solid #00eaff33;
+    }
+    .section-title {
+        font-size: 18px;
+        color: #00eaff;
+        margin-bottom: 10px;
+    }
+    .item {
+        padding: 15px;
+        background: #1c1c24;
+        border-radius: 10px;
+        border: 1px solid #00eaff22;
+        margin-bottom: 15px;
+    }
+    .item img {
+        width: 180px;
+        border-radius: 10px;
+        border: 1px solid #00eaff55;
+        margin-top: 10px;
+    }
+    .status {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: bold;
+    }
+    .approved { color: #00ff88; }
+    .refused { color: #ff3b3b; }
+    .pending { color: #ffaa00; }
+</style>
+</head>
+<body>
+
+<h1>📁 Archives des Recharges</h1>
+
+<div class="filter-box">
+    <label>Date :</label><br>
+    <input type="date" id="filterDate">
+    <button onclick="applyFilter()">Filtrer</button>
+    <button onclick="resetFilter()">Réinitialiser</button>
+</div>
+
+<div id="archives"></div>
+
+<script>
+// ------- Fonction qui transforme une date en "Il y a 3h" -------
+function timeAgo(dateString) {
+    if (!dateString) return "—";
+
+    const now = new Date();
+    const past = new Date(dateString);
+    const seconds = Math.floor((now - past) / 1000);
+
+    if (seconds < 60) return "Il y a quelques secondes";
+    if (seconds < 3600) return "Il y a " + Math.floor(seconds/60) + " min";
+    if (seconds < 86400) return "Il y a " + Math.floor(seconds/3600) + " h";
+    if (seconds < 172800) return "Hier";
+    return "Il y a " + Math.floor(seconds/86400) + " jours";
+}
+
+// ------- Charger archives -------
+let archives = JSON.parse(localStorage.getItem("dp_archives") || "[]");
+
+// ------- TRIER du plus récent au plus ancien -------
+archives.sort((a,b) => {
+    return new Date(b.archiveDate) - new Date(a.archiveDate);
+});
+
+// ------- Affichage -------
+function displayArchives(list) {
+    const container = document.getElementById("archives");
+    container.innerHTML = "";
+
+    if (list.length === 0) {
+        container.innerHTML = "<p style='text-align:center;color:#777;'>Aucune archive trouvée</p>";
+        return;
+    }
+
+    list.forEach(r => {
+        container.innerHTML += `
+            <div class="archive-section">
+                <div class="item">
+
+                    <p><b>${r.name}</b> (${r.email})</p>
+                    ${r.phone ? `<p>WhatsApp : ${r.phone}</p>` : ""}
+                    <p><b>DP-ID :</b> ${r.dpID}</p>
+
+                    <p>Montant :
+                        <span style="color:yellow;">${r.amount} HTG</span>
+                    </p>
+
+                    <p>Demande faite :
+                        <span style="color:#aaa;">${r.created}</span>
+                        <br><small>${timeAgo(r.created)}</small>
+                    </p>
+
+                    <p>Date validation :
+                        <span style="color:#00eaff;">${r.archiveDate}</span>
+                        <br><small>${timeAgo(r.archiveDate)}</small>
+                    </p>
+
+                    <p>Status :
+                        <span class="status ${r.status}">
+                            ${r.status.toUpperCase()}
+                        </span>
+                    </p>
+
+                    ${r.receipt ? `<img src="${r.receipt}">` : ""}
+                </div>
+            </div>
+        `;
+    });
+}
+
+displayArchives(archives);
+
+// ------- FILTRE PAR DATE -------
+function applyFilter() {
+    const selected = document.getElementById("filterDate").value;
+    if (!selected) return;
+
+    const filtered = archives.filter(r => {
+        let d = new Date(r.archiveDate);
+        let yyyy = d.getFullYear();
+        let mm = String(d.getMonth()+1).padStart(2,"0");
+        let dd = String(d.getDate()).padStart(2,"0");
+        return `${yyyy}-${mm}-${dd}` === selected;
+    });
+
+    displayArchives(filtered);
+}
+
+function resetFilter() {
+    document.getElementById("filterDate").value = "";
+    displayArchives(archives);
+}
+</script>
+
+</body>
+</html>

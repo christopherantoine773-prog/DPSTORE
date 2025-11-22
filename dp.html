@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>DPSTORE — Gestion des produits</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+    body {
+        background:#000;
+        color:white;
+        font-family:Arial;
+        padding:20px;
+    }
+    h1 {
+        text-align:center;
+        color:#00eaff;
+    }
+    .box {
+        background:#111;
+        padding:15px;
+        border-radius:12px;
+        border:1px solid #00eaff55;
+        margin-bottom:20px;
+    }
+    input, textarea {
+        width:95%;
+        background:#1a1a1a;
+        border:none;
+        padding:10px;
+        border-radius:8px;
+        color:white;
+        margin-top:8px;
+    }
+    button {
+        width:95%;
+        padding:12px;
+        border:none;
+        border-radius:10px;
+        margin-top:10px;
+        cursor:pointer;
+        font-weight:bold;
+    }
+    .add-btn { background:#00ff99; color:black; }
+    .save-btn { background:#00eaff; color:black; }
+    .delete-btn { background:#ff3b3b; color:white; }
+    .product {
+        background:#0f0f0f;
+        padding:15px;
+        border:1px solid #00eaff22;
+        border-radius:10px;
+        margin-top:15px;
+    }
+    img {
+        width:100px;
+        border-radius:10px;
+        margin-top:10px;
+    }
+
+    .panel-box {
+        background:#111;
+        padding:20px;
+        border-radius:15px;
+        border:1px solid #00eaff55;
+        margin-bottom:25px;
+    }
+    .panel-title {
+        font-size:22px;
+        font-weight:bold;
+        color:#00eaff;
+    }
+    .panel-value {
+        font-size:26px;
+        margin-top:5px;
+        font-weight:bold;
+    }
+    .panel-small {
+        font-size:16px;
+        color:#bbb;
+        margin-top:-3px;
+    }
+
+    .panel-btn {
+        background:#00eaff;
+        color:black;
+        padding:10px;
+        margin-top:10px;
+        border-radius:10px;
+        text-align:center;
+        font-weight:bold;
+        display:block;
+        text-decoration:none;
+    }
+
+    .back-btn {
+        background:#444;
+        color:white;
+        padding:10px 15px;
+        border-radius:8px;
+        text-decoration:none;
+        font-weight:bold;
+        display:inline-block;
+        margin-bottom:20px;
+    }
+</style>
+</head>
+
+<body>
+
+<a class="back-btn" href="profil.html">⬅ Retour au profil</a>
+
+<h1>🛠️ Gestion des Produits — DPSTORE</h1>
+
+<div class="panel-box">
+    <div class="panel-title">👤 Utilisateur</div>
+    <div class="panel-value" id="panelUser">Chargement...</div>
+    <div class="panel-small" id="panelRole"></div>
+</div>
+
+<div class="panel-box">
+    <div class="panel-title">👥 Total utilisateurs</div>
+    <div class="panel-value" id="panelUsers">Chargement...</div>
+</div>
+
+<div class="panel-box">
+    <div class="panel-title">💰 Solde du compte</div>
+    <div class="panel-value" id="panelBalance">0 HTG</div>
+
+    <a class="panel-btn" href="arg.html">⚡ Accéder à ARG</a>
+</div>
+
+<div class="box">
+    <h3 style="color:#00eaff;">➕ Ajouter un produit</h3>
+
+    <input id="prodName" placeholder="Nom du produit">
+    <input id="prodPrice" type="number" placeholder="Prix (HTG)">
+    <textarea id="prodDesc" placeholder="Description"></textarea>
+
+    <label>Image du produit :</label>
+    <input id="prodImg" type="file" accept="image/*">
+
+    <div style="margin-top:10px;">
+        <label><input type="checkbox" id="reqEmail"> Demander Email</label><br>
+        <label><input type="checkbox" id="reqPassword"> Demander Password</label><br>
+        <label><input type="checkbox" id="reqWhatsApp"> Demander Numéro WhatsApp</label><br>
+        <label><input type="checkbox" id="reqID"> Demander ID</label>
+    </div>
+
+    <button class="add-btn" onclick="addProduct()">Ajouter</button>
+</div>
+
+<div id="productList"></div>
+
+<button class="save-btn" onclick="saveProducts()">💾 Sauvegarder les modifications</button>
+<button class="delete-btn" onclick="resetProducts()">⚠️ Réinitialiser tous les produits</button>
+
+<script>
+/* ---- PANELS ---- */
+async function loadPanelData(){
+    const logged = JSON.parse(localStorage.getItem("dpstore_user") || "null");
+    if(!logged){
+        document.getElementById("panelUser").innerText = "Non connecté";
+        document.getElementById("panelRole").innerText = "";
+        document.getElementById("panelBalance").innerText = "0 HTG";
+        return;
+    }
+
+    document.getElementById("panelUser").innerText = logged.username || "Utilisateur";
+
+    let roleText = "";
+    switch(logged.role){
+        case "creator": roleText = "Créateur"; break;
+        case "employee": roleText = "Employé"; break;
+        case "admin": roleText = "Administrateur"; break;
+        default: roleText = "Utilisateur"; break;
+    }
+
+    document.getElementById("panelRole").innerText = "Rôle : " + roleText;
+
+    // 🔄 Synchronisation solde avec le profil
+    const accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+    const accGlobal = accounts.find(u => (u.email || "").toLowerCase() === (logged.email || "").toLowerCase());
+    if(accGlobal){
+        logged.balance = accGlobal.balance ?? logged.balance;
+        localStorage.setItem("dpstore_user", JSON.stringify(logged));
+    }
+
+    document.getElementById("panelBalance").innerText = (logged.balance || 0) + " HTG";
+
+    try {
+        document.getElementById("panelUsers").innerText = accounts.length;
+    } 
+    catch (e) {
+        document.getElementById("panelUsers").innerText = "0";
+    }
+}
+loadPanelData();
+
+/* ---- PRODUITS ---- */
+let products = JSON.parse(localStorage.getItem("dp_products") || "[]");
+
+function renderProducts(){
+    const list = document.getElementById("productList");
+    list.innerHTML = "";
+
+    if(products.length === 0){
+        list.innerHTML = "<p style='color:#777;'>Aucun produit pour l’instant.</p>";
+        return;
+    }
+
+    products.forEach((p,i)=>{
+        list.innerHTML += `
+            <div class="product">
+                <h3>${p.name}</h3>
+                <p>Prix : <b>${p.price} HTG</b></p>
+                <p>${p.desc}</p>
+                ${p.img ? `<img src="${p.img}">` : "<i>Pas d’image</i>"}
+                <p>Info supplémentaires demandées :</p>
+                <ul>
+                    ${p.reqEmail ? "<li>Email</li>" : ""}
+                    ${p.reqPassword ? "<li>Password</li>" : ""}
+                    ${p.reqWhatsApp ? "<li>WhatsApp</li>" : ""}
+                    ${p.reqID ? "<li>ID</li>" : ""}
+                </ul>
+                <br><br>
+                <button class="delete-btn" onclick="deleteProduct(${i})">Supprimer</button>
+            </div>
+        `;
+    });
+}
+
+renderProducts();
+
+function addProduct(){
+    let name = document.getElementById("prodName").value.trim();
+    let price = parseInt(document.getElementById("prodPrice").value);
+    let desc = document.getElementById("prodDesc").value.trim();
+    let file = document.getElementById("prodImg").files[0];
+
+    let reqEmail = document.getElementById("reqEmail").checked;
+    let reqPassword = document.getElementById("reqPassword").checked;
+    let reqWhatsApp = document.getElementById("reqWhatsApp").checked;
+    let reqID = document.getElementById("reqID").checked;
+
+    if(!name || !price){
+        alert("Nom + prix obligatoires.");
+        return;
+    }
+
+    function pushProduct(imgData){
+        products.push({ 
+            name, price, desc, img: imgData, 
+            reqEmail, reqPassword, reqWhatsApp, reqID 
+        });
+        renderProducts();
+        saveProducts();
+        alert("✔ Produit ajouté avec succès !");
+        location.reload();
+    }
+
+    if(file){
+        let reader = new FileReader();
+        reader.onload = function(e){
+            pushProduct(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    } else {
+        pushProduct(null);
+    }
+}
+
+function saveProducts(){
+    localStorage.setItem("dp_products", JSON.stringify(products));
+    alert("✔ Produits sauvegardés !");
+}
+
+function deleteProduct(i){
+    if(confirm("Supprimer ce produit ?")){
+        products.splice(i,1);
+        renderProducts();
+        saveProducts();
+    }
+}
+
+function resetProducts(){
+    if(confirm("⚠️ Réinitialiser TOUS les produits ?")){
+        products = [];
+        localStorage.setItem("dp_products", JSON.stringify(products));
+        renderProducts();
+    }
+}
+</script>
+
+</body>
+</html>

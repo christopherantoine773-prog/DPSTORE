@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apple Gift Cards - DPSTORE</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Poppins", sans-serif;
+      background: linear-gradient(180deg, #f9fff8, #e8f7ea);
+      margin: 0;
+      color: #1a1a1a;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #d7eed9;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #2e7d32;
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+    .balance-box {
+      background: #43a047;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 3px 8px rgba(67,160,71,0.3);
+    }
+    .btn-back {
+      background: none;
+      border: none;
+      color: #388e3c;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn-back:hover { color: #1b5e20; }
+    h2 {
+      text-align: center;
+      font-weight: 600;
+      margin: 25px 0;
+      color: #2e7d32;
+      letter-spacing: 1px;
+    }
+    .product-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 18px;
+      border: 1.5px solid #d7eed9;
+      box-shadow: 0 4px 15px rgba(46, 125, 50, 0.08);
+      margin: 18px;
+      padding: 18px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+    .product-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 25px rgba(76, 175, 80, 0.15);
+    }
+    .info { display: flex; align-items: center; }
+    .product-logo {
+      width: 60px;
+      height: 60px;
+      border-radius: 15px;
+      margin-right: 18px;
+      background: linear-gradient(145deg, #ffffff, #f1f1f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    .product-logo::after {
+      content: "";
+      font-family: "SF Pro Display", sans-serif;
+      font-size: 35px;
+      color: #2e7d32;
+    }
+    .details { display: flex; flex-direction: column; }
+    .details strong { font-size: 16px; letter-spacing: 0.5px; }
+    .status {
+      background: #43a047;
+      color: white;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-right: 10px;
+    }
+    .tag {
+      background: #a5d6a7;
+      color: #1b5e20;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .price {
+      font-size: 17px;
+      font-weight: 600;
+      color: #2e7d32;
+      margin-top: 5px;
+    }
+    .delivery {
+      font-size: 13px;
+      color: #558b2f;
+      margin-top: 2px;
+    }
+    .buy-btn {
+      background: linear-gradient(145deg, #66bb6a, #43a047);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(67, 160, 71, 0.3);
+    }
+    .buy-btn:hover {
+      background: linear-gradient(145deg, #81c784, #388e3c);
+      transform: translateY(-2px);
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      color: #33691e;
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #43a047;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <button class="btn-back" onclick="goBack()">← Retour</button>
+  <h1>Apple Gift Cards</h1>
+  <div class="balance-box" id="balance-display">0 HTG</div>
+</header>
+
+<h2>Cartes Cadeaux Apple 🇺🇸</h2>
+
+<!-- PRODUCTS -->
+<div class="product-card">
+  <div class="info">
+    <div class="product-logo"></div>
+    <div class="details">
+      <strong>APPLE 2 USD</strong>
+      <div><span class="status">Disponible</span> <span class="tag">Gift Card</span></div>
+      <div class="price">380 HTG</div>
+      <div class="delivery">Livraison 0 à 3h</div>
+    </div>
+  </div>
+  <button class="buy-btn" onclick="addToCart('APPLE 2 USD', 380)">Commander</button>
+</div>
+
+<div class="product-card">
+  <div class="info">
+    <div class="product-logo"></div>
+    <div class="details">
+      <strong>APPLE 5 USD</strong>
+      <div><span class="status">Disponible</span> <span class="tag">Gift Card</span></div>
+      <div class="price">980 HTG</div>
+      <div class="delivery">Livraison 0 à 3h</div>
+    </div>
+  </div>
+  <button class="buy-btn" onclick="addToCart('APPLE 5 USD', 980)">Commander</button>
+</div>
+
+<div class="product-card">
+  <div class="info">
+    <div class="product-logo"></div>
+    <div class="details">
+      <strong>APPLE 10 USD</strong>
+      <div><span class="status">Disponible</span> <span class="tag">Gift Card</span></div>
+      <div class="price">1897 HTG</div>
+      <div class="delivery">Livraison 0 à 3h</div>
+    </div>
+  </div>
+  <button class="buy-btn" onclick="addToCart('APPLE 10 USD', 1897)">Commander</button>
+</div>
+
+<div class="product-card">
+  <div class="info">
+    <div class="product-logo"></div>
+    <div class="details">
+      <strong>APPLE 25 USD</strong>
+      <div><span class="status">Disponible</span> <span class="tag">Gift Card</span></div>
+      <div class="price">4455 HTG</div>
+      <div class="delivery">Livraison 0 à 3h</div>
+    </div>
+  </div>
+  <button class="buy-btn" onclick="addToCart('APPLE 25 USD', 4455)">Commander</button>
+</div>
+
+<footer>© 2025 DPSTORE — Tous droits réservés</footer>
+
+<script>
+/* ============================
+     🔥 AJOUT AU PANIER 🔥
+   ============================ */
+
+function normalizeId(str){
+  if(!str) return "guest";
+  return String(str)
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9@.-]/g, "_")
+    .replace(/@/g,"_at_");
+}
+
+function loadUser(){
+  return JSON.parse(localStorage.getItem("dpstore_user") || "{}");
+}
+
+function getCartKey(){
+  const user = loadUser();
+  return "cart_" + normalizeId(user.email || user.dp || "guest");
+}
+
+function loadCart(){
+  return JSON.parse(localStorage.getItem(getCartKey()) || "[]");
+}
+
+function saveCart(arr){
+  localStorage.setItem(getCartKey(), JSON.stringify(arr));
+}
+
+function addToCart(name, price){
+  let cart = loadCart();
+  cart.push({ name, price });
+  saveCart(cart);
+
+  showToast("🛒 Ajouté au panier !");
+}
+
+function showToast(msg){
+  let t = document.createElement("div");
+  t.className = "toast show";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.remove(); }, 2000);
+}
+
+function goBack(){
+  window.location.href = "produits.html";
+}
+
+function loadBalance(){
+  let user = loadUser();
+  document.getElementById("balance-display").textContent = (user.balance || 0) + " HTG";
+}
+
+loadBalance();
+</script>
+
+</body>
+</html>

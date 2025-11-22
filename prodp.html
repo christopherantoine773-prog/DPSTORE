@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DPSTORE | Nouveaux Produits</title>
+
+<style>
+body {
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background:linear-gradient(135deg,#000428,#004e92);
+  color:#fff;
+}
+
+header {
+  backdrop-filter: blur(10px);
+  background: rgba(0,0,0,0.45);
+  padding: 14px 22px;
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  border-bottom:1px solid rgba(0,174,239,0.4);
+  box-shadow:0 0 12px rgba(0,174,239,0.35);
+  position:sticky;
+  top:0;
+  z-index:50;
+}
+
+header h1 {
+  font-size:1.5rem;
+  background: linear-gradient(90deg,#FFD700,#00ADEF);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin:0;
+  font-weight:700;
+}
+
+.header-buttons {
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.btn-header {
+  padding:7px 12px;
+  border-radius:10px;
+  border:2px solid #00aaff;
+  background:rgba(0,0,0,0.4);
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.25s;
+}
+
+.btn-header:hover {
+  background:#00aaff;
+  color:#000;
+  box-shadow:0 0 12px #00aaff;
+}
+
+#user-balance {
+  padding:7px 14px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.1);
+  font-weight:bold;
+  border:1px solid rgba(0,174,239,0.4);
+}
+
+.container {
+  padding:25px;
+}
+
+.section-title {
+  font-size:1.5rem;
+  margin-bottom:20px;
+  text-shadow:0 0 10px #FFD700;
+}
+
+.product-box {
+  background: rgba(255,255,255,0.06);
+  padding:20px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.12);
+  margin-bottom:20px;
+  box-shadow:0 0 15px rgba(0,174,239,0.35);
+}
+
+.product-box h3 { color:#FFD700; }
+
+.btn-cart {
+  margin-top:12px;
+  padding:10px;
+  width:100%;
+  border-radius:10px;
+  border:none;
+  background:#00ADEF;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.25s;
+}
+
+.btn-cart:hover {
+  background:#FFD700;
+  box-shadow:0 0 12px #FFD700;
+}
+
+/* Modal */
+#modal-bg {
+  display:none;
+  position:fixed;
+  top:0;left:0;width:100%;height:100%;
+  background: rgba(0,0,0,0.6);
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+#modal {
+  background:#111;
+  padding:20px;
+  border-radius:12px;
+  max-width:400px;
+  width:90%;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+#modal input {
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  width:100%;
+  background:#1a1a1a;
+  color:white;
+}
+
+#modal button {
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:#00eaff;
+  font-weight:bold;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Nouveaux Produits</h1>
+  <div class="header-buttons">
+    <div id="user-balance">0 G</div>
+    <button class="btn-header" onclick="goBack()">← Retour</button>
+    <button class="btn-header" onclick="openProfile()">👤</button>
+    <button class="btn-header" onclick="openCart()">🛒</button>
+  </div>
+</header>
+
+<div class="container">
+  <h2 class="section-title">🆕 Produits ajoutés récemment</h2>
+  <div id="new-products"></div>
+</div>
+
+<!-- Modal -->
+<div id="modal-bg">
+  <div id="modal">
+    <h3>Ajouter au panier</h3>
+    <div id="modal-fields"></div>
+    <button id="modal-submit">Ajouter</button>
+    <button onclick="document.getElementById('modal-bg').style.display='none'" style="margin-top:5px;">Annuler</button>
+  </div>
+</div>
+
+<footer style="text-align:center;padding:20px;opacity:0.6;">
+  © 2025 DPSTORE — Nouveaux Produits
+</footer>
+
+<script>
+/* ============================
+   🔥 PANIER COMPATIBLE CART.HTML
+============================ */
+let products = JSON.parse(localStorage.getItem("dpr_products") || "[]");
+
+function loadUser(){ try { return JSON.parse(localStorage.getItem("dpstore_user")||"{}"); } catch(e){ return {}; } }
+let user = loadUser();
+
+function normalizeId(str){
+  if(!str) return "guest";
+  return String(str).toLowerCase().trim().replace(/[^a-z0-9@.-]/g,"_").replace(/@/g,"_at_");
+}
+
+function getCartKey(){
+  const id = user.email || user.dp || "guest";
+  return "cart_" + normalizeId(id);
+}
+
+function migrateGlobalCartIfNeeded(){
+  const globalKey="cart";
+  const perUserKey=getCartKey();
+  const global=localStorage.getItem(globalKey);
+  const perUser=localStorage.getItem(perUserKey);
+  if(global && !perUser){
+    try{
+      localStorage.setItem(perUserKey, global);
+      localStorage.removeItem(globalKey);
+    }catch(e){ console.warn("Migration cart failed:",e);}
+  }
+}
+
+function loadCart(){ migrateGlobalCartIfNeeded(); return JSON.parse(localStorage.getItem(getCartKey())||"[]"); }
+function saveCart(arr){ localStorage.setItem(getCartKey(), JSON.stringify(arr)); }
+function updateBalanceUI(){ user=loadUser(); const el=document.getElementById("user-balance"); if(el) el.textContent=((user && user.balance)?user.balance:0)+" G"; }
+
+function finalizeAddToCart(product, userData){
+    const cart = loadCart();
+    cart.push({
+        name: product.name || "Produit",
+        price: Number(product.price) || 0,
+        ffId: userData.id || userData.email || "",
+        type: "ff"
+    });
+    saveCart(cart);
+    alert("🛒 " + (product.name||"Produit") + " ajouté au panier !");
+}
+
+/* ===========================================================
+   ✅ MISSE AJOUT — Afficher les champs spécifiques à chaque produit
+=========================================================== */
+function addToCart(product){
+  if(!product) return alert("Produit introuvable.");
+
+  const modalBg=document.getElementById("modal-bg");
+  const modalFields=document.getElementById("modal-fields");
+  modalFields.innerHTML="";
+
+  const userData={...loadUser()};
+  const fields=[];
+  const refill = product.refill || {};
+
+  if(refill.id) fields.push({label:"ID", key:"id", value:userData.id||""});
+  if(refill.email) fields.push({label:"Email", key:"email", value:userData.email||""});
+  if(refill.nom) fields.push({label:"Nom", key:"nom", value:userData.nom||""});
+  if(refill.password) fields.push({label:"Password", key:"password", value:userData.password||""});
+  if(refill.whatsapp) fields.push({label:"WhatsApp", key:"whatsapp", value:userData.whatsapp||""});
+
+  if(fields.length===0){
+    finalizeAddToCart(product,userData);
+    return;
+  }
+
+  fields.forEach(f=>{
+    const input=document.createElement("input");
+    input.type="text";
+    input.placeholder=f.label;
+    input.id="modal-"+f.key;
+    input.value=f.value;
+    modalFields.appendChild(input);
+  });
+
+  modalBg.style.display="flex";
+
+  document.getElementById("modal-submit").onclick=function(){
+    let valid=true;
+    fields.forEach(f=>{
+      const val=document.getElementById("modal-"+f.key).value.trim();
+      if(!val) valid=false;
+      else userData[f.key]=val;
+    });
+    if(!valid) return alert("⚠️ Tous les champs obligatoires doivent être remplis !");
+    modalBg.style.display="none";
+    try{ localStorage.setItem("dpstore_user", JSON.stringify(userData)); } catch(e){}
+    finalizeAddToCart(product,userData);
+  };
+}
+
+function renderProducts(){
+  const box=document.getElementById("new-products");
+  box.innerHTML="";
+  if(!products||products.length===0){
+    box.innerHTML="<p style='opacity:0.6;'>Aucun nouveau produit.</p>";
+    return;
+  }
+
+  products.forEach((p,idx)=>{
+    if(!p.id) p.id="prod_"+(p.name||"x").toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_]/g,"")+"_"+idx;
+    const div=document.createElement("div");
+    div.className="product-box";
+    const imgHtml=p.img?`<img src="${p.img}" width="140" style="border-radius:10px;margin-top:10px;">`:"";
+    div.innerHTML=`
+      <h3>${p.name}</h3>
+      <p>${p.desc||"Pas de description."}</p>
+      <p><strong>Prix : ${p.price||0} HTG</strong></p>
+      ${imgHtml}
+    `;
+    const btn=document.createElement("button");
+    btn.className="btn-cart";
+    btn.type="button";
+    btn.textContent="🛒 Ajouter au panier";
+    btn.addEventListener("click",()=>addToCart(p));
+    div.appendChild(btn);
+    box.appendChild(div);
+  });
+}
+
+function openCart(){ window.location.href="cart.html"; }
+function openProfile(){ window.location.href="profil.html"; }
+function goBack(){ window.location.href="produits.html"; }
+
+updateBalanceUI();
+renderProducts();
+setInterval(updateBalanceUI,1500);
+</script>
+
+</body>
+</html>

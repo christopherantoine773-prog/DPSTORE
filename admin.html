@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Messagerie Admin — DPSTORE</title>
+<style>
+body{
+    background:black;
+    color:white;
+    font-family:Arial;
+}
+
+.container{
+    width:95%;
+    max-width:1000px;
+    margin:40px auto;
+    display:flex;
+    gap:20px;
+}
+
+/* Liste des tickets */
+.ticket-list{
+    flex:1;
+    background:#111;
+    border-radius:15px;
+    padding:15px;
+    box-shadow:0 0 25px #fdf100;
+    max-height:80vh;
+    overflow-y:auto;
+}
+
+.ticket-item{
+    background:#222;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:10px;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.ticket-item:hover{
+    background:#333;
+}
+
+.ticket-info{
+    display:flex;
+    flex-direction:column;
+    text-align:left;
+}
+
+.ticket-info span{
+    font-weight:bold;
+    font-size:14px;
+}
+
+.ticket-status{
+    font-size:12px;
+    padding:2px 6px;
+    border-radius:5px;
+}
+
+.status-open{ background:green; color:white; }
+.status-closed{ background:red; color:white; }
+
+/* Conversation */
+.ticket-chat{
+    flex:2;
+    background:#111;
+    border-radius:15px;
+    padding:15px;
+    box-shadow:0 0 25px #fdf100;
+    display:flex;
+    flex-direction:column;
+    height:80vh;
+}
+
+.chat-header{
+    font-weight:bold;
+    font-size:18px;
+    margin-bottom:10px;
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+}
+
+.chat-user-info{
+    display:flex;
+    flex-direction:column;
+    text-align:left;
+}
+
+.messages{
+    flex:1;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    padding:5px;
+    border-top:1px solid #333;
+    border-bottom:1px solid #333;
+    margin-bottom:10px;
+}
+
+.message{
+    max-width:70%;
+    margin:5px 0;
+    padding:10px;
+    border-radius:10px;
+    word-wrap:break-word;
+}
+
+.message.user{
+    align-self:flex-start;
+    background:#00bfff;
+    color:black;
+    border-bottom-left-radius:0;
+}
+
+.message.admin{
+    align-self:flex-end;
+    background:#444;
+}
+
+input{
+    padding:10px;
+    flex:1;
+    border-radius:10px;
+    border:none;
+    background:#222;
+    color:white;
+}
+
+button{
+    padding:8px 12px;
+    border:none;
+    border-radius:8px;
+    background:red;
+    color:white;
+    cursor:pointer;
+    margin-left:5px;
+}
+
+button:disabled{
+    background:grey;
+    cursor:not-allowed;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="ticket-list">
+        <h3>Tickets Utilisateurs</h3>
+        <div id="ticketItems"></div>
+    </div>
+
+    <div class="ticket-chat" id="ticketChat" style="display:none;">
+        <div class="chat-header" id="chatHeader">
+            <div class="chat-user-info">
+                <span id="chatUser"></span>
+                <span id="chatDP" style="font-size:14px;color:#fdf100;"></span>
+                <span id="chatEmail" style="font-size:12px;color:#aaa;"></span>
+            </div>
+            <div>
+                <button id="toggleTicketBtn">Close / Open</button>
+            </div>
+        </div>
+        <div class="messages" id="messages"></div>
+        <div style="display:flex; margin-top:10px;">
+            <input type="text" id="messageInput" placeholder="Répondre..." />
+            <button id="sendBtn">Envoyer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let account = JSON.parse(localStorage.getItem("dpstore_user"));
+if(!account || !["admin","creator","employee"].includes(account.role)){
+    alert("Accès refusé !");
+    location.href="profil.html";
+}
+
+let tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
+let currentTicketIndex = null;
+
+// Afficher la liste des tickets avec DP
+function loadTicketList(){
+    const container = document.getElementById("ticketItems");
+    container.innerHTML="";
+    tickets.forEach((ticket,index)=>{
+        const div = document.createElement("div");
+        div.classList.add("ticket-item");
+
+        div.innerHTML = `
+            <div class="ticket-info">
+                <span>${ticket.username} | DP: ${ticket.dp || "—"}</span>
+                <span>${ticket.userEmail}</span>
+            </div>
+            <span class="ticket-status ${ticket.status==='open'?'status-open':'status-closed'}">
+                ${ticket.status.toUpperCase()}
+            </span>
+        `;
+        div.onclick = ()=>openTicket(index);
+        container.appendChild(div);
+    });
+}
+
+// Ouvrir un ticket
+function openTicket(index){
+    currentTicketIndex = index;
+    const ticket = tickets[index];
+    document.getElementById("ticketChat").style.display="flex";
+    document.getElementById("chatUser").textContent = ticket.username;
+    document.getElementById("chatDP").textContent = "DP: " + (ticket.dp || "—");
+    document.getElementById("chatEmail").textContent = ticket.userEmail;
+
+    document.getElementById("messageInput").disabled = ticket.status==="closed";
+    document.getElementById("sendBtn").disabled = ticket.status==="closed";
+    document.getElementById("toggleTicketBtn").textContent = ticket.status==="open" ? "Close" : "Open";
+
+    loadMessages();
+}
+
+// Charger les messages
+function loadMessages(){
+    if(currentTicketIndex===null) return;
+    const ticket = tickets[currentTicketIndex];
+    const messagesDiv = document.getElementById("messages");
+    messagesDiv.innerHTML="";
+    ticket.messages.forEach(msg=>{
+        const div = document.createElement("div");
+        div.classList.add("message");
+        div.classList.add(msg.sender);
+        div.textContent = msg.text + " (" + msg.date + ")";
+        messagesDiv.appendChild(div);
+    });
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Envoyer message admin
+document.getElementById("sendBtn").onclick = ()=>{
+    const input = document.getElementById("messageInput");
+    const text = input.value.trim();
+    if(!text || currentTicketIndex===null) return;
+    tickets[currentTicketIndex].messages.push({sender:"admin", text:text, date:new Date().toLocaleString()});
+    localStorage.setItem("dpstore_tickets", JSON.stringify(tickets));
+    input.value="";
+    loadMessages();
+}
+
+// Fermer ou ré-ouvrir le ticket
+document.getElementById("toggleTicketBtn").onclick = ()=>{
+    if(currentTicketIndex===null) return;
+    tickets[currentTicketIndex].status = tickets[currentTicketIndex].status==='open' ? 'closed' : 'open';
+    localStorage.setItem("dpstore_tickets", JSON.stringify(tickets));
+    openTicket(currentTicketIndex);
+}
+
+// Rafraîchissement automatique
+setInterval(()=>{
+    tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
+    loadTicketList();
+    loadMessages();
+},2000);
+
+loadTicketList();
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gérer Produits — Piyaylakay</title>
+<style>
+* {margin:0; padding:0; box-sizing:border-box; font-family:"Poppins",sans-serif;}
+body {
+  background:#e6f0ff;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  padding-top:30px;
+}
+.container {
+  width:90%;
+  max-width:500px;
+  background: rgba(255,255,255,0.95);
+  padding:30px;
+  border-radius:12px;
+  box-shadow:0 0 25px #007BFF;
+  text-align:center;
+  border:1px solid #007BFF;
+}
+h1,h2 {color:#007BFF; margin-bottom:15px;}
+input {width:100%; padding:12px; margin:10px 0; border:1px solid #007BFF; border-radius:6px; background:#f0f8ff; color:#007BFF; font-size:14px; outline:none;}
+button {width:100%; padding:12px; border:none; border-radius:6px; background:#FFB347; color:#fff; font-weight:bold; cursor:pointer; transition:0.3s; margin-top:10px;}
+button:hover {background:#E6953D;}
+.produit {border:1px solid #007BFF; border-radius:10px; padding:10px; margin:10px 0;}
+.produit img {width:100%; border-radius:10px; margin-bottom:10px;}
+</style>
+</head>
+<body>
+
+<script>
+// 🔐 Vérification du rôle : creator et employee seulement
+const user = JSON.parse(localStorage.getItem("dpstore_user") || "null");
+if (!user || (user.role !== "creator" && user.role !== "employee")) {
+  alert("⛔ Accès refusé !");
+  window.location.href = "index.html";
+}
+</script>
+
+<div class="container">
+  <button onclick="window.location.href='piyaylakay.html'">⬅ Retour à la Boutique</button>
+  <h1>Gérer les produits</h1>
+
+  <h2>Ajouter un produit</h2>
+  <input type="text" id="nomProduit" placeholder="Nom du produit">
+  <input type="number" id="prixProduit" placeholder="Prix du produit">
+  <p>Choisir une image depuis votre appareil :</p>
+  <input type="file" id="fichierImage" accept="image/*">
+  <button onclick="ajouterProduit()">Ajouter le produit</button>
+
+  <h2>Produits enregistrés</h2>
+  <div id="listeProduits"></div>
+</div>
+
+<script>
+// Récupérer produits depuis localStorage ou tableau vide
+let produits = JSON.parse(localStorage.getItem("produits") || "[]");
+
+// Afficher les produits
+function afficherProduits(){
+  const div = document.getElementById("listeProduits");
+  div.innerHTML = "";
+  if(produits.length === 0){
+    div.innerHTML = "<p>Aucun produit enregistré.</p>";
+    return;
+  }
+  produits.forEach((p,index)=>{
+    const produitDiv = document.createElement("div");
+    produitDiv.className = "produit";
+    produitDiv.innerHTML = `
+      <img src="${p.image}" alt="${p.nom}">
+      <h3>${p.nom}</h3>
+      <p>Prix : ${p.prix} $</p>
+      <button onclick="supprimerProduit(${index})">Supprimer</button>
+    `;
+    div.appendChild(produitDiv);
+  });
+}
+
+// Ajouter un produit
+function ajouterProduit(){
+  const nom = document.getElementById("nomProduit").value.trim();
+  const prix = document.getElementById("prixProduit").value.trim();
+  const fichier = document.getElementById("fichierImage").files[0];
+
+  // ✅ Validation stricte
+  if(!nom){
+    alert("⚠️ Le nom du produit est requis !");
+    return;
+  }
+  if(!prix || isNaN(prix) || prix <= 0){
+    alert("⚠️ Le prix doit être un nombre positif !");
+    return;
+  }
+  if(!fichier){
+    alert("⚠️ Vous devez choisir une image !");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const image = e.target.result;
+
+    // Ajouter le produit dans le tableau
+    produits.push({nom, prix, image});
+    localStorage.setItem("produits", JSON.stringify(produits));
+
+    // Réinitialiser les champs
+    document.getElementById("nomProduit").value = "";
+    document.getElementById("prixProduit").value = "";
+    document.getElementById("fichierImage").value = "";
+
+    // Rafraîchir l'affichage
+    afficherProduits();
+  }
+  reader.readAsDataURL(fichier);
+}
+
+// Supprimer un produit
+function supprimerProduit(index){
+  if(!confirm("⚠️ Confirmer la suppression de ce produit ?")) return;
+  produits.splice(index,1);
+  localStorage.setItem("produits", JSON.stringify(produits));
+  afficherProduits();
+}
+
+// Initialiser l'affichage
+afficherProduits();
+</script>
+
+</body>
+</html>

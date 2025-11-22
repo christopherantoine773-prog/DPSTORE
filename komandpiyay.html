@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Piyaylakay — Commandes</title>
+<style>
+* {margin:0; padding:0; box-sizing:border-box; font-family:"Poppins",sans-serif;}
+body {
+  background:#e6f0ff;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  padding-top:30px;
+}
+.container {
+  width:90%;
+  max-width:500px;
+  background: rgba(255,255,255,0.95);
+  padding:30px;
+  border-radius:12px;
+  box-shadow:0 0 25px #007BFF;
+  text-align:center;
+  border:1px solid #007BFF;
+}
+h1,h2,h3 {color:#007BFF; margin-bottom:15px;}
+button {
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:6px;
+  background:#FFB347; /* Jaune abricot */
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.3s;
+  margin-top:10px;
+}
+button:hover {background:#E6953D;} /* Hover légèrement plus foncé */
+.commande {border:1px solid #007BFF; border-radius:10px; padding:10px; margin:10px 0; text-align:left;}
+.commande h3 {margin-bottom:5px;}
+.userInfo {margin-bottom:15px; color:#007BFF; font-weight:bold;}
+.footer {font-size:12px; color:#555; margin-top:15px;}
+</style>
+</head>
+<body>
+<div class="container">
+  <button onclick="window.location.href='piyaylakay.html'">⬅ Retour à la Boutique</button>
+  <h1>Commandes</h1>
+  
+  <!-- Affichage email et solde -->
+  <div class="userInfo" id="userInfo"></div>
+  
+  <div id="listeCommandes"></div>
+  <p class="footer">© 2025 Piyaylakay — Technologie avancée</p>
+</div>
+
+<script>
+// Numéro WhatsApp Haïti
+const numeroWhatsApp = "50946480635";
+
+// Récupérer l'utilisateur connecté
+let user = JSON.parse(localStorage.getItem("dpstore_user") || "null");
+if(!user){
+  alert("⚠️ Aucun utilisateur connecté !");
+  window.location.href = "index.html";
+}
+
+// Affichage email et solde
+document.getElementById("userInfo").innerText = `Utilisateur : ${user.email} | Solde : ${user.balance ?? user.credits} $`;
+
+// Récupérer les commandes de l'utilisateur (par email)
+let allCommandes = JSON.parse(localStorage.getItem("commandes") || "[]");
+let commandes = allCommandes.filter(c => c.email === user.email);
+
+// Afficher les commandes
+function afficherCommandes(){
+  const div = document.getElementById("listeCommandes");
+  div.innerHTML = "";
+  if(commandes.length === 0){
+    div.innerHTML = "<p>Aucune commande pour le moment.</p>";
+    return;
+  }
+  commandes.forEach((c,index)=>{
+    const commandeDiv = document.createElement("div");
+    commandeDiv.className = "commande";
+    commandeDiv.innerHTML = `<h3>Produit : ${c.produit}</h3>
+                             <p>Prix : ${c.prix} $</p>
+                             <p>Date : ${c.date}</p>
+                             <button onclick="envoyerWhatsApp(${index})">Envoyer sur WhatsApp</button>
+                             <button onclick="supprimerCommande(${index})">Supprimer</button>`;
+    div.appendChild(commandeDiv);
+  });
+}
+
+// Supprimer une commande
+function supprimerCommande(index){
+  const globalIndex = allCommandes.findIndex(c => c.email === user.email && c.produit === commandes[index].produit && c.date === commandes[index].date);
+  if(globalIndex > -1){
+    allCommandes.splice(globalIndex,1);
+    localStorage.setItem("commandes", JSON.stringify(allCommandes));
+    commandes.splice(index,1);
+    afficherCommandes();
+  }
+}
+
+// Envoyer commande sur WhatsApp
+function envoyerWhatsApp(index){
+  const c = commandes[index];
+  const message = `Livraison pa possible pour maintenant\n\nEst-ce que ce produit est disponible ?\nProduit : ${c.produit}\nPrix : ${c.prix} $\nDate : ${c.date}`;
+  const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(message)}`;
+  window.location.href = url;
+}
+
+// Initialiser l'affichage
+afficherCommandes();
+</script>
+</body>
+</html>

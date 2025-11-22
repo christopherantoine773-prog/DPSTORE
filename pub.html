@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DPSTORE — Récompense Clic</title>
+
+<style>
+    body{
+        background:black;
+        color:white;
+        font-family:Arial;
+        text-align:center;
+        padding:20px;
+    }
+
+    .box{
+        width:90%;
+        margin:20px auto;
+        padding:20px;
+        background:#111;
+        border-radius:15px;
+        box-shadow:0 0 25px #fdf100;
+    }
+
+    button{
+        width:90%;
+        margin-top:15px;
+        padding:15px;
+        border-radius:12px;
+        border:none;
+        font-size:17px;
+        font-weight:bold;
+        cursor:pointer;
+    }
+
+    .click-btn{
+        background:#fdf100;
+        color:black;
+    }
+</style>
+</head>
+
+<body>
+
+<h1 style="color:#fdf100;">🎁 Récompense Clic — DPSTORE</h1>
+
+<div class="box">
+
+    <h2>Gagne 15 crédits tous les 10 clics</h2>
+
+    <p>
+        Clics effectués : <span id="clickCount" style="color:#00aaff;">0</span> / 10
+    </p>
+
+    <p>
+        Prochaine récompense dans :  
+        <span id="nextReward" style="color:#00ff90; font-weight:bold;">—</span>
+    </p>
+
+    <button id="clickBtn" class="click-btn">👆 Cliquer pour progresser</button>
+
+    <p style="margin-top:25px; color:#999;">Fonctionne avec ton compte DPSTORE automatiquement.</p>
+
+</div>
+
+<button onclick="location.href='profil.html'" style="background:#00aaff; color:white;">⬅️ Retour Profil</button>
+
+<script>
+/* ==========================================================
+   ⚡ VÉRIFICATION D'ACCÈS VIA OFFON.HTML
+========================================================== */
+const pubStatus = localStorage.getItem("pub_access") || "OFF";
+if(pubStatus !== "ON"){
+    alert("❌ L’accès à cette page est désactivé !");
+    window.location.href = "index.html"; // redirige vers la page principale
+}
+
+/* ==========================================================
+   🎁 SYSTÈME DE RÉCOMPENSE PAR CLIC
+   10 clics → +15 crédits
+   Reset automatique toutes les 5 jours
+========================================================== */
+
+// Charger compte connecté
+let account = JSON.parse(localStorage.getItem("dpstore_user"));
+if(!account){
+    alert("Aucun compte détecté !");
+    location.href = "index.html";
+}
+
+// Charger sauvegarde du système de clic
+let clickData = JSON.parse(localStorage.getItem("dp_click_system")) || {
+    clicks: 0,
+    lastReward: 0
+};
+
+// Afficher clics
+document.getElementById("clickCount").textContent = clickData.clicks;
+
+// Mettre à jour la date du prochain bonus
+function updateNextReward(){
+    if(!clickData.lastReward){
+        document.getElementById("nextReward").textContent = "Disponible maintenant";
+        return;
+    }
+
+    const now = Date.now();
+    const fiveDays = 5 * 24 * 60 * 60 * 1000;
+    const next = clickData.lastReward + fiveDays;
+
+    if(now >= next){
+        document.getElementById("nextReward").textContent = "Disponible maintenant";
+    } else {
+        let diff = next - now;
+        let days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+        document.getElementById("nextReward").textContent = days + " jours";
+    }
+}
+updateNextReward();
+
+// Bouton clic
+document.getElementById("clickBtn").onclick = () => {
+
+    const now = Date.now();
+    const fiveDays = 5 * 24 * 60 * 60 * 1000;
+
+    // Vérifier si période bloquée
+    if(clickData.lastReward && now < clickData.lastReward + fiveDays){
+        alert("Tu dois attendre avant de gagner à nouveau !");
+        return;
+    }
+
+    // Ajouter clic
+    clickData.clicks++;
+    document.getElementById("clickCount").textContent = clickData.clicks;
+
+    // Si 10 clics → Récompense
+    if(clickData.clicks >= 10){
+
+        account.balance = (account.balance ?? 0) + 15;
+        clickData.clicks = 0;
+        clickData.lastReward = now;
+
+        // Mettre à jour localStorage DPSTORE
+        localStorage.setItem("dpstore_user", JSON.stringify(account));
+
+        let accs = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
+        let X = accs.find(x => (x.email || "").toLowerCase() === account.email.toLowerCase());
+        if(X){
+            X.balance = account.balance;
+            localStorage.setItem("dpstore_accounts", JSON.stringify(accs));
+        }
+
+        alert("🎉 Bravo ! Tu viens de gagner 15 crédits !");
+    }
+
+    // sauvegarde système
+    localStorage.setItem("dp_click_system", JSON.stringify(clickData));
+
+    updateNextReward();
+};
+</script>
+
+</body>
+</html>

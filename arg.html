@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>DPSTORE — ARG (Modifier Produits)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+    background:#000;
+    color:white;
+    font-family:Arial;
+    padding:20px;
+}
+h1 {
+    text-align:center;
+    color:#00eaff;
+}
+.product-box {
+    background:#0f0f0f;
+    border:1px solid #00eaff55;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:20px;
+}
+input, textarea {
+    width:95%;
+    background:#1a1a1a;
+    border:none;
+    padding:10px;
+    border-radius:8px;
+    color:white;
+    margin-top:8px;
+}
+button {
+    padding:10px;
+    width:95%;
+    border:none;
+    border-radius:10px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:10px;
+}
+.save-btn { background:#00eaff; color:black; }
+.delete-btn { background:#ff3b3b; color:white; }
+.add-btn { background:#00ff99; color:black; }
+.nav-btn { background:#FFD700; color:black; margin-top:5px; }
+img { width:110px; border-radius:10px; margin-top:8px; }
+#toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 30px;
+  background: #111;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1px solid #00eaff;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  display: none;
+  z-index: 9999;
+  font-weight: bold;
+}
+.field-refill { margin-top: 10px; padding: 12px; border: 1px solid #00eaff55; border-radius: 10px; }
+.field-refill label { display:block; margin-bottom:5px; }
+</style>
+</head>
+
+<body>
+
+<h1>🛠️ Gestion Produits — ARG</h1>
+
+<!-- Liste des produits existants + ajout -->
+<div id="productList"></div>
+
+<!-- Bouton navigation vers prodp.html -->
+<button id="goToDPR" class="nav-btn">➡ Voir les produits (DPR)</button>
+<div id="toast"></div>
+
+<script>
+const STORAGE_KEY = "dpr_products";
+function showMessage(text, timeout = 2200){
+    const t = document.getElementById("toast");
+    t.textContent = text;
+    t.style.display = "block";
+    t.style.opacity = "1";
+    clearTimeout(t._timer);
+    t._timer = setTimeout(()=>{ t.style.opacity="0"; setTimeout(()=> t.style.display = "none",300); }, timeout);
+}
+function escapeAttr(s){ return s===undefined||s===null?"":s.toString().replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+let products = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+
+/* Navigation vers prodp.html */
+document.getElementById("goToDPR").addEventListener("click", ()=>{ window.location.href="prodp.html"; });
+
+function sortProducts(){ products.sort((a,b)=>((a.name||"").toLowerCase().localeCompare((b.name||"").toLowerCase()))); }
+
+function renderProducts(){
+    sortProducts();
+    const list = document.getElementById("productList");
+    list.innerHTML = "";
+
+    // Formulaire ajout produit
+    list.innerHTML+=`
+        <div class="product-box">
+            <h3 style="color:#00eaff;">➕ Ajouter un produit</h3>
+            <input id="newName" placeholder="Nom du produit">
+            <input id="newPrice" type="number" placeholder="Prix (HTG)">
+            <textarea id="newDesc" placeholder="Description"></textarea>
+            <input id="newImg" type="file" accept="image/*">
+            <div class="field-refill">
+                <h4 style="color:#FFD700;">⚙️ Champs à re-remplir pour ce produit</h4>
+                <label><input type="checkbox" id="newRefill_id"> ID</label>
+                <label><input type="checkbox" id="newRefill_email"> Email</label>
+                <label><input type="checkbox" id="newRefill_nom"> Nom</label>
+                <label><input type="checkbox" id="newRefill_password"> Password</label>
+                <label><input type="checkbox" id="newRefill_whatsapp"> WhatsApp</label>
+            </div>
+            <button id="addBtn" class="add-btn">Ajouter</button>
+        </div>
+    `;
+
+    if(products.length===0){ list.innerHTML+="<p style='color:#777;'>Aucun produit.</p>"; return; }
+
+    products.forEach((p,i)=>{
+        const safeName=escapeAttr(p.name);
+        const safeDesc=(p.desc||"").toString().replace(/</g,'&lt;');
+        const r=p.refill||{};
+        list.innerHTML+=`
+            <div class="product-box" data-index="${i}">
+                <h3 style="color:#FFD700;">${safeName}</h3>
+                <label>Nom :</label><input id="name_${i}" value="${safeName}">
+                <label>Prix (HTG) :</label><input id="price_${i}" type="number" value="${p.price||0}">
+                <label>Description :</label><textarea id="desc_${i}">${safeDesc}</textarea>
+                <label>Image actuelle :</label><br>${p.img?`<img src="${p.img}" alt="img_${i}">`:"<i>Aucune image</i>"}
+                <label>Changer l’image :</label><input id="img_${i}" type="file" accept="image/*">
+                <div class="field-refill">
+                    <label><input type="checkbox" id="refill_id_${i}" ${r.id?'checked':''}> ID</label>
+                    <label><input type="checkbox" id="refill_email_${i}" ${r.email?'checked':''}> Email</label>
+                    <label><input type="checkbox" id="refill_nom_${i}" ${r.nom?'checked':''}> Nom</label>
+                    <label><input type="checkbox" id="refill_password_${i}" ${r.password?'checked':''}> Password</label>
+                    <label><input type="checkbox" id="refill_whatsapp_${i}" ${r.whatsapp?'checked':''}> WhatsApp</label>
+                </div>
+                <button class="save-btn" onclick="saveProduct(${i})">💾 Sauvegarder</button>
+                <button class="delete-btn" onclick="deleteProduct(${i})">🗑 Supprimer</button>
+            </div>
+        `;
+    });
+}
+
+/* Redimension image */
+function resizeImage(file,maxWidth=300,maxHeight=300,quality=0.7){
+    return new Promise((resolve,reject)=>{
+        const img=new Image();
+        const reader=new FileReader();
+        reader.onload=e=>{ img.src=e.target.result; };
+        img.onload=()=>{
+            let w=img.width,h=img.height;
+            if(w>h&&w>maxWidth){ h=Math.round(h*maxWidth/w); w=maxWidth; } else if(h>maxHeight){ w=Math.round(w*maxHeight/h); h=maxHeight; }
+            const c=document.createElement("canvas"); c.width=w;c.height=h;
+            c.getContext("2d").drawImage(img,0,0,w,h);
+            resolve(c.toDataURL("image/jpeg",quality));
+        };
+        img.onerror=reject; reader.onerror=reject; reader.readAsDataURL(file);
+    });
+}
+
+/* Ajouter produit */
+document.addEventListener("click", e=>{
+    if(e.target && e.target.id==="addBtn"){
+        const name=document.getElementById("newName").value.trim();
+        const price=Number(document.getElementById("newPrice").value);
+        const desc=document.getElementById("newDesc").value.trim();
+        const file=document.getElementById("newImg").files[0];
+        const refill={
+            id:document.getElementById("newRefill_id").checked,
+            email:document.getElementById("newRefill_email").checked,
+            nom:document.getElementById("newRefill_nom").checked,
+            password:document.getElementById("newRefill_password").checked,
+            whatsapp:document.getElementById("newRefill_whatsapp").checked
+        };
+        if(!name||!isFinite(price)){ showMessage("Nom + prix obligatoires !"); return; }
+        const finish=(imgData)=>{ products.push({name,price,desc,img:imgData||null,refill}); localStorage.setItem(STORAGE_KEY,JSON.stringify(products)); renderProducts(); showMessage("✔ Produit ajouté !"); };
+        if(file){ resizeImage(file).then(finish).catch(()=>finish(null)); } else finish(null);
+    }
+});
+
+/* Modifier produit */
+function saveProduct(i){
+    const name=document.getElementById("name_"+i).value.trim();
+    const price=Number(document.getElementById("price_"+i).value);
+    const desc=document.getElementById("desc_"+i).value.trim();
+    const file=document.getElementById("img_"+i).files[0];
+    const refill={
+        id:document.getElementById("refill_id_"+i).checked,
+        email:document.getElementById("refill_email_"+i).checked,
+        nom:document.getElementById("refill_nom_"+i).checked,
+        password:document.getElementById("refill_password_"+i).checked,
+        whatsapp:document.getElementById("refill_whatsapp_"+i).checked
+    };
+    if(!name||!isFinite(price)){ showMessage("Nom + prix obligatoires !"); return; }
+    const finish=(imgData)=>{ products[i]={...products[i],name,price,desc,img:imgData||products[i].img,refill}; localStorage.setItem(STORAGE_KEY,JSON.stringify(products)); renderProducts(); showMessage("✔ Produit sauvegardé !"); };
+    if(file){ resizeImage(file).then(finish).catch(()=>finish(null)); } else finish(null);
+}
+
+/* Supprimer produit */
+function deleteProduct(i){ if(!confirm("Supprimer ce produit ?")) return; products.splice(i,1); localStorage.setItem(STORAGE_KEY,JSON.stringify(products)); renderProducts(); showMessage("✔ Produit supprimé !"); }
+
+renderProducts();
+window.addEventListener("focus", ()=>{
+    try{
+        const remote=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+        if(JSON.stringify(remote)!==JSON.stringify(products)){ products=remote; renderProducts(); }
+    }catch(e){console.error(e);}
+});
+</script>
+</body>
+</html>

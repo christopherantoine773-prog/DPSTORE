@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPSTORE | Crunchyroll Manga</title>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: radial-gradient(circle at top, #1b0034, #000);
+    color: #fff;
+    overflow-x: hidden;
+  }
+
+  header {
+    background: rgba(0,0,0,0.8);
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 0 15px #ff7b00aa;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffb347;
+    text-shadow: 0 0 15px #ff7b00, 0 0 30px #ff4500;
+  }
+
+  .balance-box {
+    background: rgba(255,123,0,0.2);
+    border: 1px solid #ff7b00;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-weight: bold;
+    color: #ffae00;
+    margin-right: 10px;
+  }
+
+  .container {
+    padding: 30px;
+  }
+
+  .section-title {
+    font-size: 1.8rem;
+    margin: 20px 0;
+    text-align: center;
+    text-shadow: 0 0 10px #ff6f00;
+    letter-spacing: 2px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+  }
+
+  .card {
+    position: relative;
+    background: linear-gradient(145deg, rgba(255,140,0,0.2), rgba(0,0,0,0.6));
+    border: 2px solid #ff6f00;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 0 20px #ff7b00aa;
+    transition: 0.3s;
+    overflow: hidden;
+  }
+
+  .card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px #ffae00;
+  }
+
+  .card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+
+  .status {
+    background: #00ff99;
+    color: #000;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .tag {
+    background: #ff7b00;
+    color: #000;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-left: 5px;
+  }
+
+  .price {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #ffb347;
+    text-shadow: 0 0 5px #ff7b00;
+    margin-top: 10px;
+  }
+
+  .desc {
+    font-size: 0.9rem;
+    color: #ddd;
+    margin-top: 8px;
+  }
+
+  .btn-primary {
+    background: #ff7b00;
+    color: #000;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 15px;
+    transition: 0.3s;
+  }
+
+  .btn-primary:hover {
+    background: #fff;
+    color: #ff7b00;
+    box-shadow: 0 0 20px #ffae00;
+  }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    background: rgba(0,0,0,0.7);
+    border-top: 1px solid #ff6f00;
+  }
+
+  .back-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(255,123,0,0.2);
+    border: 1px solid #ff7b00;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 50;
+    transition: 0.3s;
+  }
+
+  .back-btn:hover {
+    background: #ff7b00;
+    color: #000;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff7b00;
+    color: #000;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<button class="back-btn" onclick="window.location.href='produits.html'">⬅ Retour</button>
+
+<header>
+  <h1>Crunchyroll — Manga Futuriste</h1>
+  <div style="display:flex; align-items:center;">
+    <div class="balance-box" id="balanceBox">0 G</div>
+    <button class="btn-primary" onclick="openCart()">🛒 Panier</button>
+  </div>
+</header>
+
+<div class="container">
+  <h2 class="section-title">Abonnements Manga ⚡</h2>
+  <div class="grid">
+
+    <div class="card">
+      <h3>Crunchyroll 1 Mois + 1 Profil</h3>
+      <span class="status">Disponible</span><span class="tag">Manga</span>
+      <div class="price">540 HTG</div>
+      <div class="desc">Livraison 0 à 3h — Accès illimité anime & manga</div>
+      <button class="btn-primary" onclick="addToCart('Crunchyroll 1 Mois + 1 Profil', 540)">Acheter</button>
+    </div>
+
+    <div class="card">
+      <h3>Crunchyroll 2 Mois + 1 Profil</h3>
+      <span class="status">Disponible</span><span class="tag">Manga</span>
+      <div class="price">1140 HTG</div>
+      <div class="desc">Livraison 0 à 3h — Premium + multi écrans</div>
+      <button class="btn-primary" onclick="addToCart('Crunchyroll 2 Mois + 1 Profil', 1140)">Acheter</button>
+    </div>
+
+    <div class="card">
+      <h3>Crunchyroll 3 Mois + 2 Profils</h3>
+      <span class="status">Disponible</span><span class="tag">Manga</span>
+      <div class="price">1700 HTG</div>
+      <div class="desc">Livraison 0 à 3h — Accès manga + anime exclusifs</div>
+      <button class="btn-primary" onclick="addToCart('Crunchyroll 3 Mois + 2 Profils', 1700)">Acheter</button>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast" class="toast">✅ Ajouté au panier</div>
+
+<footer>© 2025 DPSTORE — Tous droits réservés</footer>
+
+<script>
+/* ==========================
+   🔥 Vérification utilisateur
+========================== */
+let user = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
+if (!user.email) {
+  alert("Aucun compte connecté !");
+  window.location.href = "index.html";
+}
+
+/* Si balance n’existe pas → créer */
+if (!user.balance) user.balance = 0;
+
+/* ==========================
+   🔥 Gestion du panier par email
+========================== */
+function normalizeId(str){ return (str||"guest").toLowerCase().replace(/[^a-z0-9@.-]/g,"_").replace(/@/g,"_at_"); }
+function getCartKey(){ return "cart_" + normalizeId(user.email); }
+function loadCart(){ return JSON.parse(localStorage.getItem(getCartKey())||"[]"); }
+function saveCart(cart){ localStorage.setItem(getCartKey(), JSON.stringify(cart)); }
+
+function updateBalanceUI() {
+  document.getElementById("balanceBox").textContent = user.balance + " G";
+  updateCartCount();
+}
+
+function updateCartCount() {
+  const cart = loadCart();
+  document.querySelectorAll('.btn-primary').forEach(b => b.innerText.includes('🛒') ? b.innerText = `🛒 Panier (${cart.length})` : null);
+}
+
+function addToCart(name, price) {
+  const cart = loadCart();
+  cart.push({ name, price });
+  saveCart(cart);
+  showToast();
+  updateCartCount();
+}
+
+function showToast() {
+  const toast = document.getElementById("toast");
+  toast.classList.add("show");
+  setTimeout(()=>toast.classList.remove("show"), 1500);
+}
+
+function openCart() {
+  localStorage.setItem("lastPage", window.location.href);
+  window.location.href = "cart.html";
+}
+
+/* ==========================
+   INIT
+========================== */
+updateBalanceUI();
+</script>
+
+</body>
+</html>

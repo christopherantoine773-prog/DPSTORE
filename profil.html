@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Profil — DPSTORE</title>
+
+<style>
+body{
+    background:black;
+    color:white;
+    font-family:Arial;
+    text-align:center;
+}
+
+.profile-box{
+    width:90%;
+    margin:40px auto;
+    padding:20px;
+    background:#111;
+    border-radius:15px;
+    box-shadow:0 0 25px #fdf100;
+}
+
+#profile-pic{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    border:4px solid #fdf100;
+    object-fit:cover;
+}
+
+.tiktok-badge{
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    width:18px;
+    height:18px;
+    background:#2aa6ff;
+    border-radius:50%;
+    font-size:12px;
+    color:white;
+    font-weight:bold;
+    margin-left:6px;
+}
+
+button{
+    padding:12px 20px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+    margin-top:10px;
+}
+
+#changePhotoBtn{
+    background:yellow;
+    color:black;
+}
+
+#savePhotoBtn{
+    background:#0099ff;
+    display:none;
+}
+
+.red{
+    background:red;
+    color:white;
+}
+
+.creator-btn{
+    background:#00eaff;
+    color:black;
+    width:90%;
+    margin-top:20px;
+    padding:14px;
+    border-radius:12px;
+    font-size:18px;
+    box-shadow:0 0 15px #00eaff;
+    display:none;
+}
+</style>
+</head>
+<body>
+
+<div class="profile-box">
+
+    <img id="profile-pic" src="" alt="Photo de profil">
+    <br>
+    <button id="changePhotoBtn">📸 Modifier la photo</button>
+    <input type="file" id="photoInput" accept="image/*" style="display:none;">
+    <br>
+    <button id="savePhotoBtn">💾 Sauvegarder</button>
+
+    <h2>
+        <span id="name"></span>
+        <span id="badge"></span>
+    </h2>
+
+    <h3 id="dp-id" style="color:#00aaff;"></h3>
+    <p id="email"></p>
+
+    <p>
+        Rôle :
+        <span id="role" style="color:#00aaff; font-weight:bold;"></span>
+    </p>
+
+    <p style="color:yellow; font-size:18px;">
+        💰 Solde : <span id="credits">0</span> crédits
+    </p>
+
+    <p style="margin-top:10px;">
+        Dernière connexion : <span id="lastLogin"></span>
+    </p>
+
+    <!-- 🔥 BOUTON CREATOR / ADMIN -->
+    <button id="creatorModeBtn" class="creator-btn"
+            onclick="location.href='creator-space.html'">
+        🚀 MODE CREATOR / ADMIN
+    </button>
+
+    <!-- 🔥 BOUTON EMPLOYÉ -->
+    <button id="employeeBtn" class="creator-btn"
+            onclick="location.href='employee.html'"
+            style="background:#ffae00; box-shadow:0 0 15px #ffae00; display:none;">
+        🛠️ ESPACE EMPLOYÉ
+    </button>
+
+    <!-- 🔥 BOUTON ACCÈS TMM -->
+    <button id="tmmBtn" class="creator-btn" 
+            style="background:#00ff90; box-shadow:0 0 15px #00ff90; display:block;"
+            onclick="location.href='tmm.html'">
+        🛠️ Gestion Commandes (TMM)
+    </button>
+
+    <!-- 🔵 BOUTON ADMIN / CREATOR / EMPLOYEE -->
+    <button id="adminBtn" style="display:none; margin-top:15px; border-radius:50%; width:60px; height:60px; font-size:24px; background:#00aaff; color:white; border:none; cursor:pointer;"
+            title="Admin / Creator" onclick="location.href='admin.html'">🛠️</button>
+
+    <!-- 🟧 BOUTON PUB -->
+    <button onclick="location.href='pub.html'" style="background:#ffaa00; color:black; width:90%; margin-top:15px; padding:14px; border-radius:12px; font-size:18px; font-weight:bold;">
+        📢 Voir les pubs
+    </button>
+
+    <!-- 🔹 NOUVEAU BOUTON PIYAYLAKAY -->
+    <button onclick="location.href='piyaylakay.html'" style="background:#00ff88; color:black; width:90%; margin-top:15px; padding:14px; border-radius:12px; font-size:18px; font-weight:bold;">
+        🎯 Piyaylakay
+    </button>
+
+    <button onclick="location.href='produits.html'">⬅️ Retour aux produits</button>
+    <button class="red" onclick="logout()">Déconnexion</button>
+
+</div>
+
+<script>
+/* ====================================
+   CONSTANTES
+==================================== */
+const OWNER_EMAIL = "Christopherantoine773@gmail.com";
+
+/* ====================================
+   🔥 Chargement du compte actif
+==================================== */
+let account = JSON.parse(localStorage.getItem("dpstore_user"));
+
+if(!account){
+    alert("Aucun compte détecté !");
+    location.href = "index.html";
+}
+
+/* ====================================
+   🚨 Force le rôle du propriétaire
+==================================== */
+(function enforceOwnerRole(){
+    let accs = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
+
+    let ownerIndex = accs.findIndex(
+        u => (u.email || "").toLowerCase() === OWNER_EMAIL.toLowerCase()
+    );
+
+    if(ownerIndex !== -1){
+        accs[ownerIndex].role = "creator";
+        localStorage.setItem("dpstore_accounts", JSON.stringify(accs));
+    }
+
+    if((account.email || "").toLowerCase() === OWNER_EMAIL.toLowerCase()){
+        account.role = "creator";
+        localStorage.setItem("dpstore_user", JSON.stringify(account));
+    }
+})();
+
+/* ====================================
+   🔄 Synchronisation avec dpstore_accounts
+==================================== */
+let accounts = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
+let accGlobal = accounts.find(
+    u => (u.email || "").toLowerCase() === account.email.toLowerCase()
+);
+
+if(accGlobal){
+    account.balance = accGlobal.balance ?? account.balance;
+    account.photo = accGlobal.photo ?? account.photo;
+    account.username = accGlobal.username ?? account.username;
+    account.role = accGlobal.role ?? account.role;
+    account.employeeType = accGlobal.employeeType ?? account.employeeType;
+    account.dp = accGlobal.dp ?? account.dp;
+
+    localStorage.setItem("dpstore_user", JSON.stringify(account));
+}
+
+/* ====================================
+   🔥 SYSTÈME ORIGINAL (employee + e1/e2)
+==================================== */
+function getRoleName(role){
+    if(!role) return "Utilisateur";
+
+    role = role.toLowerCase().trim();
+
+    if(role === "creator") return "Créateur";
+    if(role === "admin") return "Administrateur";
+
+    if(role === "employee"){
+        if(account.employeeType === "e1") return "Employé 1";
+        if(account.employeeType === "e2") return "Employé 2";
+        return "Employé";
+    }
+
+    return "Utilisateur";
+}
+
+document.getElementById("role").textContent = getRoleName(account.role);
+
+/* ====================================
+   ✔ Badge (creator, admin, employés)
+==================================== */
+function afficherBadge(role){
+    if(!role) return;
+
+    role = role.toLowerCase().trim();
+
+    let show =
+        role === "creator" ||
+        role === "admin" ||
+        role === "employee";
+
+    document.getElementById("badge").innerHTML =
+        show ? `<span class="tiktok-badge">✔</span>` : "";
+}
+afficherBadge(account.role);
+
+/* ====================================
+   ✔ Boutons Creator / Admin et Employé
+==================================== */
+let r = (account.role ?? "").toLowerCase();
+
+if(r === "creator" || r === "admin"){
+    document.getElementById("creatorModeBtn").style.display = "block";
+}
+
+if(r === "employee"){
+    document.getElementById("employeeBtn").style.display = "block";
+}
+
+if(r === "creator" || r === "admin" || r === "employee"){
+    document.getElementById("adminBtn").style.display = "inline-block";
+}
+
+/* ====================================
+   ✔ Infos chargées
+==================================== */
+document.getElementById("name").textContent = account.username;
+document.getElementById("dp-id").textContent = account.dp;
+document.getElementById("email").textContent = account.email;
+document.getElementById("credits").textContent = account.balance ?? 0;
+document.getElementById("lastLogin").textContent = account.lastLogin ?? "—";
+
+/* ====================================
+   📸 Gestion Photo
+==================================== */
+if(account.photo){
+    document.getElementById("profile-pic").src = account.photo;
+} else {
+    document.getElementById("profile-pic").src =
+        "https://via.placeholder.com/120x120?text=DP";
+}
+
+document.getElementById("changePhotoBtn").onclick = () =>
+    document.getElementById("photoInput").click();
+
+document.getElementById("photoInput").onchange = e => {
+    let file = e.target.files[0];
+    if(!file) return;
+
+    let reader = new FileReader();
+    reader.onload = evt => {
+        document.getElementById("profile-pic").src = evt.target.result;
+        document.getElementById("savePhotoBtn").style.display = "inline-block";
+    };
+    reader.readAsDataURL(file);
+};
+
+document.getElementById("savePhotoBtn").onclick = () => {
+
+    account.photo = document.getElementById("profile-pic").src;
+
+    let accs = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
+    let X = accs.find(
+        u => (u.email || "").toLowerCase() === account.email.toLowerCase()
+    );
+
+    if(X){
+        X.photo = account.photo;
+        localStorage.setItem("dpstore_accounts", JSON.stringify(accs));
+    }
+
+    localStorage.setItem("dpstore_user", JSON.stringify(account));
+
+    document.getElementById("savePhotoBtn").style.display = "none";
+    alert("Photo enregistrée !");
+};
+
+function logout(){
+    localStorage.removeItem("dpstore_user");
+    location.href = "index.html";
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPSTORE | Abonnements</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #000428, #004e92);
+    color: #fff;
+    overflow-x: hidden;
+  }
+
+  header {
+    background: rgba(0,0,0,0.6);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 0 10px #00aaff;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  header h1 {
+    font-size: 1.3rem;
+    background: linear-gradient(90deg, #FFD700, #00ADEF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+  }
+
+  .balance-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  #user-balance {
+    font-weight: bold;
+    background: rgba(255,255,255,0.1);
+    padding: 6px 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 5px #00aaff;
+  }
+
+  #role-badge {
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 0 0 10px #00aaff;
+  }
+
+  .role-admin { background: #FFD700; color: #000; }
+  .role-employee { background: #00ADEF; color: #000; }
+  .role-user { background: #444; color: #fff; }
+
+  #back-btn {
+    background: transparent;
+    color: #fff;
+    border: 1px solid #00aaff;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  #back-btn:hover {
+    background: #00aaff;
+    color: #000;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 30px;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 0 10px #00aaff44;
+    transition: 0.3s;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 15px #00aaffaa;
+  }
+
+  .price {
+    color: #FFD700;
+    font-weight: bold;
+    margin: 8px 0;
+  }
+
+  .btn-primary {
+    background: #FFD700;
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 5px;
+  }
+
+  .btn-primary:hover {
+    background: #00aaff;
+    color: #fff;
+  }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    background: rgba(0,0,0,0.6);
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>DPSTORE — Abonnements</h1>
+
+  <div class="balance-container">
+    <span id="user-balance">Solde : 0 G</span>
+    <span id="role-badge" class="role-user">Utilisateur</span>
+    <button id="back-btn">Retour</button>
+  </div>
+</header>
+
+<section class="grid" id="gridProducts"></section>
+
+<footer>© 2025 DPSTORE — Tous droits réservés</footer>
+
+<script>
+/* ============================
+   CONFIG
+============================ */
+const CREATOR_ADMIN_EMAIL = "christopherantoine773@gmail.com";
+
+const EMPLOYEES = [
+  "pilotecitizen@gmail.com",
+  "ladouceurlorvynsky@gmail.com",
+  "doresmaworldens@gmail.com",
+  "mathieulherisson99@gmail.com"
+];
+
+const PRODUCTS = [
+  {id:'net1', title:'Netflix — 1 mois (1 profil)', price_htg:720},
+  {id:'net2', title:'Netflix — 2 mois (1 profil)', price_htg:1140},
+  {id:'net3', title:'Netflix Premium — 1 mois', price_htg:1620},
+  {id:'pv1', title:'Prime Video — 1 mois', price_htg:600},
+  {id:'cr1', title:'Crunchyroll — 1 mois', price_htg:540},
+  {id:'nv1', title:'NordVPN — 1 mois', price_htg:840},
+  {id:'ff1', title:'Free Fire Pass — 1 mois', price_htg:600},
+  {id:'ff2', title:'Free Fire Pass Premium — 1 mois', price_htg:1080},
+  {id:'ff3', title:'Free Fire Elite Pass — 1 mois', price_htg:1440}
+];
+
+/* ============================
+   VARIABLES
+============================ */
+const grid = document.getElementById('gridProducts');
+const balanceEl = document.getElementById('user-balance');
+const roleBadge = document.getElementById('role-badge');
+const backBtn = document.getElementById('back-btn');
+
+let user = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
+
+if(!user || !user.email){
+  alert("⚠️ Aucun compte détecté !");
+  location.href = "index.html";
+}
+
+/* ============================
+   🔥 Synchronisation du solde
+============================ */
+if (!user.balance) user.balance = 0;
+
+function updateBalance(){
+  balanceEl.innerText = `Solde : ${user.balance} G`;
+}
+
+updateBalance();
+
+/* ============================
+   ROLES
+============================ */
+function getRole(email){
+  if(email === CREATOR_ADMIN_EMAIL) return "admin";
+  if(EMPLOYEES.includes(email)) return "employee";
+  return "user";
+}
+
+let role = getRole(user.email);
+
+if(role === "admin"){
+  roleBadge.innerText = "Creator / Admin";
+  roleBadge.className = "role-admin";
+}
+else if(role === "employee"){
+  roleBadge.innerText = "Employé";
+  roleBadge.className = "role-employee";
+}
+else {
+  roleBadge.innerText = "Utilisateur";
+  roleBadge.className = "role-user";
+}
+
+/* ============================
+   ACHAT
+============================ */
+function addOrder(product){
+  if(user.balance < product.price_htg){
+    alert("❌ Solde insuffisant !");
+    return;
+  }
+
+  user.balance -= product.price_htg;
+  localStorage.setItem("dpstore_user", JSON.stringify(user));
+  updateBalance();
+
+  alert(`🔥 Achat réussi : ${product.title}`);
+}
+
+/* ============================
+   RENDER PRODUITS
+============================ */
+function renderGrid(){
+  grid.innerHTML = "";
+  PRODUCTS.forEach(p=>{
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <h3>${p.title}</h3>
+      <div class="price">${p.price_htg} G</div>
+      <button class="btn-primary">Acheter</button>
+    `;
+    div.querySelector("button").onclick = ()=> addOrder(p);
+    grid.appendChild(div);
+  });
+}
+
+renderGrid();
+backBtn.onclick = ()=> window.location.href = "produits.html";
+</script>
+
+</body>
+</html>

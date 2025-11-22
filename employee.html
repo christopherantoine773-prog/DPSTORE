@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Espace Employé — DPSTORE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    body {
+        background: #050505;
+        color: white;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+    }
+    h1 {
+        text-align: center;
+        color: #00eaff;
+        margin-bottom: 20px;
+    }
+    .box {
+        background: #111;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        border: 1px solid #00eaff55;
+        width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    input, select {
+        width: 90%;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        background: #1c1c1c;
+        color: white;
+        margin-top: 10px;
+    }
+    button {
+        width: 90%;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 12px;
+    }
+    .apply-btn { background:#00eaff; color:black; }
+    .archive-btn { background:#ffb300; color:black; box-shadow:0 0 15px #ffb300; }
+    .back-btn { background:#ff3b3b; color:white; }
+    .request-item {
+        background: #1a1a1a;
+        border: 1px solid #00eaff33;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 12px;
+        text-align:left;
+    }
+    .btn-small {
+        width:45%;
+        padding:10px;
+        border-radius:8px;
+        font-weight:bold;
+        cursor:pointer;
+        margin-top:10px;
+    }
+    .approve { background:#00ff88; color:black; }
+    .refuse { background:#ff3b3b; color:white; }
+    .copy-btn {
+        background:#0084ff;
+        color:white;
+        margin-top:10px;
+        padding:10px;
+        border-radius:10px;
+    }
+</style>
+</head>
+<body>
+
+<h1>👨‍💼 Espace Employé</h1>
+
+<!-- 🔵 Ajouter / Retirer des fonds -->
+<div class="box">
+    <h3 style="color:#00eaff;">Ajouter / Retirer des fonds</h3>
+
+    <label>DP-ID utilisateur :</label>
+    <input id="dpInput" placeholder="ex: DP-5521">
+
+    <label>Montant :</label>
+    <input id="amountInput" placeholder="ex: 600">
+
+    <label>Action :</label>
+    <select id="actionType">
+        <option value="add">Ajouter des crédits</option>
+        <option value="remove">Retirer des crédits</option>
+    </select>
+
+    <button class="apply-btn" onclick="applyFunds()">✔️ Appliquer</button>
+</div>
+
+<!-- 🔵 Vérifier le solde -->
+<div class="box">
+    <h3 style="color:#00eaff;">🔍 Vérifier le solde d’un utilisateur</h3>
+
+    <label>Rechercher par Email, DP-ID ou Nom :</label>
+    <input id="searchUser" placeholder="ex: mike@gmail.com / DP-5521 / Mike">
+
+    <button class="apply-btn" onclick="checkBalance()">🔎 Vérifier le solde</button>
+
+    <p id="balanceResult" style="margin-top:15px; font-size:16px; color:#ffaa00;"></p>
+
+    <button id="copyBtn" class="copy-btn" style="display:none;" onclick="copyInfo()">
+        📋 Copier les infos utilisateur
+    </button>
+</div>
+
+<!-- 🔵 Demandes de recharges -->
+<div class="box">
+    <h3 style="color:#00eaff;">📩 Demandes de recharges</h3>
+    <div id="requests"></div>
+</div>
+
+<!-- Boutons -->
+<button class="archive-btn" onclick="location.href='Archi.html'">📁 Voir les archives</button>
+
+<!-- ⭐️ BOUTON DP -->
+<button class="archive-btn" onclick="location.href='dp.html'">🔗 Aller vers DP</button>
+
+<!-- ⭐️ NOUVEAU BOUTON TMM (AJOUTÉ) -->
+<button class="archive-btn" onclick="location.href='tmm.html'">📦 Aller vers TMM</button>
+
+<button class="back-btn" onclick="location.href='profil.html'">⬅️ Retour</button>
+
+
+<script>
+/* ============================================
+   Chargement des comptes
+============================================ */
+let accounts = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
+
+/* ============================================
+   Récupérer toutes les demandes dp_recharges_XXXX
+============================================ */
+function getAllRechargeRequests() {
+    let allKeys = Object.keys(localStorage);
+    let rechargeKeys = allKeys.filter(k => k.startsWith("dp_recharges_"));
+
+    let all = [];
+
+    rechargeKeys.forEach(key => {
+        let items = JSON.parse(localStorage.getItem(key) || "[]");
+        items.forEach(i => all.push(i));
+    });
+
+    return all;
+}
+
+let requests = getAllRechargeRequests();
+
+/* ============================================
+   🔥 Appliquer crédits
+============================================ */
+function applyFunds() {
+    let dp = document.getElementById("dpInput").value.trim();
+    let amount = parseInt(document.getElementById("amountInput").value);
+    let type = document.getElementById("actionType").value;
+
+    if(!dp || isNaN(amount)) {
+        alert("Remplis correctement les champs.");
+        return;
+    }
+
+    let user = accounts.find(u => (u.dp || "").toLowerCase() === dp.toLowerCase());
+    if(!user){
+        alert("Utilisateur introuvable !");
+        return;
+    }
+
+    if(type === "add") user.balance = (user.balance || 0) + amount;
+    else user.balance = Math.max(0, (user.balance || 0) - amount);
+
+    localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+    alert("✔ Opération réussie !");
+}
+
+/* ============================================
+   🔍 Vérifier le solde
+============================================ */
+let lastFoundUser = null;
+
+function checkBalance() {
+    let q = document.getElementById("searchUser").value.trim().toLowerCase();
+    let result = document.getElementById("balanceResult");
+    let copyBtn = document.getElementById("copyBtn");
+
+    if(!q){
+        result.textContent = "❌ Entre un email, un DP-ID ou un nom.";
+        copyBtn.style.display = "none";
+        return;
+    }
+
+    let user = accounts.find(u =>
+        (u.email && u.email.toLowerCase() === q) ||
+        (u.dp && u.dp.toLowerCase() === q) ||
+        (u.username && u.username.toLowerCase() === q)
+    );
+
+    if(!user){
+        result.textContent = "❌ Aucun utilisateur trouvé.";
+        copyBtn.style.display = "none";
+        return;
+    }
+
+    lastFoundUser = user;
+
+    result.innerHTML = `
+        👤 <b>${user.username}</b><br>
+        📧 ${user.email}<br>
+        🆔 ${user.dp}<br><br>
+        💰 Solde : <span style="color:yellow;font-size:20px;">${user.balance || 0} crédits</span>
+    `;
+
+    copyBtn.style.display = "block";
+}
+
+/* ============================================
+   📋 Copier les infos
+============================================ */
+function copyInfo(){
+    if(!lastFoundUser) return;
+
+    let text =
+`👤 Nom : ${lastFoundUser.username}
+📧 Email : ${lastFoundUser.email}
+🆔 DP-ID : ${lastFoundUser.dp}
+💰 Solde : ${lastFoundUser.balance || 0} crédits`;
+
+    navigator.clipboard.writeText(text);
+    alert("✔ Infos copiées !");
+}
+
+/* ============================================
+   📩 Afficher toutes les demandes
+============================================ */
+function loadRequests(){
+    const container = document.getElementById("requests");
+    container.innerHTML = "";
+
+    if(requests.length === 0){
+        container.innerHTML = "<p style='color:#777;'>Aucune demande</p>";
+        return;
+    }
+
+    requests.forEach((r,i)=>{
+        let html = "<div class='request-item'>";
+
+        for (let key in r) {
+            if (key === "receipt" && r[key]) {
+                html += `<p><b>${key}</b> :</p><img src="${r[key]}" width="180"><br>`;
+            } else {
+                html += `<p><b>${key}</b> : ${r[key]}</p>`;
+            }
+        }
+
+        html += `
+            <button class="btn-small approve" onclick="approve(${i})">Valider</button>
+            <button class="btn-small refuse" onclick="refuse(${i})">Refuser</button>
+        </div>`;
+
+        container.innerHTML += html;
+    });
+}
+loadRequests();
+
+/* ============================================
+   ✔ Validation / refus
+============================================ */
+function approve(i){
+    let r = requests[i];
+
+    let user = accounts.find(u => u.dp === r.dpID);
+    if(user){
+        user.balance = (user.balance || 0) + parseInt(r.amount);
+    }
+
+    addArchive(r, "approved");
+
+    localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+
+    removeRechargeRequest(r);
+
+    alert("✔ Demande confirmée !");
+}
+
+function refuse(i){
+    let r = requests[i];
+
+    addArchive(r, "refused");
+
+    removeRechargeRequest(r);
+
+    alert("❌ Demande refusée");
+}
+
+/* ============================================
+   🔥 Supprimer la demande dans dp_recharges_DP-ID
+============================================ */
+function removeRechargeRequest(item){
+    let key = "dp_recharges_" + item.dpID;
+    let list = JSON.parse(localStorage.getItem(key) || "[]");
+
+    list = list.filter(x => x.created !== item.created);
+
+    localStorage.setItem(key, JSON.stringify(list));
+
+    requests = getAllRechargeRequests();
+    loadRequests();
+}
+
+/* ============================================
+   🗂 Envoi vers archive
+============================================ */
+function addArchive(req, status){
+    let arch = JSON.parse(localStorage.getItem("dp_archives") || "[]");
+
+    arch.push({
+        ...req,
+        status,
+        archiveDate: new Date().toISOString()
+    });
+
+    localStorage.setItem("dp_archives", JSON.stringify(arch));
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DPSTORE | PlayStation & Xbox</title>
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #0b0f1c;
+    margin: 0;
+    padding: 0;
+    color: #fff;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    color: #00ffb3;
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+
+  .logo svg { width: 28px; margin-right: 6px; }
+
+  .right-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .balance {
+    color: #00ffb3;
+    font-weight: 600;
+    background: rgba(0,255,179,0.1);
+    padding: 6px 12px;
+    border-radius: 10px;
+    border: 1px solid #00ffb3;
+  }
+
+  .cart-btn {
+    font-size: 1.4rem;
+    cursor: pointer;
+  }
+
+  .back-btn {
+    background: none;
+    border: 2px solid #00ffb3;
+    color: #00ffb3;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  /* TITRES */
+  .section-title {
+    font-size: 1.6rem;
+    font-weight: bold;
+    margin: 25px 15px 10px;
+    color: #00ffb3;
+  }
+
+  /* PRODUITS */
+  .product {
+    background: #111726;
+    padding: 15px;
+    margin: 12px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 0 10px rgba(0,255,179,0.1);
+    justify-content: space-between;
+  }
+
+  .product img {
+    width: 65px;
+    border-radius: 6px;
+  }
+
+  .product-info {
+    flex: 1;
+    margin-left: 10px;
+  }
+
+  .product-name {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .product-price {
+    margin-top: 4px;
+    color: #00ffb3;
+    font-weight: 600;
+  }
+
+  .btn-add {
+    background: #00ffb3;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #000;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="back-btn" onclick="window.location.href='produits.html'">← Retour</button>
+
+  <!-- LOGO COD-STYLE -->
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="#00ffb3">
+      <path d="M3 3h2v18H3V3zm16 0h2v18h-2V3zM7 11h10v2H7v-2z"/>
+    </svg>
+    DPSTORE
+  </div>
+
+  <!-- Solde + Panier -->
+  <div class="right-box">
+    <div class="balance" id="balanceBox">0 G</div>
+    <div class="cart-btn" onclick="window.location.href='cart.html'">🛒(<span id="cartCount">0</span>)</div>
+  </div>
+</header>
+
+<!-- PLAYSTATION -->
+<h2 class="section-title">PLAYSTATION 🇺🇸</h2>
+<div id="playstation-list"></div>
+
+<!-- XBOX US -->
+<h2 class="section-title">XBOX 🇺🇸</h2>
+<div id="xbox-list-us"></div>
+
+<!-- XBOX FR -->
+<h2 class="section-title">XBOX 🇫🇷</h2>
+<div id="xbox-list-fr"></div>
+
+<script>
+/* ============================
+   🔥 PANIER PAR COMPTE (SAFE)
+   ============================ */
+
+function loadUser() {
+  let u = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
+  if (u.balance === undefined) u.balance = 0;
+  let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+  let acc = accounts.find(x => (x.email || "").toLowerCase() === (u.email || "").toLowerCase());
+  if (acc) {
+    u.balance = acc.balance ?? u.balance;
+    localStorage.setItem("dpstore_user", JSON.stringify(u));
+  }
+  return u;
+}
+
+let user = loadUser();
+if (!user.email && !user.dp) {
+  alert("Aucun compte connecté !");
+  window.location.href = "index.html";
+}
+
+function normalizeId(str){
+  if(!str) return "guest";
+  return String(str).toLowerCase().trim().replace(/[^a-z0-9@.-]/g, "_").replace(/@/g,"_at_");
+}
+
+function getCartKey(){
+  const id = user.email || user.dp || ("guest");
+  return "cart_" + normalizeId(id);
+}
+
+function migrateGlobalCartIfNeeded(){
+  const globalKey = "cart";
+  const perUserKey = getCartKey();
+  const global = localStorage.getItem(globalKey);
+  const perUser = localStorage.getItem(perUserKey);
+  if(global && !perUser){
+    try {
+      localStorage.setItem(perUserKey, global);
+      localStorage.removeItem(globalKey);
+    } catch(e){
+      console.warn("Migration cart failed:", e);
+    }
+  }
+}
+
+function loadCart(){
+  migrateGlobalCartIfNeeded();
+  const key = getCartKey();
+  return JSON.parse(localStorage.getItem(key) || "[]");
+}
+
+function saveCart(arr){
+  const key = getCartKey();
+  localStorage.setItem(key, JSON.stringify(arr));
+}
+
+function updateBalanceUI(){
+  user = loadUser();
+  document.getElementById("balanceBox").textContent = (user.balance ?? 0) + " G";
+  updateCartCount();
+}
+
+/* 🔥 AJOUT PANIER */
+function addToCart(name, price){
+  user = loadUser();
+  let cart = loadCart();
+  cart.push({ name, price });
+  saveCart(cart);
+  alert(`✅ ${name} ajouté au panier !`);
+  updateBalanceUI();
+}
+
+/* 🔥 COMPTEUR PANIER */
+function updateCartCount(){
+  const cart = loadCart();
+  document.getElementById("cartCount").textContent = cart.length;
+}
+
+/* 🔥 PRODUITS ORIGINAUX */
+const products = {
+  playstation: [
+    { name: "PLAYSTATION 5 USD", price: 850, img: "https://i.imgur.com/EPp1yV2.png" },
+    { name: "PLAYSTATION 10 USD", price: 1650, img: "https://i.imgur.com/EPp1yV2.png" },
+    { name: "PLAYSTATION 15 USD", price: 2475, img: "https://i.imgur.com/EPp1yV2.png" },
+    { name: "PLAYSTATION 20 USD", price: 3300, img: "https://i.imgur.com/EPp1yV2.png" },
+    { name: "PLAYSTATION 25 USD", price: 4125, img: "https://i.imgur.com/EPp1yV2.png" }
+  ],
+  xboxUS: [
+    { name: "XBOX GAME PASS 3 MONTHS (US)", price: 3200, img: "https://i.imgur.com/Ur7QcYz.png" },
+    { name: "XBOX 10 USD", price: 1650, img: "https://i.imgur.com/m4n9C1P.png" },
+    { name: "XBOX 15 USD", price: 2475, img: "https://i.imgur.com/m4n9C1P.png" },
+    { name: "XBOX 20 USD", price: 3300, img: "https://i.imgur.com/m4n9C1P.png" },
+    { name: "XBOX 25 USD", price: 4175, img: "https://i.imgur.com/m4n9C1P.png" }
+  ],
+  xboxFR: [
+    { name: "XBOX GAME PASS FR 1M", price: 1750, img: "https://i.imgur.com/m4n9C1P.png" },
+    { name: "XBOX FR 5 EUR", price: 850, img: "https://i.imgur.com/m4n9C1P.png" },
+    { name: "XBOX FR 10 EUR", price: 1650, img: "https://i.imgur.com/m4n9C1P.png" },
+    { name: "XBOX FR 25 EUR", price: 4125, img: "https://i.imgur.com/m4n9C1P.png" }
+  ]
+};
+
+/* 🔥 +15% D’AUGMENTATION */
+function applyIncrease(price) {
+    return Math.round(price * 1.15);
+}
+
+/* 🔥 AFFICHAGE PRODUITS */
+function displayProducts(listId, items) {
+  const container = document.getElementById(listId);
+  items.forEach(p => {
+    const newPrice = applyIncrease(p.price);
+
+    const div = document.createElement("div");
+    div.className = "product";
+
+    div.innerHTML = `
+      <img src="${p.img}">
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-price">${newPrice} HTG</div>
+      </div>
+      <button class="btn-add" onclick="addToCart('${p.name}', ${newPrice})">Ajouter</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+displayProducts("playstation-list", products.playstation);
+displayProducts("xbox-list-us", products.xboxUS);
+displayProducts("xbox-list-fr", products.xboxFR);
+
+/* 🔥 MISE À JOUR INITIALE */
+updateBalanceUI();
+setInterval(updateBalanceUI, 1500);
+</script>
+
+</body>
+</html>

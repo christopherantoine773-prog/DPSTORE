@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Creator Space — DPSTORE</title>
+
+<style>
+body{
+    background:black;
+    color:white;
+    font-family:Arial;
+    padding:20px;
+}
+
+/* ====== BOX ====== */
+.box{
+    background:#111;
+    padding:20px;
+    border-radius:15px;
+    width:95%;
+    margin:auto;
+    margin-bottom:20px;
+    box-shadow:0 0 20px #00eaff;
+}
+
+/* ====== INPUTS / BUTTONS ====== */
+input, button, select{
+    width:95%;
+    margin-top:10px;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    font-size:16px;
+}
+button{
+    background:#00eaff;
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* ===== TITRES ====== */
+h2{
+    color:#00eaff;
+    text-align:center;
+}
+
+/* ====== REQUEST (recharges) ====== */
+.request{
+    background:#222;
+    padding:12px;
+    border-radius:10px;
+    margin-top:15px;
+    border-left:4px solid #00eaff;
+}
+.request img{
+    width:100%;
+    border-radius:10px;
+    margin-top:10px;
+    border:1px solid #00eaff;
+}
+.btnRow{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+.btnGreen{
+    background:#00ff88;
+    color:black;
+    font-weight:bold;
+}
+.btnRed{
+    background:#ff4444;
+    color:white;
+    font-weight:bold;
+}
+
+/* STATUS BADGE */
+.status{
+    font-weight:bold;
+    padding:3px 8px;
+    border-radius:5px;
+}
+.status.pending{background:#555;}
+.status.validated{background:#00ff88;color:black;}
+.status.refused{background:#ff4444;}
+
+/* ===== MENU STYLE SMMTRENDING ===== */
+.selectorBox{
+    width:95%;
+    background:#007bff;
+    padding:15px;
+    border-radius:14px;
+    margin:auto;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:18px;
+    cursor:pointer;
+    margin-bottom:10px;
+    box-shadow:0 0 12px #007bff;
+}
+
+.selectorBox img{
+    width:30px;
+    margin-right:10px;
+}
+
+.optionList{
+    width:95%;
+    background:#004ea3;
+    border-radius:12px;
+    margin:auto;
+    margin-bottom:15px;
+    display:none;
+    overflow:hidden;
+    box-shadow:0 0 12px #004ea3;
+}
+
+.optionItem{
+    padding:12px 15px;
+    border-bottom:1px solid rgba(255,255,255,0.15);
+    cursor:pointer;
+}
+.optionItem:hover{
+    background:#0060cc;
+}
+</style>
+</head>
+<body>
+
+<h2>🚀 MODE CREATOR / ADMIN</h2>
+
+<!-- 🔵 MINI BOUTON DP -->
+<button style="
+    background:#00eaff;
+    color:black;
+    font-weight:bold;
+    padding:6px 14px;
+    border-radius:8px;
+    font-size:14px;
+    margin-bottom:10px;
+    cursor:pointer;
+    width:auto;
+" onclick="location.href='dp.html'">
+    DP
+</button>
+
+<!-- =====================================================
+     🔽 SELECTEUR STYLE SMMTRENDING
+===================================================== -->
+<div class="selectorBox" onclick="toggleMenu()">
+    <div style="display:flex;align-items:center;">
+        <img src="https://cdn-icons-png.flaticon.com/512/833/833524.png">
+        <span id="selectedAction">Ajouter des fonds</span>
+    </div>
+    <span>▼</span>
+</div>
+
+<div class="optionList" id="actionMenu">
+    <div class="optionItem" onclick="selectAction('add')">Ajouter des fonds</div>
+    <div class="optionItem" onclick="selectAction('remove')">Retirer des fonds</div>
+</div>
+
+<!-- =====================================================
+     💰 AJOUTER / RETIRER DES FONDS
+===================================================== -->
+<div class="box">
+    <h3 id="fundTitle">💰 Ajouter des fonds</h3>
+
+    <input id="dpInput" placeholder="DP ID (ex : DP-123456)">
+    <input id="amountInput" type="number" placeholder="Montant">
+
+    <button id="fundBtn" onclick="processFunds()">Ajouter</button>
+</div>
+
+<!-- =====================================================
+     🔍 Vérifier solde
+===================================================== -->
+<div class="box">
+    <h3>🔍 Vérifier un solde</h3>
+    <input id="dpCheck" placeholder="DP ID">
+    <button onclick="checkBalance()">Vérifier</button>
+    <p id="checkResult" style="margin-top:10px; font-size:18px;"></p>
+</div>
+
+<!-- =====================================================
+     👔 Ajouter un employé
+===================================================== -->
+<div class="box">
+    <h3>👔 Ajouter un employé</h3>
+
+    <input id="employeeEmail" placeholder="Email de l'employé">
+
+    <select id="employeeType">
+        <option value="employee1">Employé 1</option>
+        <option value="employee2">Employé 2</option>
+    </select>
+
+    <button onclick="addEmployee()">Ajouter</button>
+</div>
+
+<!-- =====================================================
+     ❌ SUPPRIMER EMPLOYÉ
+===================================================== -->
+<div class="box">
+    <h3 style="color:#ff4444;">❌ Supprimer un employé</h3>
+
+    <input id="removeEmployeeEmail" placeholder="Email de l'employé">
+
+    <button style="background:#ff4444; color:white;" onclick="removeEmployee()">
+        Supprimer
+    </button>
+</div>
+
+<!-- =====================================================
+     📨 Demandes de recharge
+===================================================== -->
+<div class="box">
+    <h3>📨 Demandes de recharge</h3>
+    <div id="rechargeList"></div>
+</div>
+
+<!-- BOUTONS EXISTANTS -->
+<button style="background:#00eaff; margin-top:20px;" onclick="location.href='Archi.html'">
+📁 Voir l'historique (Archive)
+</button>
+
+<button style="background:red; margin-top:20px;" onclick="location.href='profil.html'">
+⬅️ Retour au profil
+</button>
+
+<!-- NOUVEAU BOUTON OFFON -->
+<button style="background:orange; margin-top:20px;" onclick="location.href='offon.html'">
+⚡ Ouvrir OFF/ON
+</button>
+
+<!-- 🎵 Sons -->
+<audio id="soundValidate" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7b8ad29dbb.mp3?filename=correct-2-46134.mp3"></audio>
+<audio id="soundRefuse" src="https://cdn.pixabay.com/download/audio/2021/09/09/audio_9d6f5bf86d.mp3?filename=error-126627.mp3"></audio>
+
+<script>
+/* ============================================================
+   🎛 DROPDOWN STYLE SMMTRENDING
+============================================================ */
+let currentAction = "add";
+
+function toggleMenu(){
+    const menu = document.getElementById("actionMenu");
+    menu.style.display = (menu.style.display === "block") ? "none" : "block";
+}
+
+function selectAction(type){
+    currentAction = type;
+
+    document.getElementById("selectedAction").innerText =
+        type === "add" ? "Ajouter des fonds" : "Retirer des fonds";
+
+    document.getElementById("fundTitle").innerText =
+        type === "add" ? "💰 Ajouter des fonds" : "💸 Retirer des fonds";
+
+    document.getElementById("fundBtn").innerText =
+        type === "add" ? "Ajouter" : "Retirer";
+
+    toggleMenu();
+}
+
+/* ============================================================
+   STORAGE HELPERS
+============================================================ */
+function getAllAccounts(){
+    return JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
+}
+function saveAllAccounts(list){
+    localStorage.setItem("dpstore_accounts", JSON.stringify(list));
+}
+
+/* ============================================================
+   ADD / REMOVE FUNDS
+============================================================ */
+function processFunds(){
+    const dp = document.getElementById("dpInput").value.trim();
+    const amount = Number(document.getElementById("amountInput").value);
+
+    if(dp==="" || amount<=0) return alert("⚠️ Champs invalides");
+
+    let accounts = getAllAccounts();
+    let user = accounts.find(u => u.dp === dp);
+
+    if(!user) return alert("❌ DP introuvable");
+
+    if(currentAction === "add"){
+        user.balance = (user.balance || 0) + amount;
+        alert(`+${amount} crédits ajoutés à ${dp}`);
+    }
+    else{
+        if((user.balance || 0) < amount)
+            return alert("❌ Solde insuffisant!");
+
+        user.balance -= amount;
+        alert(`-${amount} crédits retirés à ${dp}`);
+    }
+
+    saveAllAccounts(accounts);
+}
+
+/* ============================================================
+   🔍 Vérifier solde (AVEC RÔLE)
+============================================================ */
+function checkBalance(){
+    const dp = document.getElementById("dpCheck").value.trim();
+    let accounts = getAllAccounts();
+    let user = accounts.find(u => u.dp === dp);
+
+    if(!user){
+        document.getElementById("checkResult").innerHTML = "❌ DP introuvable";
+        return;
+    }
+
+    document.getElementById("checkResult").innerHTML = `
+        <b>Nom :</b> ${user.username || "Non défini"} <br>
+        <b>Email :</b> ${user.email || "Non défini"} <br>
+        <b>Rôle :</b> <span style="color:#00eaff;">${user.role || "user"}</span><br>
+        <b>Solde ${dp} :</b> 
+        <span style="color:yellow;">${user.balance || 0} crédits</span>
+    `;
+}
+
+/* ============================================================
+   👔 Ajouter employé
+============================================================ */
+function addEmployee(){
+    const email = document.getElementById("employeeEmail").value.trim();
+    const type = document.getElementById("employeeType").value;
+
+    if(email==="") return alert("⚠️ Email vide");
+
+    let accounts = getAllAccounts();
+    let user = accounts.find(u => u.email === email);
+
+    if(!user) return alert("❌ Aucun compte trouvé");
+
+    user.role = "employee";
+    user.employeeType = type;
+
+    saveAllAccounts(accounts);
+
+    alert("👔 Employé ajouté !");
+}
+
+/* ============================================================
+   ❌ SUPPRIMER EMPLOYÉ
+============================================================ */
+function removeEmployee(){
+    const email = document.getElementById("removeEmployeeEmail").value.trim();
+
+    if(email === "") return alert("⚠️ Email manquant");
+
+    let accounts = getAllAccounts();
+    let user = accounts.find(u => u.email === email);
+
+    if(!user) return alert("❌ Aucun compte trouvé");
+
+    if(user.role !== "employee")
+        return alert("⚠️ Cet utilisateur n'est pas un employé");
+
+    user.role = "user";
+    user.employeeType = null;
+
+    saveAllAccounts(accounts);
+
+    alert("❌ Employé retiré !");
+}
+
+/* ============================================================
+   📬 Recharges
+============================================================ */
+function loadRecharges(){
+    let allKeys = Object.keys(localStorage).filter(k => k.startsWith("dp_recharges_"));
+    let globalList = [];
+
+    allKeys.forEach(key => {
+        let arr = JSON.parse(localStorage.getItem(key) || "[]");
+        arr.forEach(r => {
+            r._storageKey = key;
+            globalList.push(r);
+        });
+    });
+
+    const box = document.getElementById("rechargeList");
+    box.innerHTML = "";
+
+    if(globalList.length === 0){
+        box.innerHTML = "<p>Aucune demande.</p>";
+        return;
+    }
+
+    globalList.forEach((r, index) => {
+
+        box.innerHTML += `
+            <div class="request">
+
+                <p><b>${r.name}</b> (${r.email})</p>
+                ${r.phone ? `<p>WhatsApp : ${r.phone}</p>` : ""}
+                <p><b>DP-ID :</b> ${r.dpID || "Non fourni"}</p>
+
+                <p><b>Montant :</b> 
+                    <span style="color:yellow;">${r.amount} HTG</span>
+                </p>
+
+                <p><b>Date :</b> ${r.created}</p>
+
+                <p>Status :
+                    <span class="status ${r.status}">
+                        ${r.status.toUpperCase()}
+                    </span>
+                </p>
+
+                ${r.receipt ? `<img src="${r.receipt}" alt="Reçu">` : ""}
+
+                <div class="btnRow">
+                    <button class="btnGreen" onclick="validateRecharge('${r._storageKey}', '${r.transcode}')">VALIDER</button>
+                    <button class="btnRed" onclick="refuseRecharge('${r._storageKey}', '${r.transcode}')">REFUSER</button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function addToArchive(item){
+    let arch = JSON.parse(localStorage.getItem("dp_archives") || "[]");
+    item.archivedAt = new Date().toLocaleString();
+    arch.unshift(item);
+    localStorage.setItem("dp_archives", JSON.stringify(arch));
+}
+
+function validateRecharge(storageKey, id){
+    let list = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    let index = list.findIndex(x => x.transcode === id);
+    if(index === -1) return;
+
+    let r = list[index];
+
+    let accounts = getAllAccounts();
+    let user = accounts.find(u => u.dp === r.dpID);
+
+    if(user){
+        user.balance = (user.balance || 0) + Number(r.amount);
+        saveAllAccounts(accounts);
+    }
+
+    r.status = "validated";
+
+    addToArchive(r);
+
+    list.splice(index, 1);
+    localStorage.setItem(storageKey, JSON.stringify(list));
+
+    document.getElementById("soundValidate").play();
+    loadRecharges();
+}
+
+function refuseRecharge(storageKey, id){
+    let list = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    let index = list.findIndex(x => x.transcode === id);
+    if(index === -1) return;
+
+    let r = list[index];
+
+    r.status = "refused";
+
+    addToArchive(r);
+
+    list.splice(index, 1);
+    localStorage.setItem(storageKey, JSON.stringify(list));
+
+    document.getElementById("soundRefuse").play();
+    loadRecharges();
+}
+
+loadRecharges();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rechargex — DPSTORE</title>
+
+<style>
+body{margin:0;font-family:Inter,Arial,sans-serif;background:radial-gradient(circle at 20% 30%,#001a0f,#000);color:#eaffea;overflow-x:hidden}
+.header{padding:14px 18px;background:rgba(0,255,120,0.05);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,255,136,0.2)}
+.header a{color:#00ff88;font-weight:600;text-decoration:none;text-shadow:0 0 8px #00ff88}
+.container{max-width:750px;margin:25px auto;padding:20px}
+.card{background:rgba(0,20,10,0.6);padding:20px;border-radius:14px;border:1px solid rgba(0,255,136,0.15);box-shadow:0 0 25px rgba(0,255,120,0.15);backdrop-filter:blur(12px)}
+.card h2{color:#00ff99;text-shadow:0 0 10px #00ff99;font-size:1.4rem;margin:0 0 6px}
+label.small{font-size:0.9rem;color:#9fdca6;margin-top:10px;display:block}
+input{width:100%;padding:12px;margin-top:6px;border-radius:10px;border:1px solid rgba(0,255,120,0.2);background:rgba(0,0,0,0.6);color:#eaffee}
+input:focus{border-color:#00ff99;box-shadow:0 0 12px #00ff99;outline:none}
+input[readonly]{opacity:.7;color:#00ffcc;font-weight:700}
+button{width:100%;padding:14px;margin-top:15px;border-radius:10px;background:linear-gradient(90deg,#00ff88,#00cc66);color:#000;font-weight:800;border:none;cursor:pointer;font-size:1.05rem;box-shadow:0 0 20px #00ff8866}
+button[disabled]{opacity:.5;cursor:not-allowed}
+.error{color:#ffb3b3;padding:8px;margin-top:10px;border-radius:8px;background:rgba(255,0,0,0.06);display:none}
+.popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:0;visibility:hidden;transition:.2s}
+.popup.active{opacity:1;visibility:visible}
+.popup h2{color:#00ff99;margin-bottom:6px}
+.small-note{opacity:0.8;margin-top:8px;font-size:0.95rem;color:#cfeed0}
+</style>
+</head>
+<body>
+
+<audio id="soundOK" src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAA…" preload="auto"></audio>
+
+<header class="header">
+  <a href="profil.html">← Retour</a>
+</header>
+
+<div class="container">
+  <div class="card">
+    <h2>💳 Faire une recharge sur DPSTORE</h2>
+    <p class="small-note">Recharge via <b>Natcash</b> — Compte : <b>Christopher Antoine — 42758154</b></p>
+
+    <form id="payForm" novalidate>
+
+      <label class="small">Nom complet *</label>
+      <input id="nameInput" required>
+
+      <label class="small">Email *</label>
+      <input id="emailInput" type="email" required>
+
+      <!-- 🔥 AJOUT DU DP-ID VISIBLE / NON MODIFIABLE -->
+      <label class="small">DP-ID *</label>
+      <input id="dpInput" readonly>
+
+      <label class="small">Numéro WhatsApp (optionnel)</label>
+      <input id="phoneInput">
+
+      <label class="small">Montant (HTG) *</label>
+      <input id="amountInput" type="number" required>
+
+      <label class="small">Transcode Natcash *</label>
+      <input id="transcodeInput" required>
+
+      <div id="errorBox" class="error"></div>
+
+      <button id="sendBtn">🚀 Envoyer la demande</button>
+
+      <button type="button" onclick="location.href='trx.html'">📄 Voir mes recharges</button>
+    </form>
+  </div>
+</div>
+
+<div class="popup" id="popup">
+  <h2>✅ Demande envoyée</h2>
+  <p style="color:#dfffe1">Ta demande a été ajoutée à tes transactions.</p>
+</div>
+
+<script>
+
+const sendBtn = document.getElementById("sendBtn");
+const popup = document.getElementById("popup");
+const errorBox = document.getElementById("errorBox");
+const soundOK = document.getElementById("soundOK");
+
+// 🔥 récupérer l'utilisateur connecté
+const account = JSON.parse(localStorage.getItem("dpstore_user"));
+if(!account){
+    alert("Aucun compte détecté !");
+    location.href = "index.html";
+}
+
+// 🔥 injecter le DP-ID automatiquement
+document.getElementById("dpInput").value = account.dp;
+
+const key = "dp_recharges_" + account.dp;
+
+function showError(t){
+  errorBox.textContent = t;
+  errorBox.style.display = "block";
+  setTimeout(()=> errorBox.style.display="none",3000);
+}
+
+document.getElementById("payForm").addEventListener("submit", e => {
+  e.preventDefault();
+
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim();
+  const amount = amountInput.value.trim();
+  const transcode = transcodeInput.value.trim();
+
+  if(!name) return showError("Nom obligatoire.");
+  if(!email) return showError("Email obligatoire.");
+  if(!amount) return showError("Montant obligatoire.");
+  if(!transcode) return showError("Transcode obligatoire.");
+
+  sendBtn.disabled = true;
+  sendBtn.textContent = "Envoi...";
+
+  const list = JSON.parse(localStorage.getItem(key) || "[]");
+
+  list.unshift({
+    name,
+    email,
+    phone: phoneInput.value.trim(),
+    amount,
+    transcode,
+    dpID: account.dp,         // 🔥 DP synchronisé
+    emailReal: account.email, 
+    status: "en attente",
+    created: new Date().toLocaleString()
+  });
+
+  localStorage.setItem(key, JSON.stringify(list));
+
+  soundOK.play();
+  popup.classList.add("active");
+
+  setTimeout(() => location.reload(), 1500);
+});
+</script>
+
+</body>
+</html>

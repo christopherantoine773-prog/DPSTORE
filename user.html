@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Messagerie — DPSTORE</title>
+<style>
+body{
+    background:black;
+    color:white;
+    font-family:Arial;
+}
+
+.container{
+    width:90%;
+    max-width:600px;
+    margin:40px auto;
+    background:#111;
+    border-radius:15px;
+    box-shadow:0 0 25px #fdf100;
+    display:flex;
+    flex-direction:column;
+    height:80vh;
+}
+
+.header{
+    padding:15px;
+    border-bottom:1px solid #333;
+    text-align:center;
+    font-weight:bold;
+    font-size:18px;
+    background:#222;
+    border-top-left-radius:15px;
+    border-top-right-radius:15px;
+}
+
+#messages{
+    flex:1;
+    padding:15px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+}
+
+.message{
+    max-width:70%;
+    margin:5px 0;
+    padding:10px;
+    border-radius:10px;
+    word-wrap:break-word;
+}
+
+.message.user{
+    align-self:flex-end;
+    background:#00bfff;
+    color:#000;
+    border-bottom-right-radius:0;
+}
+
+.message.admin{
+    align-self:flex-start;
+    background:#444;
+}
+
+.message .sender{
+    font-size:12px;
+    color:#fdf100;
+    font-weight:bold;
+    margin-bottom:3px;
+}
+
+#inputArea{
+    display:flex;
+    border-top:1px solid #333;
+}
+
+#messageInput{
+    flex:1;
+    padding:10px;
+    border:none;
+    border-radius:0;
+    background:#222;
+    color:white;
+}
+
+#sendBtn{
+    padding:10px 20px;
+    border:none;
+    background:#fdf100;
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+}
+#sendBtn:disabled{
+    background:grey;
+    cursor:not-allowed;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">Support DPSTORE</div>
+    <div id="messages"></div>
+    <div id="inputArea">
+        <input type="text" id="messageInput" placeholder="Écrire un message..." />
+        <button id="sendBtn" onclick="sendMessage()">Envoyer</button>
+    </div>
+</div>
+
+<script>
+let account = JSON.parse(localStorage.getItem("dpstore_user"));
+if(!account){ alert("Aucun compte détecté !"); location.href="index.html"; }
+
+// Vérifier si le ticket existe, sinon le créer
+let tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
+let ticket = tickets.find(t => t.userEmail === account.email);
+if(!ticket){
+    ticket = { userEmail: account.email, username: account.username, dp: account.dp || "—", messages: [], status:"open" };
+    tickets.push(ticket);
+    localStorage.setItem("dpstore_tickets", JSON.stringify(tickets));
+}
+
+function loadMessages(){
+    const container = document.getElementById("messages");
+    container.innerHTML = "";
+
+    let tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
+    let ticket = tickets.find(t => t.userEmail === account.email);
+    if(!ticket) return;
+
+    ticket.messages.forEach(msg=>{
+        const div = document.createElement("div");
+        div.classList.add("message");
+        div.classList.add(msg.senderType === "user" ? "user" : "admin");
+
+        // Afficher qui a envoyé le message
+        let senderText = msg.senderType === "user" ? "Vous" : (msg.role || "Admin");
+        div.innerHTML = `<div class="sender">${senderText}</div>${msg.text} <div style="font-size:10px;color:#ccc;">(${msg.date})</div>`;
+        container.appendChild(div);
+    });
+
+    container.scrollTop = container.scrollHeight;
+
+    // Vérifier si le ticket est fermé
+    document.getElementById("sendBtn").disabled = ticket.status === "closed";
+}
+
+function sendMessage(){
+    const input = document.getElementById("messageInput");
+    const text = input.value.trim();
+    if(!text) return;
+
+    let tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
+    let ticket = tickets.find(t => t.userEmail === account.email);
+
+    ticket.messages.push({
+        senderType: "user",
+        text: text,
+        date: new Date().toLocaleString(),
+        role: "Utilisateur"
+    });
+
+    localStorage.setItem("dpstore_tickets", JSON.stringify(tickets));
+    input.value="";
+    loadMessages();
+}
+
+// Rafraîchissement automatique toutes les 2 secondes
+setInterval(()=>{
+    tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
+    loadMessages();
+}, 2000);
+
+loadMessages();
+</script>
+
+</body>
+</html>

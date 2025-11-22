@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Call Of Duty Mobile — DPSTORE</title>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: #0d0d0d;
+        font-family: "Arial", sans-serif;
+        color: white;
+    }
+
+    .header {
+        padding: 20px;
+        background: linear-gradient(to right, black, #2b2b2b);
+        text-align: center;
+        font-size: 28px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        color: #f5c237;
+    }
+
+    #soldeBox {
+        text-align:center;
+        font-size:18px;
+        margin-top:-10px;
+        color:#f5c237;
+        font-weight:bold;
+    }
+
+    .back-btn {
+        margin: 20px;
+        display: inline-block;
+        background: #111;
+        border: 1px solid #444;
+        padding: 10px 20px;
+        border-radius: 10px;
+        color: white;
+        text-decoration: none;
+        font-size: 16px;
+    }
+
+    .product-card {
+        background: #111;
+        border: 1px solid #292929;
+        padding: 20px;
+        margin: 20px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 0 10px rgba(255,215,0,0.1);
+    }
+
+    .product-img {
+        width: 75px;
+        height: 75px;
+        border-radius: 10px;
+        background: #1c1c1c;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 28px;
+        color: #f5c237;
+        margin-right: 20px;
+        border: 2px solid #3a3a3a;
+    }
+
+    .product-info h3 { margin: 0; font-size: 22px; }
+
+    .tag {
+        background: #00c853;
+        padding: 4px 10px;
+        border-radius: 10px;
+        font-size: 12px;
+        display: inline-block;
+        margin-top: 8px;
+    }
+
+    .tag-gray {
+        background: #3a3a3a;
+        padding: 4px 10px;
+        border-radius: 10px;
+        font-size: 12px;
+        display: inline-block;
+        margin-left: 5px;
+    }
+
+    .price {
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+
+    .buy-btn {
+        margin-top: 15px;
+        padding: 12px 20px;
+        width: 100%;
+        font-size: 18px;
+        border: none;
+        border-radius: 10px;
+        background: #f5c237;
+        color: black;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    #overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        backdrop-filter: blur(6px);
+        background: rgba(0,0,0,0.7);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .form-box {
+        width: 90%;
+        max-width: 420px;
+        background: #111;
+        padding: 25px;
+        border-radius: 15px;
+        border: 1px solid #2d2d2d;
+        box-shadow: 0 0 20px rgba(240, 200, 80, 0.2);
+        animation: pop 0.2s ease-out;
+    }
+
+    @keyframes pop {
+        from { transform: scale(0.8); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .form-box h2 {
+        margin-top: 0;
+        text-align: center;
+        color: #f5c237;
+    }
+
+    select, input {
+        width: 100%;
+        padding: 13px;
+        margin: 10px 0;
+        border-radius: 10px;
+        border: none;
+        background: #1a1a1a;
+        color: white;
+        font-size: 16px;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 15px;
+        background: #f5c237;
+        color: black;
+        border: none;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 10px;
+        margin-top: 10px;
+        cursor: pointer;
+    }
+
+    .close-btn {
+        margin-top: 10px;
+        width: 100%;
+        padding: 13px;
+        background: #333;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    .cart-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #f5c237;
+        padding: 15px 20px;
+        border-radius: 50px;
+        font-size: 18px;
+        font-weight: bold;
+        color: black;
+        border: none;
+        cursor: pointer;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="header">CALL OF DUTY MOBILE</div>
+
+<div id="soldeBox">Solde : 0 G</div>
+
+<a class="back-btn" href="produits.html">← Retour</a>
+
+<div id="products-container"></div>
+
+<div id="overlay">
+    <div class="form-box">
+        <h2 id="form-title"></h2>
+
+        <select id="typeCompte">
+            <option value="">Type de compte</option>
+            <option>Google</option>
+            <option>Call Of Duty</option>
+            <option>Facebook</option>
+        </select>
+
+        <input type="email" id="email" placeholder="Votre Email">
+        <input type="password" id="mdp" placeholder="Mot de passe">
+
+        <div style="display:flex; gap:10px;">
+            <select id="country" style="width:140px;"></select>
+            <input id="whatsapp" placeholder="Numéro WhatsApp" style="flex:1;">
+        </div>
+
+        <button class="submit-btn" onclick="ajouterPanier()">Ajouter au panier</button>
+        <button class="close-btn" onclick="closeForm()">Fermer</button>
+    </div>
+</div>
+
+<button class="cart-btn" onclick="ouvrirPanier()">Voir panier</button>
+
+<script>
+/* ==========================
+   🔥 CHARGEMENT UTILISATEUR
+========================== */
+let user = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
+if (!user.email) { alert("Aucun compte connecté !"); window.location.href = "index.html"; }
+if (!user.balance) user.balance = 0;
+document.getElementById("soldeBox").textContent = "Solde : " + user.balance + " G";
+
+/* ==========================
+   🔥 LISTE PAYS
+========================== */
+const countries = [
+    { name: "Haïti", code: "+509" },
+    { name: "France", code: "+33" },
+    { name: "Canada", code: "+1" },
+    { name: "États-Unis", code: "+1" },
+    { name: "République Dominicaine", code: "+1-809" },
+    { name: "Belgique", code: "+32" },
+    { name: "Suisse", code: "+41" },
+    { name: "Guadeloupe", code: "+590" },
+    { name: "Martinique", code: "+596" },
+    { name: "Brésil", code: "+55" },
+    { name: "Royaume-Uni", code: "+44" },
+    { name: "Sénégal", code: "+221" },
+    { name: "Maroc", code: "+212" },
+    { name: "Algérie", code: "+213" },
+    { name: "Tunisie", code: "+216" },
+];
+let countrySelect = document.getElementById("country");
+countries.forEach(c => {
+    let opt = document.createElement("option");
+    opt.value = c.code;
+    opt.textContent = `${c.name} (${c.code})`;
+    countrySelect.appendChild(opt);
+});
+
+/* ==========================
+   🔥 PRODUITS
+========================== */
+const produits = [
+    { titre: "WEEKLY SUPPLY PASS", prix: 450 },
+    { titre: "MONTHLY SUPPLY PASS", prix: 1750 },
+    { titre: "80 UC", prix: 180 },
+    { titre: "420 CP", prix: 850 },
+    { titre: "880 UC", prix: 1750 },
+    { titre: "2400 UC", prix: 4200 }
+];
+let produitSelectionne = null;
+
+function afficherProduits() {
+    let html = "";
+    produits.forEach(p => {
+        const prixFinal = Math.round(p.prix * 1.20);
+        html += `
+        <div class="product-card">
+            <div class="product-img">⚡</div>
+            <div class="product-info">
+                <h3>${p.titre}</h3>
+                <span class="tag">Disponible</span>
+                <span class="tag-gray">Call of Duty</span>
+                <div class="price">${prixFinal} G</div>
+                <button class="buy-btn" onclick="openForm('${p.titre}', ${prixFinal})">Acheter</button>
+            </div>
+        </div>`;
+    });
+    document.getElementById("products-container").innerHTML = html;
+}
+afficherProduits();
+
+/* ==========================
+   🔥 FORMULAIRE
+========================== */
+function openForm(titre, prix){
+    produitSelectionne = { titre, prix };
+    document.getElementById("form-title").innerText = titre;
+    document.getElementById("overlay").style.display = "flex";
+}
+function closeForm(){ document.getElementById("overlay").style.display = "none"; }
+
+/* ==========================
+   🔥 PANIER PAR UTILISATEUR
+========================== */
+function normalizeId(str){ return (str||"guest").toLowerCase().replace(/[^a-z0-9@.-]/g,"_").replace(/@/g,"_at_"); }
+function getCartKey(){ return "cart_" + normalizeId(user.email); }
+function loadCart(){ return JSON.parse(localStorage.getItem(getCartKey())||"[]"); }
+function saveCart(cart){ localStorage.setItem(getCartKey(), JSON.stringify(cart)); }
+
+function ajouterPanier(){
+    let type = document.getElementById("typeCompte").value;
+    let emailForm = document.getElementById("email").value;
+    let mdp = document.getElementById("mdp").value;
+    let wp = document.getElementById("whatsapp").value;
+    let indicatif = document.getElementById("country").value;
+
+    if(!type || !emailForm || !mdp || !wp){ alert("Veuillez remplir tout le formulaire !"); return; }
+
+    const cart = loadCart();
+    cart.push({
+        name: produitSelectionne.titre,
+        price: produitSelectionne.prix,
+        compte: type,
+        email: emailForm,
+        mdp: mdp,
+        whatsapp: indicatif+" "+wp,
+        date: new Date().toLocaleString()
+    });
+    saveCart(cart);
+    closeForm();
+    alert("Produit ajouté au panier !");
+}
+
+function ouvrirPanier(){
+    localStorage.setItem("lastPage", window.location.href);
+    window.location.href = "cart.html";
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Free Fire — DPSTORE</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+/* ---- STYLE (identique à avant) ---- */
+:root{
+  --bg:#040506; --panel:#0a0b0d; --muted:#9aa; --neon:#00ccff; --gold:#ffb300;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:radial-gradient(600px at 20% 0%,rgba(0,204,255,0.05),transparent),
+             linear-gradient(180deg,#020305,#050608);
+  color:#f1f6ff;
+}
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 22px;border-bottom:1px solid rgba(255,255,255,0.05)
+}
+.brand{font-weight:800;color:var(--gold);font-size:20px;display:flex;align-items:center;gap:6px}
+.balance{
+  background:rgba(255,255,255,0.05);padding:6px 14px;border-radius:999px;
+  font-weight:700;color:var(--neon);font-size:15px;display:flex;align-items:center;gap:6px
+}
+.verified-badge{width:14px;height:14px;}
+main{max-width:1100px;margin:24px auto;padding:0 18px}
+h1{font-size:22px;font-weight:800;color:var(--neon)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:22px}
+.card{
+  background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.3));
+  border:1px solid rgba(255,255,255,0.04);border-radius:12px;padding:14px;
+  transition:transform .2s,box-shadow .2s
+}
+.card:hover{transform:translateY(-5px);box-shadow:0 8px 20px rgba(0,204,255,0.1)}
+.card .title{font-weight:700;color:var(--neon)}
+.card .meta{font-size:13px;color:var(--muted)}
+.card .price{margin-top:8px;color:#00ff99;font-weight:800;font-size:18px}
+.btn{
+  margin-top:12px;display:inline-block;background:linear-gradient(90deg,var(--gold),#ffd85b);
+  color:#000;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700
+}
+.toolbar{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:14px
+}
+.back{
+  background:transparent;border:1px solid rgba(255,255,255,0.1);
+  color:var(--muted);padding:8px 12px;border-radius:8px;cursor:pointer
+}
+.cart-btn{
+  background:var(--neon);color:#000;font-weight:700;padding:8px 12px;
+  border:none;border-radius:8px;cursor:pointer;
+}
+.modal{
+  position:fixed;left:0;top:0;width:100%;height:100%;display:none;
+  align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:20
+}
+.modal-card{
+  background:var(--panel);padding:18px;border-radius:12px;width:90%;max-width:420px;
+  border:1px solid rgba(255,255,255,0.05)
+}
+.input{
+  width:100%;padding:10px;margin-top:10px;background:#0e0e0e;
+  border:1px solid rgba(255,255,255,0.05);border-radius:8px;color:#fff
+}
+.btn-row{display:flex;gap:10px;margin-top:14px}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.05);color:var(--neon)}
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">DPSTORE</div>
+
+  <div class="balance" id="balanceDisplay">
+      <img id="badge" class="verified-badge hidden" src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg">
+      <span id="balanceValue">DP4$ • 0 G</span>
+  </div>
+</header>
+
+<main>
+  <div class="toolbar">
+    <h1>Achat des diamants — Free Fire</h1>
+
+    <div style="display:flex;gap:10px">
+        <button class="cart-btn" onclick="window.location.href='cart.html'">🛒 Panier</button>
+        <button class="back" onclick="window.location.href='produits.html'">← Retour</button>
+    </div>
+  </div>
+
+  <p style="color:var(--muted);margin-bottom:10px">
+    Choisis ton pack Free Fire et entre ton ID joueur avant d’ajouter au panier.
+  </p>
+
+  <div class="grid" id="grid"></div>
+</main>
+
+<!-- MODAL -->
+<div id="modal" class="modal">
+  <div class="modal-card">
+    <h3 id="modalTitle">Ajouter au panier</h3>
+    <p style="color:var(--muted)">Entre ton ID Free Fire :</p>
+    <input id="ffId" class="input" placeholder="ID du joueur"/>
+    <div class="btn-row">
+      <button id="confirm" class="btn">Ajouter</button>
+      <button id="cancel" class="btn-ghost">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ======================================================================
+   🔥 1. CHARGEMENT DU COMPTE CONNECTÉ
+====================================================================== */
+let user = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
+
+if (!user.email){
+    alert("Aucun compte connecté");
+    location.href = "index.html";
+}
+
+/* ======================================================================
+   🔥 2. SYNCHRO AVEC dpstore_accounts
+====================================================================== */
+let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+let accGlobal = accounts.find(u => u.email === user.email);
+
+if(accGlobal){
+    user.balance = accGlobal.balance !== undefined ? accGlobal.balance : (user.balance || 0);
+    localStorage.setItem("dpstore_user", JSON.stringify(user));
+}
+
+/* ======================================================================
+   🔥 3. AFFICHAGE DU SOLDE
+====================================================================== */
+function updateBalance(){
+    document.getElementById("balanceValue").textContent =
+        `DP4$ • ${Number(user.balance).toFixed(2)} G`;
+}
+updateBalance();
+
+/* ======================================================================
+   🔥 4. BADGE
+====================================================================== */
+if(user.role === "creator" || user.role === "employe"){
+    document.getElementById("badge").classList.remove("hidden");
+}
+
+/* ======================================================================
+   🔥 5. LISTE DES PRODUITS
+====================================================================== */
+const PRODUCTS = [
+  {id:"ff1", qty:"100 + 10", price:204},
+  {id:"ff2", qty:"200 + 20", price:408},
+  {id:"ff3", qty:"310 + 31", price:588},
+  {id:"ff4", qty:"520 + 52", price:960},
+  {id:"ff5", qty:"680", price:1200},
+  {id:"ff6", qty:"1060 + 106", price:1920},
+  {id:"ff7", qty:"2160 + 216", price:3840}
+];
+
+const grid = document.getElementById('grid');
+
+function renderProducts(){
+    grid.innerHTML = "";
+    PRODUCTS.forEach(p=>{
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+            <div class="title">Free Fire • ${p.qty}</div>
+            <div class="meta">Global</div>
+            <div class="price">${p.price} G</div>
+            <button class="btn" onclick="showModal('${p.id}')">Acheter</button>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+/* ======================================================================
+   🔥 6. MODAL
+====================================================================== */
+let selectedProduct = null;
+
+function showModal(id){
+    selectedProduct = PRODUCTS.find(p=>p.id===id);
+    document.getElementById("modalTitle").textContent = "Acheter " + selectedProduct.qty;
+    document.getElementById("modal").style.display = "flex";
+}
+
+document.getElementById("cancel").onclick = () => {
+    document.getElementById("modal").style.display = "none";
+};
+
+document.getElementById("confirm").onclick = () => {
+    const ffId = document.getElementById("ffId").value.trim();
+    if(!ffId) return alert("ID requis");
+
+    addToCart(selectedProduct, ffId);
+
+    document.getElementById("modal").style.display = "none";
+};
+
+/* ======================================================================
+   🔥 7. PANIER COMPATIBLE AVEC cart.html
+====================================================================== */
+
+function normalizeId(str){
+    if(!str) return "guest";
+    return String(str).toLowerCase().trim()
+        .replace(/[^a-z0-9@.-]/g, "_")
+        .replace(/@/g, "_at_");
+}
+
+function getCartKey(){
+    const id = user.email || user.dp || "guest";
+    return "cart_" + normalizeId(id);
+}
+
+function loadCart(){
+    return JSON.parse(localStorage.getItem(getCartKey()) || "[]");
+}
+
+function saveCart(arr){
+    localStorage.setItem(getCartKey(), JSON.stringify(arr));
+}
+
+function addToCart(product, ffId){
+    const cart = loadCart();
+
+    cart.push({
+        name: "Free Fire • " + product.qty,
+        price: product.price,
+        ffId: ffId,
+        type: "ff"
+    });
+
+    saveCart(cart);
+
+    alert("Produit ajouté au panier ✔");
+}
+
+/* ======================================================================
+   🔥 8. INIT
+====================================================================== */
+renderProducts();
+</script>
+
+</body>
+</html>

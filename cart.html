@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DPSTORE | Panier</title>
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(160deg, #000, #021220, #001a13);
+    margin: 0;
+    color: #e0ffe9;
+    overflow-x: hidden;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background: rgba(0, 20, 10, 0.55);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(0,255,150,0.15);
+    box-shadow: 0 0 25px rgba(0,255,150,0.15);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #00ffb3;
+    letter-spacing: 1px;
+  }
+
+  .balance {
+    background: rgba(0,255,150,0.12);
+    border: 1px solid rgba(0,255,150,0.4);
+    padding: 8px 15px;
+    border-radius: 25px;
+    font-weight: 600;
+    color: #00ffb3;
+    font-size: 1rem;
+    box-shadow: 0 0 10px rgba(0,255,150,0.3);
+  }
+
+  .back-btn {
+    background: transparent;
+    border: 2px solid #00ffb3;
+    color: #00ffb3;
+    padding: 6px 16px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.25s;
+  }
+
+  .back-btn:hover {
+    background: #00ffb3;
+    color: #000;
+    transform: scale(1.05);
+  }
+
+  .container {
+    padding: 35px 20px;
+    max-width: 800px;
+    margin: auto;
+  }
+
+  .item {
+    background: rgba(0,255,179,0.06);
+    border: 1px solid rgba(0,255,179,0.25);
+    border-radius: 16px;
+    margin-bottom: 18px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 0 20px rgba(0,255,179,0.12);
+    backdrop-filter: blur(10px);
+    animation: fadeInUp 0.4s ease both;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .btn-confirm {
+    background: linear-gradient(90deg, #00ffb3, #00e676);
+    border: none;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    color: #000;
+    transition: 0.2s;
+    box-shadow: 0 0 10px rgba(0,255,179,0.4);
+  }
+
+  .btn-confirm:hover {
+    transform: scale(1.1);
+    background: #00ffb3;
+  }
+
+  .total {
+    text-align: right;
+    font-weight: bold;
+    font-size: 1.3rem;
+    color: #00ffb3;
+    margin-top: 25px;
+    padding: 10px;
+    border-top: 1px solid rgba(0,255,150,0.3);
+  }
+
+  .btn-clear, .btn-support {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border: none;
+    transition: 0.25s;
+    margin-top: 18px;
+  }
+
+  .btn-clear {
+    background: linear-gradient(90deg, #00ffb3, #00695c);
+    color: #000;
+    box-shadow: 0 0 12px rgba(0,255,150,0.25);
+  }
+
+  .btn-support {
+    background: linear-gradient(90deg, #00b4ff, #0060ff);
+    color: #000;
+    box-shadow: 0 0 12px rgba(0, 170, 255, 0.25);
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <button class="back-btn" onclick="goBack()">← Retour</button>
+  <h1>DPSTORE 🛒</h1>
+  <div class="balance" id="balanceBox">0 G</div>
+</header>
+
+<div class="container">
+  <div id="cart-items"></div>
+  <div id="total" class="total"></div>
+
+  <button class="btn-clear" onclick="clearCart()">🗑️ Vider le panier</button>
+  <button class="btn-support" onclick="window.location.href='contact.html'">📞 Support / Aide</button>
+
+  <!-- 🔥 BOUTON AJOUTÉ ICI -->
+  <button class="btn-clear" onclick="window.location.href='reçus.html'">🧾 Voir les reçus</button>
+</div>
+
+<footer>© 2025 DPSTORE — Tous droits réservés</footer>
+
+<script>
+/* ============================
+   🔥 PANIER PAR COMPTE (SAFE)
+   ============================ */
+
+function loadUser() {
+  let u = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
+  if (u.balance === undefined) u.balance = 0;
+  let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+  let acc = accounts.find(x => (x.email || "").toLowerCase() === (u.email || "").toLowerCase());
+  if (acc) {
+    u.balance = acc.balance ?? u.balance;
+    localStorage.setItem("dpstore_user", JSON.stringify(u));
+  }
+  return u;
+}
+
+let user = loadUser();
+if (!user.email && !user.dp) {
+  alert("Aucun compte connecté !");
+  window.location.href = "index.html";
+}
+
+function normalizeId(str){
+  if(!str) return "guest";
+  return String(str).toLowerCase().trim().replace(/[^a-z0-9@.-]/g, "_").replace(/@/g,"_at_");
+}
+
+function getCartKey(){
+  const id = user.email || user.dp || ("guest");
+  return "cart_" + normalizeId(id);
+}
+
+function migrateGlobalCartIfNeeded(){
+  const globalKey = "cart";
+  const perUserKey = getCartKey();
+  const global = localStorage.getItem(globalKey);
+  const perUser = localStorage.getItem(perUserKey);
+  if(global && !perUser){
+    try {
+      localStorage.setItem(perUserKey, global);
+      localStorage.removeItem(globalKey);
+    } catch(e){
+      console.warn("Migration cart failed:", e);
+    }
+  }
+}
+
+function loadCart(){
+  migrateGlobalCartIfNeeded();
+  const key = getCartKey();
+  return JSON.parse(localStorage.getItem(key) || "[]");
+}
+
+function saveCart(arr){
+  const key = getCartKey();
+  localStorage.setItem(key, JSON.stringify(arr));
+}
+
+function updateBalanceUI(){
+  user = loadUser();
+  document.getElementById("balanceBox").textContent = (user.balance ?? 0) + " G";
+}
+
+const container = document.getElementById("cart-items");
+const totalEl = document.getElementById("total");
+
+function renderCart(){
+  user = loadUser();
+  const cart = loadCart();
+  container.innerHTML = "";
+
+  if (!cart || cart.length === 0){
+    container.innerHTML = "<p style='text-align:center; opacity:0.7;'>🛍️ Aucun produit dans le panier.</p>";
+    totalEl.textContent = "";
+    updateBalanceUI();
+    return;
+  }
+
+  let total = 0;
+  cart.forEach((item, index) => {
+    total += item.price || 0;
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+      <span>${item.name} — <strong>${item.price} G</strong></span>
+      <button class="btn-confirm" onclick="confirmSingle(${index})">✔</button>
+    `;
+    container.appendChild(div);
+  });
+
+  totalEl.textContent = "Total : " + total + " G";
+  updateBalanceUI();
+}
+
+function confirmSingle(index){
+  user = loadUser();
+  let cart = loadCart();
+  const item = cart[index];
+  if(!item) return alert("Article introuvable");
+
+  if((user.balance || 0) < (item.price || 0)){
+    return alert("❌ Solde insuffisant !");
+  }
+
+  user.balance = (user.balance || 0) - (item.price || 0);
+  localStorage.setItem("dpstore_user", JSON.stringify(user));
+
+  let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+  let acc = accounts.find(x => (x.email || "").toLowerCase() === (user.email || "").toLowerCase());
+  if(acc){
+    acc.balance = user.balance;
+    localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+  }
+
+  let orders = JSON.parse(localStorage.getItem("orders") || "[]");
+  orders.push({
+    name: item.name,
+    price: item.price,
+    buyer: user.email || user.dp || null,
+    date: new Date().toLocaleString()
+  });
+  localStorage.setItem("orders", JSON.stringify(orders));
+
+  cart.splice(index, 1);
+  saveCart(cart);
+
+  renderCart();
+  alert("✅ Commande confirmée !");
+}
+
+function clearCart(){
+  const key = getCartKey();
+  localStorage.removeItem(key);
+  renderCart();
+}
+
+function goBack(){
+  window.location.href = localStorage.getItem("lastPage") || "produits.html";
+}
+
+renderCart();
+updateBalanceUI();
+</script>
+
+</body>
+</html>
