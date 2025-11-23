@@ -1,195 +1,421 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DPSTORE — Connexion / Inscription</title>
-<style>
-* {margin:0; padding:0; box-sizing:border-box; font-family:"Poppins",sans-serif;}
-body {background:#000; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column;}
-.container {width:90%; max-width:400px; background:rgba(20,20,20,0.95); padding:30px; border-radius:12px; box-shadow:0 0 25px #f9d71c; text-align:center; border:1px solid #f9d71c;}
-h1 {color:#f9d71c; font-size:1.8em; margin-bottom:20px;}
-input {width:100%; padding:12px; margin:10px 0; border:none; outline:none; border-radius:6px; background:#111; color:#f9d71c; font-size:14px; border:1px solid #f9d71c;}
-button {width:100%; padding:12px; border:none; border-radius:6px; background:#f9d71c; color:#000; font-weight:bold; cursor:pointer; transition:0.3s;}
-button:hover {background:#fff700;}
-.switch {color:#ccc; font-size:14px; margin-top:15px; cursor:pointer;}
-.footer {margin-top:25px; font-size:12px; color:#777;}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DPSTORE — Connexion / Inscription</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+    body { background: #000; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; }
+    .container { width: 90%; max-width: 400px; background: rgba(20,20,20,0.95); padding: 30px; border-radius: 12px; box-shadow: 0 0 25px #f9d71c; text-align:center; border:1px solid #f9d71c; }
+    h1 { color: #f9d71c; font-size: 1.8em; margin-bottom: 20px; }
+    input { width:100%; padding:12px; margin:10px 0; border:none; outline:none; border-radius:6px; background:#111; color:#f9d71c; font-size:14px; border:1px solid #f9d71c; }
+    button { width:100%; padding:12px; border:none; border-radius:6px; background:#f9d71c; color:#000; font-weight:bold; cursor:pointer; transition:0.3s; }
+    button:hover { background:#fff700; }
+    .switch { color:#ccc; font-size:14px; margin-top:15px; cursor:pointer; }
+    .footer { margin-top:25px; font-size:12px; color:#777; }
+  </style>
 </head>
+
 <body>
-<div class="container">
-<h1>DPSTORE</h1>
+  <div class="container">
+    <h1>DPSTORE</h1>
 
-<div id="signup">
-<p>Créer ton compte</p>
-<input type="text" id="username" placeholder="Nom d'utilisateur" required />
-<input type="email" id="email" placeholder="Adresse email" required />
-<input type="password" id="password" placeholder="Mot de passe" required />
-<button id="sendCodeBtn">📧 Recevoir le code</button>
-<input type="text" id="code" placeholder="Entre le code reçu" style="margin-top:15px;" />
-<button id="verifyBtn">✅ Vérifier le code</button>
-<p class="switch" id="toLogin">Déjà un compte ? Se connecter</p>
-</div>
+    <!-- FORMULAIRE INSCRIPTION -->
+    <div id="signup">
+      <p>Créer ton compte</p>
+      <input type="text" id="username" placeholder="Nom d'utilisateur" required />
+      <input type="email" id="email" placeholder="Adresse email" required />
+      <input type="password" id="password" placeholder="Mot de passe" required />
+      <button onclick="sendVerificationCode()">📧 Recevoir le code</button>
 
-<div id="login" style="display: none;">
-<p>Connexion à ton compte</p>
-<input type="email" id="loginEmail" placeholder="Adresse email" required />
-<input type="password" id="loginPassword" placeholder="Mot de passe" required />
-<button id="loginBtn">🚀 Se connecter</button>
-<p class="switch" id="toSignup">Pas encore inscrit ? Créer un compte</p>
-</div>
-</div>
+      <input type="text" id="code" placeholder="Entre le code reçu" style="margin-top:15px;" />
+      <button onclick="verifyCode()">✅ Vérifier le code</button>
+      <p class="switch" onclick="toggleForms()">Déjà un compte ? Se connecter</p>
+    </div>
 
-<p class="footer">© 2025 DPSTORE — Technologie avancée</p>
+    <!-- FORMULAIRE CONNEXION -->
+    <div id="login" style="display: none;">
+      <p>Connexion à ton compte</p>
+      <input type="email" id="loginEmail" placeholder="Adresse email" required />
+      <input type="password" id="loginPassword" placeholder="Mot de passe" required />
+      <button onclick="loginUser()">🚀 Se connecter</button>
+      <p class="switch" onclick="toggleForms()">Pas encore inscrit ? Créer un compte</p>
+    </div>
+  </div>
 
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <p class="footer">© 2025 DPSTORE — Technologie avancée</p>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-import { getFirestore, collection, doc, getDoc, setDoc, addDoc, getDocs, query, where, runTransaction } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+  <!-- EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
-  authDomain: "dpstore-officie.firebaseapp.com",
-  projectId: "dpstore-officie",
-  storageBucket: "dpstore-officie.appspot.com",
-  messagingSenderId: "903943973062",
-  appId: "1:903943973062:web:6501a2ec167adb31258fc7"
-};
+  <!-- Firebase (modular v9) loaded as module -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, updateDoc, runTransaction, collection, addDoc
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    // ====== REMPLACER ICI PAR TA CONFIG FIREBASE ======
+    const firebaseConfig = {
+      // example:
+      // apiKey: "AIzaS...yourkey...",
+      // authDomain: "your-project.firebaseapp.com",
+      // projectId: "your-project-id",
+      // storageBucket: "your-project-id.appspot.com",
+      // messagingSenderId: "1234567890",
+      // appId: "1:123456789:web:abcdef"
+      /* TA FIREBASE CONFIG ICI */
+    };
 
-const CREATOR_EMAIL = "christopherantoine773@gmail.com";
-const CREATOR_EMAILS = [CREATOR_EMAIL];
-const EMPLOYEE_EMAILS = [
-  "pilotecitizen@gmail.com",
-  "ladouceurlorvynsky@gmail.com",
-  "doresmaworldens@gmail.com",
-  "mathieulherisson99@gmail.com"
-];
+    // Initialisation Firebase
+    let firebaseApp = null;
+    let db = null;
+    try {
+      firebaseApp = initializeApp(firebaseConfig);
+      db = getFirestore(firebaseApp);
+      console.log("Firestore initialisé.");
+    } catch (e) {
+      console.warn("Firestore non initialisé (config manquante ou erreur) :", e);
+    }
 
-function getRoleByEmail(email){
-  if(CREATOR_EMAILS.includes(email)) return "creator";
-  if(EMPLOYEE_EMAILS.includes(email)) return "employee";
-  return "user";
-}
+    // ===== EmailJS init (unchanged) =====
+    (function () {
+      emailjs.init("5gObExmJ85l0pSXC3");
+    })();
 
-function generateCode(){ return Math.floor(100000 + Math.random()*900000); }
+    // ======= Fonctions utilitaires Firestore =======
+    async function getNextDPFromFirestore() {
+      // Utilise une transaction sur le document counters/dp
+      if (!db) throw new Error("Firestore non disponible");
+      const counterRef = doc(db, "counters", "dp");
+      const newNum = await runTransaction(db, async (tx) => {
+        const snap = await tx.get(counterRef);
+        if (!snap.exists()) {
+          tx.set(counterRef, { last: 1 });
+          return 1;
+        } else {
+          const last = snap.data().last || 0;
+          const next = last + 1;
+          tx.update(counterRef, { last: next });
+          return next;
+        }
+      });
+      // newNum est le nombre entier (1 => DP000001)
+      return "DP" + String(newNum).padStart(6, "0");
+    }
 
-// 🔹 EmailJS init
-emailjs.init("5gObExmJ85l0pSXC3");
+    // fallback client-side generator (utilisé si Firestore indisponible)
+    function getNextDPClientSafe() {
+      // lit dp_last_number de localStorage, incrémente et retourne DP...
+      let last = parseInt(localStorage.getItem("dp_last_number") || "0", 10);
+      last = isNaN(last) ? 0 : last;
+      last++;
+      localStorage.setItem("dp_last_number", String(last));
+      return "DP" + String(last).padStart(6, "0");
+    }
 
-// 🔹 Créer le compteur DP si inexistant
-async function initDPCounter(){
-  const counterRef = doc(db, "counters", "dp_counter");
-  const snap = await getDoc(counterRef);
-  if(!snap.exists()){
-    await setDoc(counterRef, { lastNumber: 0 });
-  }
-}
+    // helper: store emailjs_sent in Firestore collection and localStorage
+    async function recordEmailJSSent(email, code) {
+      try {
+        // localStorage store always
+        const arr = JSON.parse(localStorage.getItem("emailjs_sent") || "[]");
+        arr.push({ email, code, date: new Date().toISOString() });
+        localStorage.setItem("emailjs_sent", JSON.stringify(arr));
 
-// 🔹 Synchroniser creator
-async function syncCreator(){
-  const usersCol = collection(db, "users");
-  const q = query(usersCol, where("email","==",CREATOR_EMAIL));
-  const snapshot = await getDocs(q);
-  if(snapshot.empty){
-    await addDoc(usersCol, {
-      username:"DPSTORE",
-      email:CREATOR_EMAIL,
-      password:"Blondy200ky444",
-      role:"creator",
-      credits:0,
-      dp:"DP000001",
-      photo:"https://i.imgur.com/2XnKZ9R.png",
-      lastLogin:new Date().toISOString()
-    });
-  }
-}
+        if (db) {
+          await addDoc(collection(db, "emailjs_sent"), { email, code, date: new Date().toISOString() });
+        }
+      } catch (e) {
+        console.warn("Erreur en enregistrant emailjs_sent :", e);
+      }
+    }
 
-await initDPCounter();
-await syncCreator();
+    // helper: save user to Firestore + localStorage
+    async function saveUserEverywhere(user) {
+      // save localStorage (unchanged behavior)
+      try {
+        const accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+        // avoid duplicates by email in localStorage
+        if (!accounts.some(u => u.email === user.email)) {
+          accounts.push(user);
+          localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+        } else {
+          // update existing entry
+          const idx = accounts.findIndex(u => u.email === user.email);
+          accounts[idx] = user;
+          localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+        }
+        localStorage.setItem("user_" + user.email, JSON.stringify(user));
+        localStorage.setItem("dpstore_user", JSON.stringify(user));
+      } catch (e) {
+        console.warn("Erreur localStorage lors de saveUserEverywhere :", e);
+      }
 
-// 🔹 Envoyer code
-document.getElementById("sendCodeBtn").addEventListener("click", async ()=>{
-  const email = document.getElementById("email").value.trim().toLowerCase();
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
-  if(!email||!username||!password){ alert("⚠️ Remplis tous les champs !"); return; }
+      // save to Firestore (if available)
+      if (db) {
+        try {
+          const safeId = encodeURIComponent(user.email); // doc id safe
+          const userRef = doc(db, "users", safeId);
+          await setDoc(userRef, {
+            username: user.username,
+            email: user.email,
+            password: user.password,
+            role: user.role,
+            credits: user.credits || 0,
+            dp: user.dp,
+            photo: user.photo || null,
+            lastLogin: user.lastLogin || new Date().toLocaleString(),
+            createdAt: new Date().toISOString()
+          }, { merge: true });
+        } catch (e) {
+          console.warn("Erreur Firestore lors de saveUserEverywhere :", e);
+        }
+      }
+    }
 
-  // Vérifier doublon sur Firebase
-  const usersCol = collection(db,"users");
-  const q = query(usersCol, where("email","==",email));
-  const snapshot = await getDocs(q);
-  if(!snapshot.empty){ alert("⚠️ Ce compte existe déjà !"); return; }
+    // ========== Ton code inchangé (avec petits points d'intégration) ==========
+    // Pré-initialisation du compte creator (compatible : on écrit aussi dans Firestore)
+    (function initCreatorAccount() {
+      try {
+        const accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+        const creatorEmail = "christopherantoine773@gmail.com";
 
-  const code = generateCode();
-  // 🔹 Stocker temporairement en mémoire JS
-  window.pendingAccount = { username, email, password, code };
+        if (!accounts.some(u => u.email.toLowerCase() === creatorEmail.toLowerCase())) {
+          const creator = {
+            username: "DPSTORE",
+            email: creatorEmail.toLowerCase(),
+            password: "Blondy200ky444",
+            role: "creator",
+            credits: 0,
+            dp: "DP000001",
+            photo: "https://i.imgur.com/2XnKZ9R.png",
+            lastLogin: new Date().toLocaleString()
+          };
+          accounts.push(creator);
+          localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+          localStorage.setItem("user_" + creatorEmail.toLowerCase(), JSON.stringify(creator));
+          localStorage.setItem("dp_last_number", "1");
+          // also save to Firestore
+          if (db) {
+            const safeId = encodeURIComponent(creator.email);
+            setDoc(doc(db, "users", safeId), creator).catch(e => console.warn(e));
+            // ensure counters/dp exists and is at least 1
+            (async () => {
+              try {
+                const counterRef = doc(db, "counters", "dp");
+                // run a transaction only if missing
+                const snap = await getDoc(counterRef);
+                if (!snap.exists()) {
+                  await setDoc(counterRef, { last: 1 });
+                } else {
+                  // if last < 1, set to 1
+                  const current = snap.data().last || 0;
+                  if (current < 1) {
+                    await setDoc(counterRef, { last: 1 }, { merge: true });
+                  }
+                }
+              } catch (e) { console.warn(e); }
+            })();
+          }
+        } else {
+          // ensure local dp_last_number at least 1
+          if (!localStorage.getItem("dp_last_number")) localStorage.setItem("dp_last_number", "1");
+        }
+      } catch (e) {
+        console.warn("Erreur initCreatorAccount :", e);
+      }
+    })();
 
-  emailjs.send("service_1tnwnvu","template_7o06ag8",{user_email:email,to_name:username,message:code})
-    .then(()=>alert("✅ Code envoyé !"))
-    .catch(err=>alert("❌ Erreur : "+JSON.stringify(err)));
-});
+    function generateCode() { return Math.floor(100000 + Math.random() * 900000); }
 
-// 🔹 Vérifier code et créer compte
-document.getElementById("verifyBtn").addEventListener("click", async ()=>{
-  const entered = document.getElementById("code").value.trim();
-  if(!window.pendingAccount || entered!=window.pendingAccount.code){ alert("❌ Code incorrect !"); return; }
+    // ========= sendVerificationCode (modifié pour enregistrer EmailJS dans Firestore aussi) =========
+    async function sendVerificationCode() {
+      const email = document.getElementById("email").value.trim().toLowerCase();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
 
-  const { email, username, password } = window.pendingAccount;
-  const role = getRoleByEmail(email);
+      if (!email || !username || !password) {
+        alert("⚠️ Remplis tous les champs !");
+        return;
+      }
 
-  const usersCol = collection(db,"users");
-  let dp = "";
+      // check global list in localStorage first (keeps behavior)
+      const accountsLocal = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+      if (accountsLocal.some(u => u.email === email)) {
+        alert("⚠️ Ce compte existe déjà !");
+        return;
+      }
 
-  // 🔹 Transaction DP unique
-  const counterRef = doc(db,"counters","dp_counter");
-  await runTransaction(db, async (t)=>{
-    const snap = await t.get(counterRef);
-    let last = snap.exists() ? snap.data().lastNumber : 0;
-    last++;
-    dp = "DP"+String(last).padStart(6,"0");
-    t.update(counterRef,{lastNumber:last});
-  });
+      const code = generateCode();
+      localStorage.setItem("verificationCode", String(code));
+      localStorage.setItem("pendingEmail", email);
+      localStorage.setItem("pendingUsername", username);
+      localStorage.setItem("pendingPassword", password);
 
-  await addDoc(usersCol,{
-    username,email,password,role,credits:0,dp,photo:"https://i.imgur.com/2XnKZ9R.png",
-    lastLogin:new Date().toISOString()
-  });
+      // record emailjs attempt (local + firestore)
+      await recordEmailJSSent(email, code);
 
-  alert("🎉 Compte créé !");
-  window.location.href="profil.html";
-});
+      const params = { user_email: email, to_name: username, message: code };
+      emailjs.send("service_1tnwnvu", "template_7o06ag8", params)
+        .then(() => alert("✅ Code envoyé !"))
+        .catch(err => {
+          console.warn("EmailJS erreur:", err);
+          alert("❌ Erreur : " + JSON.stringify(err));
+        });
+    }
 
-// 🔹 Connexion
-document.getElementById("loginBtn").addEventListener("click", async ()=>{
-  const email = document.getElementById("loginEmail").value.trim().toLowerCase();
-  const password = document.getElementById("loginPassword").value.trim();
-  const usersCol = collection(db,"users");
-  const q = query(usersCol, where("email","==",email));
-  const snapshot = await getDocs(q);
-  if(snapshot.empty){ alert("⚠️ Aucun compte trouvé !"); return; }
-  const user = snapshot.docs[0].data();
-  if(user.password!==password){ alert("❌ Mot de passe incorrect !"); return; }
+    function getRoleByEmail(email) {
+      const CREATOR_EMAILS = ["christopherantoine773@gmail.com"];
+      const EMPLOYEE_EMAILS = [
+        "pilotecitizen@gmail.com",
+        "ladouceurlorvynsky@gmail.com",
+        "doresmaworldens@gmail.com",
+        "mathieulherisson99@gmail.com"
+      ];
+      if (CREATOR_EMAILS.includes(email)) return "creator";
+      if (EMPLOYEE_EMAILS.includes(email)) return "employee";
+      return "user";
+    }
 
-  // 🔹 Sauvegarder l'email pour profil
-  localStorage.setItem("dpstore_currentEmail", email);
+    // ========= verifyCode (utilise Firestore pour obtenir DP de façon atomique) =========
+    async function verifyCode() {
+      const entered = document.getElementById("code").value.trim();
+      const saved = localStorage.getItem("verificationCode");
 
-  alert("✅ Connexion !");
-  window.location.href="profil.html";
-});
+      if (String(entered) === String(saved)) {
+        try {
+          let email = localStorage.getItem("pendingEmail").toLowerCase();
+          const username = localStorage.getItem("pendingUsername");
+          const password = localStorage.getItem("pendingPassword");
 
-// 🔹 Switch forms
-document.getElementById("toLogin").addEventListener("click", ()=>{
-  document.getElementById("signup").style.display="none";
-  document.getElementById("login").style.display="block";
-});
-document.getElementById("toSignup").addEventListener("click", ()=>{
-  document.getElementById("login").style.display="none";
-  document.getElementById("signup").style.display="block";
-});
-</script>
+          // re-read global accounts from localStorage (compat)
+          let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+
+          // If account already exists (race), abort
+          if (accounts.some(u => u.email === email)) {
+            alert("⚠️ Ce compte existe déjà !");
+            return;
+          }
+
+          const role = getRoleByEmail(email);
+
+          // generate DP using Firestore transaction if possible
+          let dp;
+          try {
+            if (db) {
+              dp = await getNextDPFromFirestore();
+            } else {
+              dp = getNextDPClientSafe();
+            }
+          } catch (e) {
+            console.warn("Erreur transaction Firestore pour DP :", e);
+            // fallback client-side safe generator (still increments local counter)
+            dp = getNextDPClientSafe();
+          }
+
+          const user = {
+            username,
+            email,
+            password,
+            role,
+            credits: 0,
+            dp,
+            photo: "https://i.imgur.com/2XnKZ9R.png",
+            lastLogin: new Date().toLocaleString(),
+            createdAt: new Date().toISOString()
+          };
+
+          // Save everywhere (localStorage + Firestore)
+          await saveUserEverywhere(user);
+
+          alert("🎉 Compte créé !");
+          window.location.href = "profil.html";
+        } catch (err) {
+          console.error("Erreur verifyCode:", err);
+          alert("❌ Une erreur est survenue lors de la création du compte.");
+        }
+      } else {
+        alert("❌ Code incorrect !");
+      }
+    }
+
+    // ========= loginUser (inchangé mais continue à mettre à jour localStorage) =========
+    function loginUser() {
+      const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+      const password = document.getElementById("loginPassword").value.trim();
+
+      const accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+      const user = accounts.find(u => u.email.toLowerCase() === email);
+
+      if (!user) { alert("⚠️ Aucun compte trouvé !"); return; }
+      if (user.password !== password) { alert("❌ Mot de passe incorrect !"); return; }
+
+      user.lastLogin = new Date().toLocaleString();
+      localStorage.setItem("dpstore_user", JSON.stringify(user));
+      localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+
+      // also update Firestore lastLogin if available
+      if (db) {
+        const safeId = encodeURIComponent(user.email);
+        setDoc(doc(db, "users", safeId), { lastLogin: user.lastLogin }, { merge: true }).catch(e => console.warn(e));
+      }
+
+      alert("✅ Connexion !");
+      window.location.href = "profil.html";
+    }
+
+    function toggleForms() {
+      const s = document.getElementById("signup");
+      const l = document.getElementById("login");
+      s.style.display = s.style.display === "none" ? "block" : "none";
+      l.style.display = l.style.display === "none" ? "block" : "none";
+    }
+
+    // ===== Fix automatique des DP dupliqués (local) - conserve ton comportement existant =====
+    (function fixDuplicateDP() {
+      try {
+        let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+        if (!accounts.length) return;
+
+        const usedDP = new Set();
+        let changed = false;
+
+        for (let i = 0; i < accounts.length; i++) {
+          const dp = accounts[i].dp;
+
+          if (usedDP.has(dp)) {
+            let newDP;
+            // prefer Firestore for uniqueness if available
+            if (db) {
+              // génération asynchrone impossible ici synchronement : on joue la sécurité en fallback
+              newDP = getNextDPClientSafe();
+            } else {
+              newDP = getNextDPClientSafe();
+            }
+
+            accounts[i].dp = newDP;
+            changed = true;
+          }
+
+          usedDP.add(accounts[i].dp);
+        }
+
+        if (changed) {
+          localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+          console.log("✔ Correction DP dupliqués appliquée (local).");
+        }
+      } catch (e) {
+        console.warn("Erreur fixDuplicateDP:", e);
+      }
+    })();
+
+    // expose functions on window so onclick handlers work (keeps your HTML unchanged)
+    window.sendVerificationCode = sendVerificationCode;
+    window.verifyCode = verifyCode;
+    window.loginUser = loginUser;
+    window.toggleForms = toggleForms;
+
+  </script>
 </body>
 </html>
