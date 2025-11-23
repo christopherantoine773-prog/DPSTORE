@@ -126,7 +126,7 @@ button{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+import { getFirestore, collection, query, where, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
@@ -167,8 +167,8 @@ async function loadProfile(email){
 account = await loadProfile(currentEmail);
 if(!account) return; // sécurité
 
-// 🔹 FORCER rôle "creator" si email = Christopherantoine773@gmail.com
-if(account.email.toLowerCase() === "christopherantoine773@gmail.com"){
+// 🔹 Forcer l'email propriétaire comme creator
+if((account.email ?? "").toLowerCase() === "christopherantoine773@gmail.com"){
     account.role = "creator";
 }
 
