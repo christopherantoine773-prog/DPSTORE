@@ -140,7 +140,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let currentEmail = localStorage.getItem("dpstore_currentEmail"); // email enregistré lors de login
+// 🔹 Vérifier email connecté
+let currentEmail = localStorage.getItem("dpstore_currentEmail");
 if(!currentEmail){ alert("Aucun compte connecté !"); location.href="index.html"; }
 
 let userDocRef = null;
@@ -150,13 +151,19 @@ async function loadProfile(email){
   const usersCol = collection(db, "users");
   const q = query(usersCol, where("email","==",email));
   const snapshot = await getDocs(q);
-  if(snapshot.empty){ alert("Compte introuvable !"); location.href="index.html"; return; }
+  if(snapshot.empty){
+      alert("Compte introuvable !");
+      location.href="index.html";
+      return;
+  }
   userDocRef = snapshot.docs[0].ref;
   return snapshot.docs[0].data();
 }
 
+// 🔹 Charger compte depuis Firebase
 account = await loadProfile(currentEmail);
 
+// 🔹 Affichage des infos
 document.getElementById("name").textContent = account.username;
 document.getElementById("dp-id").textContent = account.dp;
 document.getElementById("email").textContent = account.email;
@@ -164,12 +171,14 @@ document.getElementById("credits").textContent = account.credits ?? 0;
 document.getElementById("lastLogin").textContent = account.lastLogin ?? "—";
 document.getElementById("profile-pic").src = account.photo || "https://via.placeholder.com/120x120?text=DP";
 
+// 🔹 Rôle et boutons
 let r = (account.role ?? "").toLowerCase();
 document.getElementById("role").textContent = r === "creator" ? "Créateur" : r === "admin" ? "Administrateur" : r === "employee" ? "Employé" : "Utilisateur";
 document.getElementById("creatorModeBtn").style.display = (r==="creator"||r==="admin") ? "block":"none";
 document.getElementById("employeeBtn").style.display = (r==="employee") ? "block":"none";
 document.getElementById("adminBtn").style.display = (r==="creator"||r==="admin"||r==="employee") ? "inline-block":"none";
 
+// 🔹 Modifier photo
 document.getElementById("changePhotoBtn").onclick = ()=>document.getElementById("photoInput").click();
 document.getElementById("photoInput").onchange = e=>{
   let file = e.target.files[0];
@@ -189,7 +198,11 @@ document.getElementById("savePhotoBtn").onclick = async ()=>{
   alert("Photo mise à jour !");
 };
 
-function logout(){ localStorage.removeItem("dpstore_currentEmail"); location.href="index.html"; }
+// 🔹 Déconnexion
+function logout(){
+  localStorage.removeItem("dpstore_currentEmail");
+  location.href="index.html";
+}
 document.querySelector(".red").onclick = logout;
 </script>
 
