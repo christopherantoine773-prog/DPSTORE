@@ -142,7 +142,10 @@ const db = getFirestore(app);
 
 // 🔹 Vérifier email connecté
 let currentEmail = localStorage.getItem("dpstore_currentEmail");
-if(!currentEmail){ alert("Aucun compte connecté !"); location.href="index.html"; }
+if(!currentEmail){ 
+    alert("Aucun compte connecté !");
+    location.href="index.html"; 
+}
 
 let userDocRef = null;
 let account = null;
@@ -154,7 +157,7 @@ async function loadProfile(email){
   if(snapshot.empty){
       alert("Compte introuvable !");
       location.href="index.html";
-      return;
+      return null;
   }
   userDocRef = snapshot.docs[0].ref;
   return snapshot.docs[0].data();
@@ -162,6 +165,7 @@ async function loadProfile(email){
 
 // 🔹 Charger compte depuis Firebase
 account = await loadProfile(currentEmail);
+if(!account) return; // sécurité
 
 // 🔹 Affichage des infos
 document.getElementById("name").textContent = account.username;
