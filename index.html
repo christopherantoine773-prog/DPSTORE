@@ -1,52 +1,132 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DPSTORE — Connexion / Inscription</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Profil — DPSTORE</title>
+
 <style>
-* {margin:0; padding:0; box-sizing:border-box; font-family:"Poppins",sans-serif;}
-body {background:#000; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column;}
-.container {width:90%; max-width:400px; background:rgba(20,20,20,0.95); padding:30px; border-radius:12px; box-shadow:0 0 25px #f9d71c; text-align:center; border:1px solid #f9d71c;}
-h1 {color:#f9d71c; font-size:1.8em; margin-bottom:20px;}
-input {width:100%; padding:12px; margin:10px 0; border:none; outline:none; border-radius:6px; background:#111; color:#f9d71c; font-size:14px; border:1px solid #f9d71c;}
-button {width:100%; padding:12px; border:none; border-radius:6px; background:#f9d71c; color:#000; font-weight:bold; cursor:pointer; transition:0.3s;}
-button:hover {background:#fff700;}
-.switch {color:#ccc; font-size:14px; margin-top:15px; cursor:pointer;}
-.footer {margin-top:25px; font-size:12px; color:#777;}
+body{
+    background:black;
+    color:white;
+    font-family:Arial;
+    text-align:center;
+}
+
+.profile-box{
+    width:90%;
+    margin:40px auto;
+    padding:20px;
+    background:#111;
+    border-radius:15px;
+    box-shadow:0 0 25px #fdf100;
+}
+
+#profile-pic{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    border:4px solid #fdf100;
+    object-fit:cover;
+}
+
+.tiktok-badge{
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    width:18px;
+    height:18px;
+    background:#2aa6ff;
+    border-radius:50%;
+    font-size:12px;
+    color:white;
+    font-weight:bold;
+    margin-left:6px;
+}
+
+button{
+    padding:12px 20px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+    margin-top:10px;
+}
+
+#changePhotoBtn{
+    background:yellow;
+    color:black;
+}
+
+#savePhotoBtn{
+    background:#0099ff;
+    display:none;
+}
+
+.red{
+    background:red;
+    color:white;
+}
+
+.creator-btn{
+    background:#00eaff;
+    color:black;
+    width:90%;
+    margin-top:20px;
+    padding:14px;
+    border-radius:12px;
+    font-size:18px;
+    box-shadow:0 0 15px #00eaff;
+    display:none;
+}
 </style>
 </head>
 <body>
-<div class="container">
-<h1>DPSTORE</h1>
 
-<div id="signup">
-<p>Créer ton compte</p>
-<input type="text" id="username" placeholder="Nom d'utilisateur" required />
-<input type="email" id="email" placeholder="Adresse email" required />
-<input type="password" id="password" placeholder="Mot de passe" required />
-<button id="sendCodeBtn">📧 Recevoir le code</button>
-<input type="text" id="code" placeholder="Entre le code reçu" style="margin-top:15px;" />
-<button id="verifyBtn">✅ Vérifier le code</button>
-<p class="switch" id="toLogin">Déjà un compte ? Se connecter</p>
+<div class="profile-box">
+
+    <img id="profile-pic" src="" alt="Photo de profil">
+    <br>
+    <button id="changePhotoBtn">📸 Modifier la photo</button>
+    <input type="file" id="photoInput" accept="image/*" style="display:none;">
+    <br>
+    <button id="savePhotoBtn">💾 Sauvegarder</button>
+
+    <h2>
+        <span id="name"></span>
+        <span id="badge"></span>
+    </h2>
+
+    <h3 id="dp-id" style="color:#00aaff;"></h3>
+    <p id="email"></p>
+
+    <p>
+        Rôle :
+        <span id="role" style="color:#00aaff; font-weight:bold;"></span>
+    </p>
+
+    <p style="color:yellow; font-size:18px;">
+        💰 Solde : <span id="credits">0</span> crédits
+    </p>
+
+    <p style="margin-top:10px;">
+        Dernière connexion : <span id="lastLogin"></span>
+    </p>
+
+    <button id="creatorModeBtn" class="creator-btn" onclick="location.href='creator-space.html'">🚀 MODE CREATOR / ADMIN</button>
+    <button id="employeeBtn" class="creator-btn" onclick="location.href='employee.html'" style="background:#ffae00; box-shadow:0 0 15px #ffae00; display:none;">🛠️ ESPACE EMPLOYÉ</button>
+    <button id="tmmBtn" class="creator-btn" style="background:#00ff90; box-shadow:0 0 15px #00ff90; display:block;" onclick="location.href='tmm.html'">🛠️ Gestion Commandes (TMM)</button>
+    <button id="adminBtn" style="display:none; margin-top:15px; border-radius:50%; width:60px; height:60px; font-size:24px; background:#00aaff; color:white; border:none; cursor:pointer;" title="Admin / Creator" onclick="location.href='admin.html'">🛠️</button>
+    <button onclick="location.href='pub.html'" style="background:#ffaa00; color:black; width:90%; margin-top:15px; padding:14px; border-radius:12px; font-size:18px; font-weight:bold;">📢 Voir les pubs</button>
+    <button onclick="location.href='piyaylakay.html'" style="background:#00ff88; color:black; width:90%; margin-top:15px; padding:14px; border-radius:12px; font-size:18px; font-weight:bold;">🎯 Piyaylakay</button>
+    <button onclick="location.href='produits.html'">⬅️ Retour aux produits</button>
+    <button class="red" onclick="logout()">Déconnexion</button>
+
 </div>
-
-<div id="login" style="display: none;">
-<p>Connexion à ton compte</p>
-<input type="email" id="loginEmail" placeholder="Adresse email" required />
-<input type="password" id="loginPassword" placeholder="Mot de passe" required />
-<button id="loginBtn">🚀 Se connecter</button>
-<p class="switch" id="toSignup">Pas encore inscrit ? Créer un compte</p>
-</div>
-</div>
-
-<p class="footer">© 2025 DPSTORE — Technologie avancée</p>
-
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-import { getFirestore, collection, doc, getDoc, setDoc, addDoc, getDocs, query, where, runTransaction } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
@@ -60,137 +140,58 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const CREATOR_EMAIL = "christopherantoine773@gmail.com";
-const CREATOR_EMAILS = [CREATOR_EMAIL];
-const EMPLOYEE_EMAILS = [
-  "pilotecitizen@gmail.com",
-  "ladouceurlorvynsky@gmail.com",
-  "doresmaworldens@gmail.com",
-  "mathieulherisson99@gmail.com"
-];
+let currentEmail = localStorage.getItem("dpstore_currentEmail"); // email enregistré lors de login
+if(!currentEmail){ alert("Aucun compte connecté !"); location.href="index.html"; }
 
-function getRoleByEmail(email){
-  if(CREATOR_EMAILS.includes(email)) return "creator";
-  if(EMPLOYEE_EMAILS.includes(email)) return "employee";
-  return "user";
-}
+let userDocRef = null;
+let account = null;
 
-function generateCode(){ return Math.floor(100000 + Math.random()*900000); }
-
-// 🔹 EmailJS init
-emailjs.init("5gObExmJ85l0pSXC3");
-
-// 🔹 Créer le compteur DP si inexistant
-async function initDPCounter(){
-  const counterRef = doc(db, "counters", "dp_counter");
-  const snap = await getDoc(counterRef);
-  if(!snap.exists()){
-    await setDoc(counterRef, { lastNumber: 0 });
-  }
-}
-
-// 🔹 Synchroniser creator
-async function syncCreator(){
+async function loadProfile(email){
   const usersCol = collection(db, "users");
-  const q = query(usersCol, where("email","==",CREATOR_EMAIL));
+  const q = query(usersCol, where("email","==",email));
   const snapshot = await getDocs(q);
-  if(snapshot.empty){
-    await addDoc(usersCol, {
-      username:"DPSTORE",
-      email:CREATOR_EMAIL,
-      password:"Blondy200ky444",
-      role:"creator",
-      credits:0,
-      dp:"DP000001",
-      photo:"https://i.imgur.com/2XnKZ9R.png",
-      lastLogin:new Date().toISOString()
-    });
-  }
+  if(snapshot.empty){ alert("Compte introuvable !"); location.href="index.html"; return; }
+  userDocRef = snapshot.docs[0].ref;
+  return snapshot.docs[0].data();
 }
 
-await initDPCounter();
-await syncCreator();
+account = await loadProfile(currentEmail);
 
-// 🔹 Envoyer code
-document.getElementById("sendCodeBtn").addEventListener("click", async ()=>{
-  const email = document.getElementById("email").value.trim().toLowerCase();
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
-  if(!email||!username||!password){ alert("⚠️ Remplis tous les champs !"); return; }
+document.getElementById("name").textContent = account.username;
+document.getElementById("dp-id").textContent = account.dp;
+document.getElementById("email").textContent = account.email;
+document.getElementById("credits").textContent = account.credits ?? 0;
+document.getElementById("lastLogin").textContent = account.lastLogin ?? "—";
+document.getElementById("profile-pic").src = account.photo || "https://via.placeholder.com/120x120?text=DP";
 
-  // Vérifier doublon sur Firebase
-  const usersCol = collection(db,"users");
-  const q = query(usersCol, where("email","==",email));
-  const snapshot = await getDocs(q);
-  if(!snapshot.empty){ alert("⚠️ Ce compte existe déjà !"); return; }
+let r = (account.role ?? "").toLowerCase();
+document.getElementById("role").textContent = r === "creator" ? "Créateur" : r === "admin" ? "Administrateur" : r === "employee" ? "Employé" : "Utilisateur";
+document.getElementById("creatorModeBtn").style.display = (r==="creator"||r==="admin") ? "block":"none";
+document.getElementById("employeeBtn").style.display = (r==="employee") ? "block":"none";
+document.getElementById("adminBtn").style.display = (r==="creator"||r==="admin"||r==="employee") ? "inline-block":"none";
 
-  const code = generateCode();
-  localStorage.setItem("verificationCode",code);
-  localStorage.setItem("pendingEmail",email);
-  localStorage.setItem("pendingUsername",username);
-  localStorage.setItem("pendingPassword",password);
+document.getElementById("changePhotoBtn").onclick = ()=>document.getElementById("photoInput").click();
+document.getElementById("photoInput").onchange = e=>{
+  let file = e.target.files[0];
+  if(!file) return;
+  let reader = new FileReader();
+  reader.onload = evt=>{
+    document.getElementById("profile-pic").src = evt.target.result;
+    document.getElementById("savePhotoBtn").style.display="inline-block";
+  };
+  reader.readAsDataURL(file);
+};
 
-  emailjs.send("service_1tnwnvu","template_7o06ag8",{user_email:email,to_name:username,message:code})
-    .then(()=>alert("✅ Code envoyé !"))
-    .catch(err=>alert("❌ Erreur : "+JSON.stringify(err)));
-});
+document.getElementById("savePhotoBtn").onclick = async ()=>{
+  let newPhoto = document.getElementById("profile-pic").src;
+  await updateDoc(userDocRef, { photo:newPhoto });
+  document.getElementById("savePhotoBtn").style.display="none";
+  alert("Photo mise à jour !");
+};
 
-// 🔹 Vérifier code et créer compte
-document.getElementById("verifyBtn").addEventListener("click", async ()=>{
-  const entered = document.getElementById("code").value.trim();
-  const saved = localStorage.getItem("verificationCode");
-  if(entered!==saved){ alert("❌ Code incorrect !"); return; }
-
-  const email = localStorage.getItem("pendingEmail").toLowerCase();
-  const username = localStorage.getItem("pendingUsername");
-  const password = localStorage.getItem("pendingPassword");
-  const role = getRoleByEmail(email);
-
-  const usersCol = collection(db,"users");
-  let dp = "";
-
-  // 🔹 Transaction DP unique
-  const counterRef = doc(db,"counters","dp_counter");
-  await runTransaction(db, async (t)=>{
-    const snap = await t.get(counterRef);
-    let last = snap.exists() ? snap.data().lastNumber : 0;
-    last++;
-    dp = "DP"+String(last).padStart(6,"0");
-    t.update(counterRef,{lastNumber:last});
-  });
-
-  await addDoc(usersCol,{
-    username,email,password,role,credits:0,dp,photo:"https://i.imgur.com/2XnKZ9R.png",
-    lastLogin:new Date().toISOString()
-  });
-
-  alert("🎉 Compte créé !");
-  window.location.href="profil.html";
-});
-
-// 🔹 Connexion
-document.getElementById("loginBtn").addEventListener("click", async ()=>{
-  const email = document.getElementById("loginEmail").value.trim().toLowerCase();
-  const password = document.getElementById("loginPassword").value.trim();
-  const usersCol = collection(db,"users");
-  const q = query(usersCol, where("email","==",email));
-  const snapshot = await getDocs(q);
-  if(snapshot.empty){ alert("⚠️ Aucun compte trouvé !"); return; }
-  const user = snapshot.docs[0].data();
-  if(user.password!==password){ alert("❌ Mot de passe incorrect !"); return; }
-  alert("✅ Connexion !");
-  window.location.href="profil.html";
-});
-
-// 🔹 Switch forms
-document.getElementById("toLogin").addEventListener("click", ()=>{
-  document.getElementById("signup").style.display="none";
-  document.getElementById("login").style.display="block";
-});
-document.getElementById("toSignup").addEventListener("click", ()=>{
-  document.getElementById("login").style.display="none";
-  document.getElementById("signup").style.display="block";
-});
+function logout(){ localStorage.removeItem("dpstore_currentEmail"); location.href="index.html"; }
+document.querySelector(".red").onclick = logout;
 </script>
+
 </body>
 </html>
