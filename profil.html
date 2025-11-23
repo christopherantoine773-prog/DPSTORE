@@ -113,163 +113,84 @@ button{
         Dernière connexion : <span id="lastLogin"></span>
     </p>
 
-    <!-- 🔥 BOUTON CREATOR / ADMIN -->
-    <button id="creatorModeBtn" class="creator-btn"
-            onclick="location.href='creator-space.html'">
-        🚀 MODE CREATOR / ADMIN
-    </button>
-
-    <!-- 🔥 BOUTON EMPLOYÉ -->
-    <button id="employeeBtn" class="creator-btn"
-            onclick="location.href='employee.html'"
-            style="background:#ffae00; box-shadow:0 0 15px #ffae00; display:none;">
-        🛠️ ESPACE EMPLOYÉ
-    </button>
-
-    <!-- 🔥 BOUTON ACCÈS TMM -->
-    <button id="tmmBtn" class="creator-btn" 
-            style="background:#00ff90; box-shadow:0 0 15px #00ff90; display:block;"
-            onclick="location.href='tmm.html'">
-        🛠️ Gestion Commandes (TMM)
-    </button>
-
-    <!-- 🔵 BOUTON ADMIN / CREATOR / EMPLOYEE -->
-    <button id="adminBtn" style="display:none; margin-top:15px; border-radius:50%; width:60px; height:60px; font-size:24px; background:#00aaff; color:white; border:none; cursor:pointer;"
-            title="Admin / Creator" onclick="location.href='admin.html'">🛠️</button>
-
-    <!-- 🟧 BOUTON PUB -->
-    <button onclick="location.href='pub.html'" style="background:#ffaa00; color:black; width:90%; margin-top:15px; padding:14px; border-radius:12px; font-size:18px; font-weight:bold;">
-        📢 Voir les pubs
-    </button>
-
-    <!-- 🔹 NOUVEAU BOUTON PIYAYLAKAY -->
-    <button onclick="location.href='piyaylakay.html'" style="background:#00ff88; color:black; width:90%; margin-top:15px; padding:14px; border-radius:12px; font-size:18px; font-weight:bold;">
-        🎯 Piyaylakay
-    </button>
-
+    <button id="creatorModeBtn" class="creator-btn" onclick="location.href='creator-space.html'">🚀 MODE CREATOR / ADMIN</button>
+    <button id="employeeBtn" class="creator-btn" onclick="location.href='employee.html'" style="background:#ffae00; box-shadow:0 0 15px #ffae00; display:none;">🛠️ ESPACE EMPLOYÉ</button>
+    <button id="tmmBtn" class="creator-btn" style="background:#00ff90; box-shadow:0 0 15px #00ff90; display:block;" onclick="location.href='tmm.html'">🛠️ Gestion Commandes (TMM)</button>
+    <button id="adminBtn" style="display:none; margin-top:15px; border-radius:50%; width:60px; height:60px; font-size:24px; background:#00aaff; color:white; border:none; cursor:pointer;" title="Admin / Creator" onclick="location.href='admin.html'">🛠️</button>
+    <button onclick="location.href='pub.html'" style="background:#ffaa00; color:black; width:90%; margin-top:15px; padding:14px; border-radius:12px; font-size:18px; font-weight:bold;">📢 Voir les pubs</button>
+    <button onclick="location.href='piyaylakay.html'" style="background:#00ff88; color:black; width:90%; margin-top:15px; padding:14px; border-radius:12px; font-size:18px; font-weight:bold;">🎯 Piyaylakay</button>
     <button onclick="location.href='produits.html'">⬅️ Retour aux produits</button>
     <button class="red" onclick="logout()">Déconnexion</button>
 
 </div>
 
-<script>
-/* ====================================
-   CONSTANTES
-==================================== */
-const OWNER_EMAIL = "Christopherantoine773@gmail.com";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
-/* ====================================
-   🔥 Chargement du compte actif
-==================================== */
-let account = JSON.parse(localStorage.getItem("dpstore_user"));
+const firebaseConfig = {
+  apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
+  authDomain: "dpstore-officie.firebaseapp.com",
+  projectId: "dpstore-officie",
+  storageBucket: "dpstore-officie.appspot.com",
+  messagingSenderId: "903943973062",
+  appId: "1:903943973062:web:6501a2ec167adb31258fc7"
+};
 
-if(!account){
-    alert("Aucun compte détecté !");
-    location.href = "index.html";
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let currentEmail = localStorage.getItem("dpstore_currentEmail"); // email enregistré lors de login
+if(!currentEmail){ alert("Aucun compte connecté !"); location.href="index.html"; }
+
+let userDocRef = null;
+let account = null;
+
+async function loadProfile(email){
+  const usersCol = collection(db, "users");
+  const q = query(usersCol, where("email","==",email));
+  const snapshot = await getDocs(q);
+  if(snapshot.empty){ alert("Compte introuvable !"); location.href="index.html"; return; }
+  userDocRef = snapshot.docs[0].ref;
+  return snapshot.docs[0].data();
 }
 
-/* ====================================
-   🚨 Force le rôle du propriétaire
-==================================== */
-(function enforceOwnerRole(){
-    let accs = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
+account = await loadProfile(currentEmail);
 
-    let ownerIndex = accs.findIndex(
-        u => (u.email || "").toLowerCase() === OWNER_EMAIL.toLowerCase()
-    );
-
-    if(ownerIndex !== -1){
-        accs[ownerIndex].role = "creator";
-        localStorage.setItem("dpstore_accounts", JSON.stringify(accs));
-    }
-
-    if((account.email || "").toLowerCase() === OWNER_EMAIL.toLowerCase()){
-        account.role = "creator";
-        localStorage.setItem("dpstore_user", JSON.stringify(account));
-    }
-})();
-
-/* ====================================
-   🔄 Synchronisation avec dpstore_accounts
-   🔹 MISE À JOUR : affichage correct, badge et boutons
-==================================== */
-let accounts = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
-let accGlobal = accounts.find(
-    u => (u.email || "").toLowerCase() === account.email.toLowerCase()
-);
-
-if(accGlobal){
-    account.balance = accGlobal.balance ?? account.balance;
-    account.photo = accGlobal.photo ?? account.photo;
-    account.username = accGlobal.username ?? account.username;
-    account.role = accGlobal.role ?? account.role;
-    account.employeeType = accGlobal.employeeType ?? account.employeeType;
-    account.dp = accGlobal.dp ?? account.dp;
-
-    localStorage.setItem("dpstore_user", JSON.stringify(account));
-}
-
-/* ====================================
-   🔹 Badge affiché selon rôle
-==================================== */
-function afficherBadge(role){
-    if(!role) return;
-    role = role.toLowerCase().trim();
-    let show = role === "creator" || role === "admin" || role === "employee";
-    document.getElementById("badge").innerHTML = show ? `<span class="tiktok-badge">✔</span>` : "";
-}
-afficherBadge(account.role);
-
-/* ====================================
-   🔹 Boutons selon rôle
-==================================== */
-let r = (account.role ?? "").toLowerCase();
-document.getElementById("creatorModeBtn").style.display = (r === "creator" || r==="admin") ? "block" : "none";
-document.getElementById("employeeBtn").style.display = (r==="employee") ? "block" : "none";
-document.getElementById("adminBtn").style.display = (r==="creator"||r==="admin"||r==="employee") ? "inline-block" : "none";
-
-/* ====================================
-   🔹 Infos profil affichées
-==================================== */
 document.getElementById("name").textContent = account.username;
 document.getElementById("dp-id").textContent = account.dp;
 document.getElementById("email").textContent = account.email;
-document.getElementById("credits").textContent = account.balance ?? 0;
+document.getElementById("credits").textContent = account.credits ?? 0;
 document.getElementById("lastLogin").textContent = account.lastLogin ?? "—";
-
-/* ====================================
-   📸 Gestion Photo
-==================================== */
 document.getElementById("profile-pic").src = account.photo || "https://via.placeholder.com/120x120?text=DP";
 
-document.getElementById("changePhotoBtn").onclick = () => document.getElementById("photoInput").click();
-document.getElementById("photoInput").onchange = e => {
-    let file = e.target.files[0];
-    if(!file) return;
-    let reader = new FileReader();
-    reader.onload = evt => {
-        document.getElementById("profile-pic").src = evt.target.result;
-        document.getElementById("savePhotoBtn").style.display = "inline-block";
-    };
-    reader.readAsDataURL(file);
+let r = (account.role ?? "").toLowerCase();
+document.getElementById("role").textContent = r === "creator" ? "Créateur" : r === "admin" ? "Administrateur" : r === "employee" ? "Employé" : "Utilisateur";
+document.getElementById("creatorModeBtn").style.display = (r==="creator"||r==="admin") ? "block":"none";
+document.getElementById("employeeBtn").style.display = (r==="employee") ? "block":"none";
+document.getElementById("adminBtn").style.display = (r==="creator"||r==="admin"||r==="employee") ? "inline-block":"none";
+
+document.getElementById("changePhotoBtn").onclick = ()=>document.getElementById("photoInput").click();
+document.getElementById("photoInput").onchange = e=>{
+  let file = e.target.files[0];
+  if(!file) return;
+  let reader = new FileReader();
+  reader.onload = evt=>{
+    document.getElementById("profile-pic").src = evt.target.result;
+    document.getElementById("savePhotoBtn").style.display="inline-block";
+  };
+  reader.readAsDataURL(file);
 };
 
-document.getElementById("savePhotoBtn").onclick = () => {
-    account.photo = document.getElementById("profile-pic").src;
-    let X = accounts.find(u => (u.email || "").toLowerCase() === account.email.toLowerCase());
-    if(X){ X.photo = account.photo; localStorage.setItem("dpstore_accounts", JSON.stringify(accounts)); }
-    localStorage.setItem("dpstore_user", JSON.stringify(account));
-    document.getElementById("savePhotoBtn").style.display = "none";
-    alert("Photo enregistrée !");
+document.getElementById("savePhotoBtn").onclick = async ()=>{
+  let newPhoto = document.getElementById("profile-pic").src;
+  await updateDoc(userDocRef, { photo:newPhoto });
+  document.getElementById("savePhotoBtn").style.display="none";
+  alert("Photo mise à jour !");
 };
 
-/* ====================================
-   🔹 Déconnexion
-==================================== */
-function logout(){
-    localStorage.removeItem("dpstore_user");
-    location.href = "index.html";
-}
+function logout(){ localStorage.removeItem("dpstore_currentEmail"); location.href="index.html"; }
+document.querySelector(".red").onclick = logout;
 </script>
 
 </body>
