@@ -113,20 +113,38 @@ button{
         Dernière connexion : <span id="lastLogin"></span>
     </p>
 
-    <button id="creatorModeBtn" class="creator-btn" onclick="location.href='creator-space.html'">🚀 MODE CREATOR / ADMIN</button>
-    <button id="employeeBtn" class="creator-btn" onclick="location.href='employee.html'" style="background:#ffae00; box-shadow:0 0 15px #ffae00; display:none;">🛠️ ESPACE EMPLOYÉ</button>
-    <button id="tmmBtn" class="creator-btn" style="background:#00ff90; box-shadow:0 0 15px #00ff90; display:block;" onclick="location.href='tmm.html'">🛠️ Gestion Commandes (TMM)</button>
-    <button id="adminBtn" style="display:none; margin-top:15px; border-radius:50%; width:60px; height:60px; font-size:24px; background:#00aaff; color:white; border:none; cursor:pointer;" title="Admin / Creator" onclick="location.href='admin.html'">🛠️</button>
-    <button onclick="location.href='pub.html'" style="background:#ffaa00; color:black; width:90%; margin-top:15px; padding:14px; border-radius:12px; font-size:18px; font-weight:bold;">📢 Voir les pubs</button>
-    <button onclick="location.href='piyaylakay.html'" style="background:#00ff88; color:black; width:90%; margin-top:15px; padding:14px; border-radius:12px; font-size:18px; font-weight:bold;">🎯 Piyaylakay</button>
+    <!-- 🔥 BOUTON CREATOR / ADMIN -->
+    <button id="creatorModeBtn" class="creator-btn"
+            onclick="location.href='creator-space.html'">
+        🚀 MODE CREATOR / ADMIN
+    </button>
+
+    <!-- 🔥 BOUTON EMPLOYÉ (Ajouté) -->
+    <button id="employeeBtn" class="creator-btn"
+            onclick="location.href='employee.html'"
+            style="background:#ffae00; box-shadow:0 0 15px #ffae00; display:none;">
+        🛠️ ESPACE EMPLOYÉ
+    </button>
+
+    <!-- 🔥 BOUTON ACCÈS TMM -->
+    <button id="tmmBtn" class="creator-btn" 
+            style="background:#00ff90; box-shadow:0 0 15px #00ff90; display:block;"
+            onclick="location.href='tmm.html'">
+        🛠️ Gestion Commandes (TMM)
+    </button>
+
     <button onclick="location.href='produits.html'">⬅️ Retour aux produits</button>
     <button class="red" onclick="logout()">Déconnexion</button>
 
 </div>
 
+<!-- ==================== SCRIPT ==================== -->
 <script type="module">
+/* ====================================
+   FIREBASE CONFIG & INIT
+==================================== */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-import { getFirestore, collection, query, where, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
@@ -140,79 +158,154 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔹 Vérifier email connecté
-let currentEmail = localStorage.getItem("dpstore_currentEmail");
-if(!currentEmail){ 
-    alert("Aucun compte connecté !");
-    location.href="index.html"; 
+/* ====================================
+   CONSTANTES
+==================================== */
+const OWNER_EMAIL = "Christopherantoine773@gmail.com";
+
+/* ====================================
+   🔥 Chargement du compte actif
+==================================== */
+let account = JSON.parse(localStorage.getItem("dpstore_user"));
+if(!account){
+    alert("Aucun compte détecté !");
+    location.href = "index.html";
 }
 
-let userDocRef = null;
-let account = null;
+/* ====================================
+   🚨 Force le rôle du propriétaire
+==================================== */
+(function enforceOwnerRole(){
+    let accs = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
+    let ownerIndex = accs.findIndex(u => (u.email || "").toLowerCase() === OWNER_EMAIL.toLowerCase());
+    if(ownerIndex !== -1){
+        accs[ownerIndex].role = "creator";
+        localStorage.setItem("dpstore_accounts", JSON.stringify(accs));
+    }
+    if((account.email || "").toLowerCase() === OWNER_EMAIL.toLowerCase()){
+        account.role = "creator";
+        localStorage.setItem("dpstore_user", JSON.stringify(account));
+    }
+})();
 
-async function loadProfile(email){
-  const usersCol = collection(db, "users");
-  const q = query(usersCol, where("email","==",email));
-  const snapshot = await getDocs(q);
-  if(snapshot.empty){
-      alert("Compte introuvable !");
-      location.href="index.html";
-      return null;
-  }
-  userDocRef = snapshot.docs[0].ref;
-  return snapshot.docs[0].data();
+/* ====================================
+   🔄 Synchronisation avec dpstore_accounts
+==================================== */
+let accounts = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
+let accGlobal = accounts.find(u => (u.email || "").toLowerCase() === account.email.toLowerCase());
+if(accGlobal){
+    account.balance = accGlobal.balance ?? account.balance;
+    account.photo = accGlobal.photo ?? account.photo;
+    account.username = accGlobal.username ?? account.username;
+    account.role = accGlobal.role ?? account.role;
+    account.employeeType = accGlobal.employeeType ?? account.employeeType;
+    account.dp = accGlobal.dp ?? account.dp;
+    localStorage.setItem("dpstore_user", JSON.stringify(account));
 }
 
-// 🔹 Charger compte depuis Firebase
-account = await loadProfile(currentEmail);
-if(!account) return; // sécurité
-
-// 🔹 Forcer l'email propriétaire comme creator
-if((account.email ?? "").toLowerCase() === "christopherantoine773@gmail.com"){
-    account.role = "creator";
+/* ====================================
+   🔥 SYSTÈME ORIGINAL (employee + e1/e2)
+==================================== */
+function getRoleName(role){
+    if(!role) return "Utilisateur";
+    role = role.toLowerCase().trim();
+    if(role === "creator") return "Créateur";
+    if(role === "admin") return "Administrateur";
+    if(role === "employee"){
+        if(account.employeeType === "e1") return "Employé 1";
+        if(account.employeeType === "e2") return "Employé 2";
+        return "Employé";
+    }
+    return "Utilisateur";
 }
 
-// 🔹 Affichage des infos
+document.getElementById("role").textContent = getRoleName(account.role);
+
+/* ====================================
+   ✔ Badge (creator, admin, employés)
+==================================== */
+function afficherBadge(role){
+    if(!role) return;
+    role = role.toLowerCase().trim();
+    let show = role === "creator" || role === "admin" || role === "employee";
+    document.getElementById("badge").innerHTML = show ? `<span class="tiktok-badge">✔</span>` : "";
+}
+afficherBadge(account.role);
+
+/* ====================================
+   ✔ Boutons Creator / Admin et Employé
+==================================== */
+let r = (account.role ?? "").toLowerCase();
+if(r === "creator" || r === "admin") document.getElementById("creatorModeBtn").style.display = "block";
+if(r === "employee") document.getElementById("employeeBtn").style.display = "block";
+
+/* ====================================
+   ✔ Infos chargées
+==================================== */
 document.getElementById("name").textContent = account.username;
 document.getElementById("dp-id").textContent = account.dp;
 document.getElementById("email").textContent = account.email;
-document.getElementById("credits").textContent = account.credits ?? 0;
+document.getElementById("credits").textContent = account.balance ?? 0;
 document.getElementById("lastLogin").textContent = account.lastLogin ?? "—";
-document.getElementById("profile-pic").src = account.photo || "https://via.placeholder.com/120x120?text=DP";
 
-// 🔹 Rôle et boutons
-let r = (account.role ?? "").toLowerCase();
-document.getElementById("role").textContent = r === "creator" ? "Créateur" : r === "admin" ? "Administrateur" : r === "employee" ? "Employé" : "Utilisateur";
-document.getElementById("creatorModeBtn").style.display = (r==="creator"||r==="admin") ? "block":"none";
-document.getElementById("employeeBtn").style.display = (r==="employee") ? "block":"none";
-document.getElementById("adminBtn").style.display = (r==="creator"||r==="admin"||r==="employee") ? "inline-block":"none";
-
-// 🔹 Modifier photo
-document.getElementById("changePhotoBtn").onclick = ()=>document.getElementById("photoInput").click();
-document.getElementById("photoInput").onchange = e=>{
-  let file = e.target.files[0];
-  if(!file) return;
-  let reader = new FileReader();
-  reader.onload = evt=>{
-    document.getElementById("profile-pic").src = evt.target.result;
-    document.getElementById("savePhotoBtn").style.display="inline-block";
-  };
-  reader.readAsDataURL(file);
-};
-
-document.getElementById("savePhotoBtn").onclick = async ()=>{
-  let newPhoto = document.getElementById("profile-pic").src;
-  await updateDoc(userDocRef, { photo:newPhoto });
-  document.getElementById("savePhotoBtn").style.display="none";
-  alert("Photo mise à jour !");
-};
-
-// 🔹 Déconnexion
-function logout(){
-  localStorage.removeItem("dpstore_currentEmail");
-  location.href="index.html";
+/* ====================================
+   📸 Gestion Photo + Firebase (email + DP sauvegardés)
+==================================== */
+if(account.photo){
+    document.getElementById("profile-pic").src = account.photo;
+} else {
+    document.getElementById("profile-pic").src = "https://via.placeholder.com/120x120?text=DP";
 }
-document.querySelector(".red").onclick = logout;
+
+document.getElementById("changePhotoBtn").onclick = () => document.getElementById("photoInput").click();
+
+document.getElementById("photoInput").onchange = e => {
+    let file = e.target.files[0];
+    if(!file) return;
+    let reader = new FileReader();
+    reader.onload = evt => {
+        document.getElementById("profile-pic").src = evt.target.result;
+        document.getElementById("savePhotoBtn").style.display = "inline-block";
+    };
+    reader.readAsDataURL(file);
+};
+
+document.getElementById("savePhotoBtn").onclick = async () => {
+    account.photo = document.getElementById("profile-pic").src;
+
+    let accs = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
+    let X = accs.find(u => (u.email || "").toLowerCase() === account.email.toLowerCase());
+    if(X){
+        X.photo = account.photo;
+        localStorage.setItem("dpstore_accounts", JSON.stringify(accs));
+    }
+    localStorage.setItem("dpstore_user", JSON.stringify(account));
+
+    // 🔥 FIREBASE : sauvegarde email + DP + photo
+    try{
+        const emailSafe = encodeURIComponent(account.email);
+        const userRef = doc(db,"users",emailSafe);
+        await setDoc(userRef, {
+            email: account.email,
+            dp: account.dp,
+            photo: account.photo
+        }, { merge: true });
+        console.log("Email et DP sauvegardés sur Firebase");
+    } catch(e){
+        console.warn("Erreur Firebase update:", e);
+    }
+
+    document.getElementById("savePhotoBtn").style.display = "none";
+    alert("Photo enregistrée !");
+};
+
+/* ====================================
+   🔴 Déconnexion
+==================================== */
+function logout(){
+    localStorage.removeItem("dpstore_user");
+    location.href = "index.html";
+}
 </script>
 
 </body>
