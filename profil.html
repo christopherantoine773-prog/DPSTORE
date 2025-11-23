@@ -191,6 +191,7 @@ if(!account){
 
 /* ====================================
    🔄 Synchronisation avec dpstore_accounts
+   🔹 MISE À JOUR : affichage correct, badge et boutons
 ==================================== */
 let accounts = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
 let accGlobal = accounts.find(
@@ -209,64 +210,26 @@ if(accGlobal){
 }
 
 /* ====================================
-   🔥 SYSTÈME ORIGINAL (employee + e1/e2)
-==================================== */
-function getRoleName(role){
-    if(!role) return "Utilisateur";
-
-    role = role.toLowerCase().trim();
-
-    if(role === "creator") return "Créateur";
-    if(role === "admin") return "Administrateur";
-
-    if(role === "employee"){
-        if(account.employeeType === "e1") return "Employé 1";
-        if(account.employeeType === "e2") return "Employé 2";
-        return "Employé";
-    }
-
-    return "Utilisateur";
-}
-
-document.getElementById("role").textContent = getRoleName(account.role);
-
-/* ====================================
-   ✔ Badge (creator, admin, employés)
+   🔹 Badge affiché selon rôle
 ==================================== */
 function afficherBadge(role){
     if(!role) return;
-
     role = role.toLowerCase().trim();
-
-    let show =
-        role === "creator" ||
-        role === "admin" ||
-        role === "employee";
-
-    document.getElementById("badge").innerHTML =
-        show ? `<span class="tiktok-badge">✔</span>` : "";
+    let show = role === "creator" || role === "admin" || role === "employee";
+    document.getElementById("badge").innerHTML = show ? `<span class="tiktok-badge">✔</span>` : "";
 }
 afficherBadge(account.role);
 
 /* ====================================
-   ✔ Boutons Creator / Admin et Employé
+   🔹 Boutons selon rôle
 ==================================== */
 let r = (account.role ?? "").toLowerCase();
-
-if(r === "creator" || r === "admin"){
-    document.getElementById("creatorModeBtn").style.display = "block";
-}
-
-if(r === "employee"){
-    document.getElementById("employeeBtn").style.display = "block";
-}
-
-if(r === "creator" || r === "admin" || r === "employee"){
-    document.getElementById("adminBtn").style.display = "inline-block";
-}
+document.getElementById("creatorModeBtn").style.display = (r === "creator" || r==="admin") ? "block" : "none";
+document.getElementById("employeeBtn").style.display = (r==="employee") ? "block" : "none";
+document.getElementById("adminBtn").style.display = (r==="creator"||r==="admin"||r==="employee") ? "inline-block" : "none";
 
 /* ====================================
-   ✔ Infos chargées
+   🔹 Infos profil affichées
 ==================================== */
 document.getElementById("name").textContent = account.username;
 document.getElementById("dp-id").textContent = account.dp;
@@ -277,20 +240,12 @@ document.getElementById("lastLogin").textContent = account.lastLogin ?? "—";
 /* ====================================
    📸 Gestion Photo
 ==================================== */
-if(account.photo){
-    document.getElementById("profile-pic").src = account.photo;
-} else {
-    document.getElementById("profile-pic").src =
-        "https://via.placeholder.com/120x120?text=DP";
-}
+document.getElementById("profile-pic").src = account.photo || "https://via.placeholder.com/120x120?text=DP";
 
-document.getElementById("changePhotoBtn").onclick = () =>
-    document.getElementById("photoInput").click();
-
+document.getElementById("changePhotoBtn").onclick = () => document.getElementById("photoInput").click();
 document.getElementById("photoInput").onchange = e => {
     let file = e.target.files[0];
     if(!file) return;
-
     let reader = new FileReader();
     reader.onload = evt => {
         document.getElementById("profile-pic").src = evt.target.result;
@@ -300,25 +255,17 @@ document.getElementById("photoInput").onchange = e => {
 };
 
 document.getElementById("savePhotoBtn").onclick = () => {
-
     account.photo = document.getElementById("profile-pic").src;
-
-    let accs = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
-    let X = accs.find(
-        u => (u.email || "").toLowerCase() === account.email.toLowerCase()
-    );
-
-    if(X){
-        X.photo = account.photo;
-        localStorage.setItem("dpstore_accounts", JSON.stringify(accs));
-    }
-
+    let X = accounts.find(u => (u.email || "").toLowerCase() === account.email.toLowerCase());
+    if(X){ X.photo = account.photo; localStorage.setItem("dpstore_accounts", JSON.stringify(accounts)); }
     localStorage.setItem("dpstore_user", JSON.stringify(account));
-
     document.getElementById("savePhotoBtn").style.display = "none";
     alert("Photo enregistrée !");
 };
 
+/* ====================================
+   🔹 Déconnexion
+==================================== */
 function logout(){
     localStorage.removeItem("dpstore_user");
     location.href = "index.html";
