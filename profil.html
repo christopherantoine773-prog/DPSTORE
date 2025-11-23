@@ -167,6 +167,11 @@ async function loadProfile(email){
 account = await loadProfile(currentEmail);
 if(!account) return; // sécurité
 
+// 🔹 FORCER rôle "creator" si email = Christopherantoine773@gmail.com
+if(account.email.toLowerCase() === "christopherantoine773@gmail.com"){
+    account.role = "creator";
+}
+
 // 🔹 Affichage des infos
 document.getElementById("name").textContent = account.username;
 document.getElementById("dp-id").textContent = account.dp;
