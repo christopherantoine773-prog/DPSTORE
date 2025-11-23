@@ -45,9 +45,8 @@ button:hover {background:#fff700;}
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
 <script type="module">
-// Firebase import et configuration
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, setDoc, addDoc, getDocs, query, where, runTransaction } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
@@ -57,9 +56,9 @@ const firebaseConfig = {
   messagingSenderId: "903943973062",
   appId: "1:903943973062:web:6501a2ec167adb31258fc7"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-window.firebaseDB = db;
 
 const CREATOR_EMAIL = "christopherantoine773@gmail.com";
 const CREATOR_EMAILS = [CREATOR_EMAIL];
@@ -70,23 +69,33 @@ const EMPLOYEE_EMAILS = [
   "mathieulherisson99@gmail.com"
 ];
 
-function generateDP() {
-  return "DP" + Date.now() + Math.floor(Math.random()*1000); // Unique 100% basé sur timestamp + random
-}
-function generateCode() { return Math.floor(100000 + Math.random()*900000); }
-function getRoleByEmail(email) {
+function getRoleByEmail(email){
   if(CREATOR_EMAILS.includes(email)) return "creator";
   if(EMPLOYEE_EMAILS.includes(email)) return "employee";
   return "user";
 }
 
-// Pré-initialisation creator si absent
-async function initCreator() {
-  const usersCol = collection(db,"users");
+function generateCode(){ return Math.floor(100000 + Math.random()*900000); }
+
+// 🔹 EmailJS init
+emailjs.init("5gObExmJ85l0pSXC3");
+
+// 🔹 Créer le compteur DP si inexistant
+async function initDPCounter(){
+  const counterRef = doc(db, "counters", "dp_counter");
+  const snap = await getDoc(counterRef);
+  if(!snap.exists()){
+    await setDoc(counterRef, { lastNumber: 0 });
+  }
+}
+
+// 🔹 Synchroniser creator
+async function syncCreator(){
+  const usersCol = collection(db, "users");
   const q = query(usersCol, where("email","==",CREATOR_EMAIL));
   const snapshot = await getDocs(q);
   if(snapshot.empty){
-    const creator = {
+    await addDoc(usersCol, {
       username:"DPSTORE",
       email:CREATOR_EMAIL,
       password:"Blondy200ky444",
@@ -94,89 +103,93 @@ async function initCreator() {
       credits:0,
       dp:"DP000001",
       photo:"https://i.imgur.com/2XnKZ9R.png",
-      lastLogin:new Date().toLocaleString()
-    };
-    await addDoc(usersCol,creator);
+      lastLogin:new Date().toISOString()
+    });
   }
 }
-initCreator();
 
-// Gestion EmailJS
-document.addEventListener("DOMContentLoaded",()=>{
-  emailjs.init("5gObExmJ85l0pSXC3");
+await initDPCounter();
+await syncCreator();
 
-  const sendBtn = document.getElementById("sendCodeBtn");
-  sendBtn.addEventListener("click",async()=>{
-    const email = document.getElementById("email").value.trim().toLowerCase();
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
-    if(!email||!username||!password){ alert("⚠️ Remplis tous les champs !"); return; }
+// 🔹 Envoyer code
+document.getElementById("sendCodeBtn").addEventListener("click", async ()=>{
+  const email = document.getElementById("email").value.trim().toLowerCase();
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+  if(!email||!username||!password){ alert("⚠️ Remplis tous les champs !"); return; }
 
-    const usersCol = collection(db,"users");
-    const q = query(usersCol, where("email","==",email));
-    const snapshot = await getDocs(q);
-    if(!snapshot.empty){ alert("⚠️ Ce compte existe déjà !"); return; }
+  // Vérifier doublon sur Firebase
+  const usersCol = collection(db,"users");
+  const q = query(usersCol, where("email","==",email));
+  const snapshot = await getDocs(q);
+  if(!snapshot.empty){ alert("⚠️ Ce compte existe déjà !"); return; }
 
-    const code = generateCode();
-    localStorage.setItem("verificationCode",code);
-    localStorage.setItem("pendingEmail",email);
-    localStorage.setItem("pendingUsername",username);
-    localStorage.setItem("pendingPassword",password);
+  const code = generateCode();
+  localStorage.setItem("verificationCode",code);
+  localStorage.setItem("pendingEmail",email);
+  localStorage.setItem("pendingUsername",username);
+  localStorage.setItem("pendingPassword",password);
 
-    emailjs.send("service_1tnwnvu","template_7o06ag8",{user_email:email,to_name:username,message:code})
-      .then(()=>alert("✅ Code envoyé !"))
-      .catch(err=>alert("❌ Erreur : "+JSON.stringify(err)));
+  emailjs.send("service_1tnwnvu","template_7o06ag8",{user_email:email,to_name:username,message:code})
+    .then(()=>alert("✅ Code envoyé !"))
+    .catch(err=>alert("❌ Erreur : "+JSON.stringify(err)));
+});
+
+// 🔹 Vérifier code et créer compte
+document.getElementById("verifyBtn").addEventListener("click", async ()=>{
+  const entered = document.getElementById("code").value.trim();
+  const saved = localStorage.getItem("verificationCode");
+  if(entered!==saved){ alert("❌ Code incorrect !"); return; }
+
+  const email = localStorage.getItem("pendingEmail").toLowerCase();
+  const username = localStorage.getItem("pendingUsername");
+  const password = localStorage.getItem("pendingPassword");
+  const role = getRoleByEmail(email);
+
+  const usersCol = collection(db,"users");
+  let dp = "";
+
+  // 🔹 Transaction DP unique
+  const counterRef = doc(db,"counters","dp_counter");
+  await runTransaction(db, async (t)=>{
+    const snap = await t.get(counterRef);
+    let last = snap.exists() ? snap.data().lastNumber : 0;
+    last++;
+    dp = "DP"+String(last).padStart(6,"0");
+    t.update(counterRef,{lastNumber:last});
   });
 
-  document.getElementById("verifyBtn").addEventListener("click",async()=>{
-    const entered = document.getElementById("code").value.trim();
-    if(entered!==localStorage.getItem("verificationCode")){ alert("❌ Code incorrect !"); return; }
-
-    const email = localStorage.getItem("pendingEmail").toLowerCase();
-    const username = localStorage.getItem("pendingUsername");
-    const password = localStorage.getItem("pendingPassword");
-    const role = getRoleByEmail(email);
-
-    const usersCol = collection(db,"users");
-    // Vérification email unique encore une fois avant ajout (multi-appareils)
-    const q = query(usersCol, where("email","==",email));
-    const snapshot = await getDocs(q);
-    if(!snapshot.empty){ alert("⚠️ Ce compte existe déjà !"); return; }
-
-    const dp = generateDP();
-    const user = {username,email,password,role,credits:0,dp,photo:"https://i.imgur.com/2XnKZ9R.png",lastLogin:new Date().toLocaleString()};
-    await addDoc(usersCol,user);
-
-    localStorage.setItem("dpstore_user",JSON.stringify(user));
-    alert("🎉 Compte créé !");
-    window.location.href="profil.html";
+  await addDoc(usersCol,{
+    username,email,password,role,credits:0,dp,photo:"https://i.imgur.com/2XnKZ9R.png",
+    lastLogin:new Date().toISOString()
   });
 
-  document.getElementById("loginBtn").addEventListener("click",async()=>{
-    const email = document.getElementById("loginEmail").value.trim().toLowerCase();
-    const password = document.getElementById("loginPassword").value.trim();
-    const usersCol = collection(db,"users");
-    const q = query(usersCol, where("email","==",email));
-    const snapshot = await getDocs(q);
-    if(snapshot.empty){ alert("⚠️ Aucun compte trouvé !"); return; }
+  alert("🎉 Compte créé !");
+  window.location.href="profil.html";
+});
 
-    let user;
-    snapshot.forEach(docSnap=>{user=docSnap.data();});
-    if(user.password!==password){ alert("❌ Mot de passe incorrect !"); return; }
+// 🔹 Connexion
+document.getElementById("loginBtn").addEventListener("click", async ()=>{
+  const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+  const password = document.getElementById("loginPassword").value.trim();
+  const usersCol = collection(db,"users");
+  const q = query(usersCol, where("email","==",email));
+  const snapshot = await getDocs(q);
+  if(snapshot.empty){ alert("⚠️ Aucun compte trouvé !"); return; }
+  const user = snapshot.docs[0].data();
+  if(user.password!==password){ alert("❌ Mot de passe incorrect !"); return; }
+  alert("✅ Connexion !");
+  window.location.href="profil.html";
+});
 
-    localStorage.setItem("dpstore_user",JSON.stringify(user));
-    alert("✅ Connexion !");
-    window.location.href="profil.html";
-  });
-
-  document.getElementById("toLogin").addEventListener("click",()=>{
-    document.getElementById("signup").style.display="none";
-    document.getElementById("login").style.display="block";
-  });
-  document.getElementById("toSignup").addEventListener("click",()=>{
-    document.getElementById("login").style.display="none";
-    document.getElementById("signup").style.display="block";
-  });
+// 🔹 Switch forms
+document.getElementById("toLogin").addEventListener("click", ()=>{
+  document.getElementById("signup").style.display="none";
+  document.getElementById("login").style.display="block";
+});
+document.getElementById("toSignup").addEventListener("click", ()=>{
+  document.getElementById("login").style.display="none";
+  document.getElementById("signup").style.display="block";
 });
 </script>
 </body>
