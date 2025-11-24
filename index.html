@@ -53,19 +53,27 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import {
-      getFirestore, doc, getDoc, setDoc, updateDoc, runTransaction, collection, addDoc
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc,
+      runTransaction,
+      collection,
+      addDoc,
+      query,
+      where,
+      getDocs
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-    // ====== REMPLACER ICI PAR TA CONFIG FIREBASE ======
+    // ====== TA CONFIG FIREBASE (déjà fournie) ======
     const firebaseConfig = {
-      // example:
-      // apiKey: "AIzaS...yourkey...",
-      // authDomain: "your-project.firebaseapp.com",
-      // projectId: "your-project-id",
-      // storageBucket: "your-project-id.appspot.com",
-      // messagingSenderId: "1234567890",
-      // appId: "1:123456789:web:abcdef"
-      /* TA FIREBASE CONFIG ICI */
+      apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
+      authDomain: "dpstore-officie.firebaseapp.com",
+      projectId: "dpstore-officie",
+      storageBucket: "dpstore-officie.firebasestorage.app",
+      messagingSenderId: "903943973062",
+      appId: "1:903943973062:web:6501a2ec167adb31258fc7"
     };
 
     // Initialisation Firebase
@@ -79,14 +87,22 @@
       console.warn("Firestore non initialisé (config manquante ou erreur) :", e);
     }
 
-    // ===== EmailJS init (unchanged) =====
+    // ===== EmailJS init (inchangé) =====
     (function () {
       emailjs.init("5gObExmJ85l0pSXC3");
     })();
 
+    // ========== VARIABLES EN MÉMOIRE (remplacent localStorage pour pending state) ==========
+    // NOTE : ces variables ne survivent pas à un reload — c'est volontaire (plus de localStorage).
+    let pendingRegistration = {
+      email: null,
+      username: null,
+      password: null,
+      verificationCode: null
+    };
+
     // ======= Fonctions utilitaires Firestore =======
     async function getNextDPFromFirestore() {
-      // Utilise une transaction sur le document counters/dp
       if (!db) throw new Error("Firestore non disponible");
       const counterRef = doc(db, "counters", "dp");
       const newNum = await runTransaction(db, async (tx) => {
@@ -101,28 +117,12 @@
           return next;
         }
       });
-      // newNum est le nombre entier (1 => DP000001)
       return "DP" + String(newNum).padStart(6, "0");
     }
 
-    // fallback client-side generator (utilisé si Firestore indisponible)
-    function getNextDPClientSafe() {
-      // lit dp_last_number de localStorage, incrémente et retourne DP...
-      let last = parseInt(localStorage.getItem("dp_last_number") || "0", 10);
-      last = isNaN(last) ? 0 : last;
-      last++;
-      localStorage.setItem("dp_last_number", String(last));
-      return "DP" + String(last).padStart(6, "0");
-    }
-
-    // helper: store emailjs_sent in Firestore collection and localStorage
+    // helper: save an emailjs record in Firestore
     async function recordEmailJSSent(email, code) {
       try {
-        // localStorage store always
-        const arr = JSON.parse(localStorage.getItem("emailjs_sent") || "[]");
-        arr.push({ email, code, date: new Date().toISOString() });
-        localStorage.setItem("emailjs_sent", JSON.stringify(arr));
-
         if (db) {
           await addDoc(collection(db, "emailjs_sent"), { email, code, date: new Date().toISOString() });
         }
@@ -131,96 +131,85 @@
       }
     }
 
-    // helper: save user to Firestore + localStorage
-    async function saveUserEverywhere(user) {
-      // save localStorage (unchanged behavior)
-      try {
-        const accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-        // avoid duplicates by email in localStorage
-        if (!accounts.some(u => u.email === user.email)) {
-          accounts.push(user);
-          localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
-        } else {
-          // update existing entry
-          const idx = accounts.findIndex(u => u.email === user.email);
-          accounts[idx] = user;
-          localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
-        }
-        localStorage.setItem("user_" + user.email, JSON.stringify(user));
-        localStorage.setItem("dpstore_user", JSON.stringify(user));
-      } catch (e) {
-        console.warn("Erreur localStorage lors de saveUserEverywhere :", e);
-      }
-
-      // save to Firestore (if available)
-      if (db) {
-        try {
-          const safeId = encodeURIComponent(user.email); // doc id safe
-          const userRef = doc(db, "users", safeId);
-          await setDoc(userRef, {
-            username: user.username,
-            email: user.email,
-            password: user.password,
-            role: user.role,
-            credits: user.credits || 0,
-            dp: user.dp,
-            photo: user.photo || null,
-            lastLogin: user.lastLogin || new Date().toLocaleString(),
-            createdAt: new Date().toISOString()
-          }, { merge: true });
-        } catch (e) {
-          console.warn("Erreur Firestore lors de saveUserEverywhere :", e);
-        }
-      }
+    // helper: check if a user exists by email (Firestore)
+    async function userExists(email) {
+      if (!db) throw new Error("Firestore non disponible");
+      const safeId = encodeURIComponent(email);
+      const snap = await getDoc(doc(db, "users", safeId));
+      return snap.exists();
     }
 
-    // ========== Ton code inchangé (avec petits points d'intégration) ==========
-    // Pré-initialisation du compte creator (compatible : on écrit aussi dans Firestore)
-    (function initCreatorAccount() {
-      try {
-        const accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-        const creatorEmail = "christopherantoine773@gmail.com";
+    // helper: save user to Firestore (no localStorage)
+    async function saveUserToFirestore(user) {
+      if (!db) throw new Error("Firestore non disponible");
+      const safeId = encodeURIComponent(user.email);
+      const userRef = doc(db, "users", safeId);
+      await setDoc(userRef, {
+        username: user.username,
+        email: user.email,
+        password: user.password,
+        role: user.role,
+        credits: user.credits || 0,
+        dp: user.dp,
+        photo: user.photo || null,
+        lastLogin: user.lastLogin || new Date().toLocaleString(),
+        createdAt: user.createdAt || new Date().toISOString()
+      }, { merge: true });
+    }
 
-        if (!accounts.some(u => u.email.toLowerCase() === creatorEmail.toLowerCase())) {
+    // helper: fetch user by email from Firestore
+    async function fetchUserByEmail(email) {
+      if (!db) throw new Error("Firestore non disponible");
+      const safeId = encodeURIComponent(email);
+      const snap = await getDoc(doc(db, "users", safeId));
+      return snap.exists() ? snap.data() : null;
+    }
+
+    // ========= Pré-initialisation du compte creator dans Firestore =========
+    (async function initCreatorAccount() {
+      try {
+        const creatorEmail = "christopherantoine773@gmail.com".toLowerCase();
+        if (!db) return;
+
+        const exists = await userExists(creatorEmail);
+        if (!exists) {
           const creator = {
             username: "DPSTORE",
-            email: creatorEmail.toLowerCase(),
+            email: creatorEmail,
             password: "Blondy200ky444",
             role: "creator",
             credits: 0,
             dp: "DP000001",
             photo: "https://i.imgur.com/2XnKZ9R.png",
-            lastLogin: new Date().toLocaleString()
+            lastLogin: new Date().toLocaleString(),
+            createdAt: new Date().toISOString()
           };
-          accounts.push(creator);
-          localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
-          localStorage.setItem("user_" + creatorEmail.toLowerCase(), JSON.stringify(creator));
-          localStorage.setItem("dp_last_number", "1");
-          // also save to Firestore
-          if (db) {
-            const safeId = encodeURIComponent(creator.email);
-            setDoc(doc(db, "users", safeId), creator).catch(e => console.warn(e));
-            // ensure counters/dp exists and is at least 1
-            (async () => {
-              try {
-                const counterRef = doc(db, "counters", "dp");
-                // run a transaction only if missing
-                const snap = await getDoc(counterRef);
-                if (!snap.exists()) {
-                  await setDoc(counterRef, { last: 1 });
-                } else {
-                  // if last < 1, set to 1
-                  const current = snap.data().last || 0;
-                  if (current < 1) {
-                    await setDoc(counterRef, { last: 1 }, { merge: true });
-                  }
-                }
-              } catch (e) { console.warn(e); }
-            })();
+          await saveUserToFirestore(creator);
+
+          // ensure counters/dp exists and is at least 1
+          const counterRef = doc(db, "counters", "dp");
+          const snap = await getDoc(counterRef);
+          if (!snap.exists()) {
+            await setDoc(counterRef, { last: 1 });
+          } else {
+            const current = snap.data().last || 0;
+            if (current < 1) {
+              await setDoc(counterRef, { last: 1 }, { merge: true });
+            }
           }
+          console.log("Compte creator créé dans Firestore.");
         } else {
-          // ensure local dp_last_number at least 1
-          if (!localStorage.getItem("dp_last_number")) localStorage.setItem("dp_last_number", "1");
+          // ensure counters/dp at least 1
+          const counterRef = doc(db, "counters", "dp");
+          const snap = await getDoc(counterRef);
+          if (!snap.exists()) {
+            await setDoc(counterRef, { last: 1 });
+          } else {
+            const current = snap.data().last || 0;
+            if (current < 1) {
+              await setDoc(counterRef, { last: 1 }, { merge: true });
+            }
+          }
         }
       } catch (e) {
         console.warn("Erreur initCreatorAccount :", e);
@@ -229,40 +218,52 @@
 
     function generateCode() { return Math.floor(100000 + Math.random() * 900000); }
 
-    // ========= sendVerificationCode (modifié pour enregistrer EmailJS dans Firestore aussi) =========
+    // ========= sendVerificationCode (utilise mémoire + Firestore pour trace) =========
     async function sendVerificationCode() {
-      const email = document.getElementById("email").value.trim().toLowerCase();
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
+      const emailEl = document.getElementById("email");
+      const usernameEl = document.getElementById("username");
+      const passwordEl = document.getElementById("password");
+
+      const email = emailEl.value.trim().toLowerCase();
+      const username = usernameEl.value.trim();
+      const password = passwordEl.value.trim();
 
       if (!email || !username || !password) {
         alert("⚠️ Remplis tous les champs !");
         return;
       }
 
-      // check global list in localStorage first (keeps behavior)
-      const accountsLocal = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-      if (accountsLocal.some(u => u.email === email)) {
-        alert("⚠️ Ce compte existe déjà !");
-        return;
+      try {
+        // check Firestore if account exists
+        if (db) {
+          const exists = await userExists(email);
+          if (exists) {
+            alert("⚠️ Ce compte existe déjà !");
+            return;
+          }
+        }
+
+        const code = generateCode();
+        // store pending in-memory
+        pendingRegistration.email = email;
+        pendingRegistration.username = username;
+        pendingRegistration.password = password;
+        pendingRegistration.verificationCode = String(code);
+
+        // record emailjs attempt in Firestore
+        await recordEmailJSSent(email, code);
+
+        const params = { user_email: email, to_name: username, message: String(code) };
+        emailjs.send("service_1tnwnvu", "template_7o06ag8", params)
+          .then(() => alert("✅ Code envoyé !"))
+          .catch(err => {
+            console.warn("EmailJS erreur:", err);
+            alert("❌ Erreur : " + JSON.stringify(err));
+          });
+      } catch (e) {
+        console.error("Erreur sendVerificationCode:", e);
+        alert("❌ Erreur lors de l'envoi du code.");
       }
-
-      const code = generateCode();
-      localStorage.setItem("verificationCode", String(code));
-      localStorage.setItem("pendingEmail", email);
-      localStorage.setItem("pendingUsername", username);
-      localStorage.setItem("pendingPassword", password);
-
-      // record emailjs attempt (local + firestore)
-      await recordEmailJSSent(email, code);
-
-      const params = { user_email: email, to_name: username, message: code };
-      emailjs.send("service_1tnwnvu", "template_7o06ag8", params)
-        .then(() => alert("✅ Code envoyé !"))
-        .catch(err => {
-          console.warn("EmailJS erreur:", err);
-          alert("❌ Erreur : " + JSON.stringify(err));
-        });
     }
 
     function getRoleByEmail(email) {
@@ -278,24 +279,28 @@
       return "user";
     }
 
-    // ========= verifyCode (utilise Firestore pour obtenir DP de façon atomique) =========
+    // ========= verifyCode (génère DP atomiquement via transaction) =========
     async function verifyCode() {
       const entered = document.getElementById("code").value.trim();
-      const saved = localStorage.getItem("verificationCode");
 
-      if (String(entered) === String(saved)) {
+      if (!pendingRegistration.verificationCode) {
+        alert("⚠️ Aucun code en attente (la page a peut-être été rechargée). Re-demande le code.");
+        return;
+      }
+
+      if (String(entered) === String(pendingRegistration.verificationCode)) {
         try {
-          let email = localStorage.getItem("pendingEmail").toLowerCase();
-          const username = localStorage.getItem("pendingUsername");
-          const password = localStorage.getItem("pendingPassword");
+          const email = pendingRegistration.email.toLowerCase();
+          const username = pendingRegistration.username;
+          const password = pendingRegistration.password;
 
-          // re-read global accounts from localStorage (compat)
-          let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-
-          // If account already exists (race), abort
-          if (accounts.some(u => u.email === email)) {
-            alert("⚠️ Ce compte existe déjà !");
-            return;
+          // Double-check in Firestore if account exists (race)
+          if (db) {
+            const exists = await userExists(email);
+            if (exists) {
+              alert("⚠️ Ce compte existe déjà !");
+              return;
+            }
           }
 
           const role = getRoleByEmail(email);
@@ -306,12 +311,12 @@
             if (db) {
               dp = await getNextDPFromFirestore();
             } else {
-              dp = getNextDPClientSafe();
+              // as fallback create simple DP from current timestamp (shouldn't happen since db must be present)
+              dp = "DP" + String(Date.now()).slice(-6);
             }
           } catch (e) {
             console.warn("Erreur transaction Firestore pour DP :", e);
-            // fallback client-side safe generator (still increments local counter)
-            dp = getNextDPClientSafe();
+            dp = "DP" + String(Date.now()).slice(-6);
           }
 
           const user = {
@@ -326,8 +331,21 @@
             createdAt: new Date().toISOString()
           };
 
-          // Save everywhere (localStorage + Firestore)
-          await saveUserEverywhere(user);
+          // Save to Firestore
+          await saveUserToFirestore(user);
+
+          // Set session (so profil.html peut récupérer la session si tu utilises sessionStorage)
+          try {
+            sessionStorage.setItem("dpstore_user", JSON.stringify({
+              email: user.email,
+              username: user.username,
+              dp: user.dp,
+              role: user.role,
+              credits: user.credits
+            }));
+          } catch (e) {
+            console.warn("sessionStorage indisponible :", e);
+          }
 
           alert("🎉 Compte créé !");
           window.location.href = "profil.html";
@@ -340,29 +358,44 @@
       }
     }
 
-    // ========= loginUser (inchangé mais continue à mettre à jour localStorage) =========
-    function loginUser() {
+    // ========= loginUser (vérifie dans Firestore) =========
+    async function loginUser() {
       const email = document.getElementById("loginEmail").value.trim().toLowerCase();
       const password = document.getElementById("loginPassword").value.trim();
 
-      const accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-      const user = accounts.find(u => u.email.toLowerCase() === email);
-
-      if (!user) { alert("⚠️ Aucun compte trouvé !"); return; }
-      if (user.password !== password) { alert("❌ Mot de passe incorrect !"); return; }
-
-      user.lastLogin = new Date().toLocaleString();
-      localStorage.setItem("dpstore_user", JSON.stringify(user));
-      localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
-
-      // also update Firestore lastLogin if available
-      if (db) {
-        const safeId = encodeURIComponent(user.email);
-        setDoc(doc(db, "users", safeId), { lastLogin: user.lastLogin }, { merge: true }).catch(e => console.warn(e));
+      if (!email || !password) {
+        alert("⚠️ Remplis tous les champs !");
+        return;
       }
 
-      alert("✅ Connexion !");
-      window.location.href = "profil.html";
+      try {
+        const user = await fetchUserByEmail(email);
+        if (!user) { alert("⚠️ Aucun compte trouvé !"); return; }
+        if (user.password !== password) { alert("❌ Mot de passe incorrect !"); return; }
+
+        // update lastLogin in Firestore
+        const safeId = encodeURIComponent(email);
+        await setDoc(doc(db, "users", safeId), { lastLogin: new Date().toLocaleString() }, { merge: true });
+
+        // set session so other pages can read the logged user
+        try {
+          sessionStorage.setItem("dpstore_user", JSON.stringify({
+            email: user.email,
+            username: user.username,
+            dp: user.dp,
+            role: user.role,
+            credits: user.credits
+          }));
+        } catch (e) {
+          console.warn("sessionStorage indisponible :", e);
+        }
+
+        alert("✅ Connexion !");
+        window.location.href = "profil.html";
+      } catch (e) {
+        console.error("Erreur loginUser:", e);
+        alert("❌ Erreur lors de la connexion.");
+      }
     }
 
     function toggleForms() {
@@ -372,43 +405,48 @@
       l.style.display = l.style.display === "none" ? "block" : "none";
     }
 
-    // ===== Fix automatique des DP dupliqués (local) - conserve ton comportement existant =====
-    (function fixDuplicateDP() {
+    // ===== Fix automatique des DP dupliqués (optionnel) =====
+    // Cette fonction vérifie si plusieurs utilisateurs partagent le même dp
+    // si elle trouve des doublons, elle les corrige en demandant un nouveau DP via transaction.
+    // Attention : scan de la collection 'users' (opération potentiellement lourde si bcp d'utilisateurs).
+    async function fixDuplicateDPs() {
       try {
-        let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-        if (!accounts.length) return;
-
-        const usedDP = new Set();
-        let changed = false;
-
-        for (let i = 0; i < accounts.length; i++) {
-          const dp = accounts[i].dp;
-
-          if (usedDP.has(dp)) {
-            let newDP;
-            // prefer Firestore for uniqueness if available
-            if (db) {
-              // génération asynchrone impossible ici synchronement : on joue la sécurité en fallback
-              newDP = getNextDPClientSafe();
-            } else {
-              newDP = getNextDPClientSafe();
-            }
-
-            accounts[i].dp = newDP;
-            changed = true;
+        if (!db) return;
+        const q = query(collection(db, "users"));
+        const snaps = await getDocs(q);
+        const dpMap = new Map();
+        const updates = [];
+        snaps.forEach(docSnap => {
+          const data = docSnap.data();
+          const dp = data.dp;
+          if (!dp) return;
+          if (dpMap.has(dp)) {
+            dpMap.get(dp).push({ id: docSnap.id, data });
+          } else {
+            dpMap.set(dp, [{ id: docSnap.id, data }]);
           }
-
-          usedDP.add(accounts[i].dp);
+        });
+        for (const [dp, arr] of dpMap.entries()) {
+          if (arr.length > 1) {
+            // keep first, regenerate for others
+            for (let i = 1; i < arr.length; i++) {
+              const userId = arr[i].id;
+              const newDP = await getNextDPFromFirestore();
+              updates.push({ userId, newDP });
+            }
+          }
         }
-
-        if (changed) {
-          localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
-          console.log("✔ Correction DP dupliqués appliquée (local).");
+        for (const u of updates) {
+          const userRef = doc(db, "users", u.userId);
+          await updateDoc(userRef, { dp: u.newDP });
         }
+        if (updates.length) console.log("DP duplicatés corrigés :", updates.length);
       } catch (e) {
-        console.warn("Erreur fixDuplicateDP:", e);
+        console.warn("Erreur fixDuplicateDPs:", e);
       }
-    })();
+    }
+    // On lance en arrière-plan (silencieux)
+    fixDuplicateDPs().catch(() => {});
 
     // expose functions on window so onclick handlers work (keeps your HTML unchanged)
     window.sendVerificationCode = sendVerificationCode;
