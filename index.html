@@ -66,7 +66,6 @@
       getDocs
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-    // ====== TA CONFIG FIREBASE (déjà fournie) ======
     const firebaseConfig = {
       apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
       authDomain: "dpstore-officie.firebaseapp.com",
@@ -76,7 +75,6 @@
       appId: "1:903943973062:web:6501a2ec167adb31258fc7"
     };
 
-    // Initialisation Firebase
     let firebaseApp = null;
     let db = null;
     try {
@@ -84,24 +82,13 @@
       db = getFirestore(firebaseApp);
       console.log("Firestore initialisé.");
     } catch (e) {
-      console.warn("Firestore non initialisé (config manquante ou erreur) :", e);
+      console.warn("Firestore non initialisé :", e);
     }
 
-    // ===== EmailJS init (inchangé) =====
-    (function () {
-      emailjs.init("5gObExmJ85l0pSXC3");
-    })();
+    (function () { emailjs.init("5gObExmJ85l0pSXC3"); })();
 
-    // ========== VARIABLES EN MÉMOIRE (remplacent localStorage pour pending state) ==========
-    // NOTE : ces variables ne survivent pas à un reload — c'est volontaire (plus de localStorage).
-    let pendingRegistration = {
-      email: null,
-      username: null,
-      password: null,
-      verificationCode: null
-    };
+    let pendingRegistration = { email: null, username: null, password: null, verificationCode: null };
 
-    // ======= Fonctions utilitaires Firestore =======
     async function getNextDPFromFirestore() {
       if (!db) throw new Error("Firestore non disponible");
       const counterRef = doc(db, "counters", "dp");
@@ -120,18 +107,11 @@
       return "DP" + String(newNum).padStart(6, "0");
     }
 
-    // helper: save an emailjs record in Firestore
     async function recordEmailJSSent(email, code) {
-      try {
-        if (db) {
-          await addDoc(collection(db, "emailjs_sent"), { email, code, date: new Date().toISOString() });
-        }
-      } catch (e) {
-        console.warn("Erreur en enregistrant emailjs_sent :", e);
-      }
+      try { if (db) await addDoc(collection(db, "emailjs_sent"), { email, code, date: new Date().toISOString() }); }
+      catch (e) { console.warn("Erreur emailjs_sent :", e); }
     }
 
-    // helper: check if a user exists by email (Firestore)
     async function userExists(email) {
       if (!db) throw new Error("Firestore non disponible");
       const safeId = encodeURIComponent(email);
@@ -139,7 +119,6 @@
       return snap.exists();
     }
 
-    // helper: save user to Firestore (no localStorage)
     async function saveUserToFirestore(user) {
       if (!db) throw new Error("Firestore non disponible");
       const safeId = encodeURIComponent(user.email);
@@ -157,245 +136,101 @@
       }, { merge: true });
     }
 
-    // helper: fetch user by email from Firestore
+    // ====== FETCH USER MODIFIÉ POUR LOGIN
     async function fetchUserByEmail(email) {
       if (!db) throw new Error("Firestore non disponible");
       const safeId = encodeURIComponent(email);
-      const snap = await getDoc(doc(db, "users", safeId));
-      return snap.exists() ? snap.data() : null;
+      let snap = await getDoc(doc(db, "users", safeId));
+      if (!snap.exists()) {
+        // fallback : recherche par champ email si ID encodé inexistant
+        const q = query(collection(db, "users"), where("email", "==", email));
+        const snaps = await getDocs(q);
+        if (!snaps.empty) return snaps.docs[0].data();
+        return null;
+      }
+      return snap.data();
     }
 
-    // ========= Pré-initialisation du compte creator dans Firestore =========
     (async function initCreatorAccount() {
       try {
         const creatorEmail = "christopherantoine773@gmail.com".toLowerCase();
         if (!db) return;
-
         const exists = await userExists(creatorEmail);
         if (!exists) {
           const creator = {
-            username: "DPSTORE",
-            email: creatorEmail,
-            password: "Blondy200ky444",
-            role: "creator",
-            credits: 0,
-            dp: "DP000001",
+            username: "DPSTORE", email: creatorEmail, password: "Blondy200ky444",
+            role: "creator", credits: 0, dp: "DP000001",
             photo: "https://i.imgur.com/2XnKZ9R.png",
             lastLogin: new Date().toLocaleString(),
             createdAt: new Date().toISOString()
           };
           await saveUserToFirestore(creator);
-
-          // ensure counters/dp exists and is at least 1
           const counterRef = doc(db, "counters", "dp");
           const snap = await getDoc(counterRef);
-          if (!snap.exists()) {
-            await setDoc(counterRef, { last: 1 });
-          } else {
-            const current = snap.data().last || 0;
-            if (current < 1) {
-              await setDoc(counterRef, { last: 1 }, { merge: true });
-            }
-          }
+          if (!snap.exists()) await setDoc(counterRef, { last: 1 });
+          else { const current = snap.data().last || 0; if (current < 1) await setDoc(counterRef, { last: 1 }, { merge: true }); }
           console.log("Compte creator créé dans Firestore.");
-        } else {
-          // ensure counters/dp at least 1
-          const counterRef = doc(db, "counters", "dp");
-          const snap = await getDoc(counterRef);
-          if (!snap.exists()) {
-            await setDoc(counterRef, { last: 1 });
-          } else {
-            const current = snap.data().last || 0;
-            if (current < 1) {
-              await setDoc(counterRef, { last: 1 }, { merge: true });
-            }
-          }
         }
-      } catch (e) {
-        console.warn("Erreur initCreatorAccount :", e);
-      }
+      } catch (e) { console.warn("Erreur initCreatorAccount :", e); }
     })();
 
     function generateCode() { return Math.floor(100000 + Math.random() * 900000); }
 
-    // ========= sendVerificationCode (utilise mémoire + Firestore pour trace) =========
     async function sendVerificationCode() {
-      const emailEl = document.getElementById("email");
-      const usernameEl = document.getElementById("username");
-      const passwordEl = document.getElementById("password");
-
-      const email = emailEl.value.trim().toLowerCase();
-      const username = usernameEl.value.trim();
-      const password = passwordEl.value.trim();
-
-      if (!email || !username || !password) {
-        alert("⚠️ Remplis tous les champs !");
-        return;
-      }
-
+      const email = document.getElementById("email").value.trim().toLowerCase();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      if (!email || !username || !password) { alert("⚠️ Remplis tous les champs !"); return; }
       try {
-        // check Firestore if account exists
-        if (db) {
-          const exists = await userExists(email);
-          if (exists) {
-            alert("⚠️ Ce compte existe déjà !");
-            return;
-          }
-        }
-
+        if (db) { if (await userExists(email)) { alert("⚠️ Ce compte existe déjà !"); return; } }
         const code = generateCode();
-        // store pending in-memory
-        pendingRegistration.email = email;
-        pendingRegistration.username = username;
-        pendingRegistration.password = password;
-        pendingRegistration.verificationCode = String(code);
-
-        // record emailjs attempt in Firestore
+        pendingRegistration = { email, username, password, verificationCode: String(code) };
         await recordEmailJSSent(email, code);
-
-        const params = { user_email: email, to_name: username, message: String(code) };
-        emailjs.send("service_1tnwnvu", "template_7o06ag8", params)
+        emailjs.send("service_1tnwnvu", "template_7o06ag8", { user_email: email, to_name: username, message: String(code) })
           .then(() => alert("✅ Code envoyé !"))
-          .catch(err => {
-            console.warn("EmailJS erreur:", err);
-            alert("❌ Erreur : " + JSON.stringify(err));
-          });
-      } catch (e) {
-        console.error("Erreur sendVerificationCode:", e);
-        alert("❌ Erreur lors de l'envoi du code.");
-      }
+          .catch(err => { console.warn("EmailJS erreur:", err); alert("❌ Erreur : " + JSON.stringify(err)); });
+      } catch (e) { console.error("Erreur sendVerificationCode:", e); alert("❌ Erreur lors de l'envoi du code."); }
     }
 
     function getRoleByEmail(email) {
       const CREATOR_EMAILS = ["christopherantoine773@gmail.com"];
       const EMPLOYEE_EMAILS = [
-        "pilotecitizen@gmail.com",
-        "ladouceurlorvynsky@gmail.com",
-        "doresmaworldens@gmail.com",
-        "mathieulherisson99@gmail.com"
+        "pilotecitizen@gmail.com","ladouceurlorvynsky@gmail.com",
+        "doresmaworldens@gmail.com","mathieulherisson99@gmail.com"
       ];
       if (CREATOR_EMAILS.includes(email)) return "creator";
       if (EMPLOYEE_EMAILS.includes(email)) return "employee";
       return "user";
     }
 
-    // ========= verifyCode (génère DP atomiquement via transaction) =========
     async function verifyCode() {
       const entered = document.getElementById("code").value.trim();
-
-      if (!pendingRegistration.verificationCode) {
-        alert("⚠️ Aucun code en attente (la page a peut-être été rechargée). Re-demande le code.");
-        return;
-      }
-
+      if (!pendingRegistration.verificationCode) { alert("⚠️ Aucun code en attente."); return; }
       if (String(entered) === String(pendingRegistration.verificationCode)) {
         try {
           const email = pendingRegistration.email.toLowerCase();
-          const username = pendingRegistration.username;
-          const password = pendingRegistration.password;
-
-          // Double-check in Firestore if account exists (race)
-          if (db) {
-            const exists = await userExists(email);
-            if (exists) {
-              alert("⚠️ Ce compte existe déjà !");
-              return;
-            }
-          }
-
-          const role = getRoleByEmail(email);
-
-          // generate DP using Firestore transaction if possible
-          let dp;
-          try {
-            if (db) {
-              dp = await getNextDPFromFirestore();
-            } else {
-              // as fallback create simple DP from current timestamp (shouldn't happen since db must be present)
-              dp = "DP" + String(Date.now()).slice(-6);
-            }
-          } catch (e) {
-            console.warn("Erreur transaction Firestore pour DP :", e);
-            dp = "DP" + String(Date.now()).slice(-6);
-          }
-
-          const user = {
-            username,
-            email,
-            password,
-            role,
-            credits: 0,
-            dp,
-            photo: "https://i.imgur.com/2XnKZ9R.png",
-            lastLogin: new Date().toLocaleString(),
-            createdAt: new Date().toISOString()
-          };
-
-          // Save to Firestore
+          if (db && await userExists(email)) { alert("⚠️ Ce compte existe déjà !"); return; }
+          const dp = db ? await getNextDPFromFirestore() : "DP" + String(Date.now()).slice(-6);
+          const user = { username: pendingRegistration.username, email, password: pendingRegistration.password, role: getRoleByEmail(email), credits: 0, dp, photo: "https://i.imgur.com/2XnKZ9R.png", lastLogin: new Date().toLocaleString(), createdAt: new Date().toISOString() };
           await saveUserToFirestore(user);
-
-          // Set session (so profil.html peut récupérer la session si tu utilises sessionStorage)
-          try {
-            sessionStorage.setItem("dpstore_user", JSON.stringify({
-              email: user.email,
-              username: user.username,
-              dp: user.dp,
-              role: user.role,
-              credits: user.credits
-            }));
-          } catch (e) {
-            console.warn("sessionStorage indisponible :", e);
-          }
-
-          alert("🎉 Compte créé !");
-          window.location.href = "profil.html";
-        } catch (err) {
-          console.error("Erreur verifyCode:", err);
-          alert("❌ Une erreur est survenue lors de la création du compte.");
-        }
-      } else {
-        alert("❌ Code incorrect !");
-      }
+          sessionStorage.setItem("dpstore_user", JSON.stringify({ email:user.email, username:user.username, dp:user.dp, role:user.role, credits:user.credits }));
+          alert("🎉 Compte créé !"); window.location.href = "profil.html";
+        } catch (err) { console.error("Erreur verifyCode:", err); alert("❌ Une erreur est survenue."); }
+      } else alert("❌ Code incorrect !");
     }
 
-    // ========= loginUser (vérifie dans Firestore) =========
     async function loginUser() {
       const email = document.getElementById("loginEmail").value.trim().toLowerCase();
       const password = document.getElementById("loginPassword").value.trim();
-
-      if (!email || !password) {
-        alert("⚠️ Remplis tous les champs !");
-        return;
-      }
-
+      if (!email || !password) { alert("⚠️ Remplis tous les champs !"); return; }
       try {
         const user = await fetchUserByEmail(email);
         if (!user) { alert("⚠️ Aucun compte trouvé !"); return; }
         if (user.password !== password) { alert("❌ Mot de passe incorrect !"); return; }
-
-        // update lastLogin in Firestore
-        const safeId = encodeURIComponent(email);
-        await setDoc(doc(db, "users", safeId), { lastLogin: new Date().toLocaleString() }, { merge: true });
-
-        // set session so other pages can read the logged user
-        try {
-          sessionStorage.setItem("dpstore_user", JSON.stringify({
-            email: user.email,
-            username: user.username,
-            dp: user.dp,
-            role: user.role,
-            credits: user.credits
-          }));
-        } catch (e) {
-          console.warn("sessionStorage indisponible :", e);
-        }
-
-        alert("✅ Connexion !");
-        window.location.href = "profil.html";
-      } catch (e) {
-        console.error("Erreur loginUser:", e);
-        alert("❌ Erreur lors de la connexion.");
-      }
+        await setDoc(doc(db, "users", encodeURIComponent(email)), { lastLogin: new Date().toLocaleString() }, { merge: true });
+        sessionStorage.setItem("dpstore_user", JSON.stringify({ email:user.email, username:user.username, dp:user.dp, role:user.role, credits:user.credits }));
+        alert("✅ Connexion !"); window.location.href = "profil.html";
+      } catch (e) { console.error("Erreur loginUser:", e); alert("❌ Erreur lors de la connexion."); }
     }
 
     function toggleForms() {
@@ -405,55 +240,26 @@
       l.style.display = l.style.display === "none" ? "block" : "none";
     }
 
-    // ===== Fix automatique des DP dupliqués (optionnel) =====
-    // Cette fonction vérifie si plusieurs utilisateurs partagent le même dp
-    // si elle trouve des doublons, elle les corrige en demandant un nouveau DP via transaction.
-    // Attention : scan de la collection 'users' (opération potentiellement lourde si bcp d'utilisateurs).
     async function fixDuplicateDPs() {
       try {
         if (!db) return;
-        const q = query(collection(db, "users"));
-        const snaps = await getDocs(q);
-        const dpMap = new Map();
-        const updates = [];
+        const snaps = await getDocs(query(collection(db, "users")));
+        const dpMap = new Map(); const updates = [];
         snaps.forEach(docSnap => {
-          const data = docSnap.data();
-          const dp = data.dp;
-          if (!dp) return;
-          if (dpMap.has(dp)) {
-            dpMap.get(dp).push({ id: docSnap.id, data });
-          } else {
-            dpMap.set(dp, [{ id: docSnap.id, data }]);
-          }
+          const data = docSnap.data(); const dp = data.dp; if(!dp) return;
+          if (dpMap.has(dp)) dpMap.get(dp).push({id:docSnap.id,data}); else dpMap.set(dp,[{id:docSnap.id,data}]);
         });
-        for (const [dp, arr] of dpMap.entries()) {
-          if (arr.length > 1) {
-            // keep first, regenerate for others
-            for (let i = 1; i < arr.length; i++) {
-              const userId = arr[i].id;
-              const newDP = await getNextDPFromFirestore();
-              updates.push({ userId, newDP });
-            }
-          }
-        }
-        for (const u of updates) {
-          const userRef = doc(db, "users", u.userId);
-          await updateDoc(userRef, { dp: u.newDP });
-        }
-        if (updates.length) console.log("DP duplicatés corrigés :", updates.length);
-      } catch (e) {
-        console.warn("Erreur fixDuplicateDPs:", e);
-      }
+        for (const [dp, arr] of dpMap.entries()) { if(arr.length>1){ for(let i=1;i<arr.length;i++){ const userId=arr[i].id; const newDP=await getNextDPFromFirestore(); updates.push({userId,newDP}); } } }
+        for(const u of updates){ await updateDoc(doc(db,"users",u.userId),{dp:u.newDP}); }
+        if(updates.length) console.log("DP duplicatés corrigés :", updates.length);
+      } catch(e){ console.warn("Erreur fixDuplicateDPs:",e); }
     }
-    // On lance en arrière-plan (silencieux)
-    fixDuplicateDPs().catch(() => {});
+    fixDuplicateDPs().catch(()=>{});
 
-    // expose functions on window so onclick handlers work (keeps your HTML unchanged)
     window.sendVerificationCode = sendVerificationCode;
     window.verifyCode = verifyCode;
     window.loginUser = loginUser;
     window.toggleForms = toggleForms;
-
   </script>
 </body>
 </html>
