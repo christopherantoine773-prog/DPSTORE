@@ -334,17 +334,21 @@
           // Save to Firestore
           await saveUserToFirestore(user);
 
-          // Set session (so profil.html peut récupérer la session si tu utilises sessionStorage)
+          // Set session (so profil.html can retrieve the session)
           try {
-            sessionStorage.setItem("dpstore_user", JSON.stringify({
+            const userPayload = {
               email: user.email,
               username: user.username,
               dp: user.dp,
               role: user.role,
-              credits: user.credits
-            }));
+              credits: user.credits,
+              balance: user.credits // also set balance for profil.html compatibility
+            };
+            sessionStorage.setItem("dpstore_user", JSON.stringify(userPayload));
+            // <-- ADDED: also store in localStorage so profil.html (which reads localStorage) works
+            localStorage.setItem("dpstore_user", JSON.stringify(userPayload));
           } catch (e) {
-            console.warn("sessionStorage indisponible :", e);
+            console.warn("sessionStorage/localStorage indisponible :", e);
           }
 
           alert("🎉 Compte créé !");
@@ -379,15 +383,19 @@
 
         // set session so other pages can read the logged user
         try {
-          sessionStorage.setItem("dpstore_user", JSON.stringify({
+          const userPayload = {
             email: user.email,
             username: user.username,
             dp: user.dp,
             role: user.role,
-            credits: user.credits
-          }));
+            credits: user.credits,
+            balance: user.credits // also set balance
+          };
+          sessionStorage.setItem("dpstore_user", JSON.stringify(userPayload));
+          // <-- ADDED: write same payload to localStorage for profil.html compatibility
+          localStorage.setItem("dpstore_user", JSON.stringify(userPayload));
         } catch (e) {
-          console.warn("sessionStorage indisponible :", e);
+          console.warn("sessionStorage/localStorage indisponible :", e);
         }
 
         alert("✅ Connexion !");
