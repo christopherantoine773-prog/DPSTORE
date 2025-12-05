@@ -170,7 +170,7 @@ h2{
 <div class="box">
     <h3 id="fundTitle">💰 Ajouter des fonds</h3>
 
-    <input id="dpInput" placeholder="DP ID (ex : DP-123456)">
+    <input id="dpInput" placeholder="DP ID (ex : DP000001)">
     <input id="amountInput" type="number" placeholder="Montant">
 
     <button id="fundBtn" onclick="processFunds()">Ajouter</button>
@@ -195,8 +195,8 @@ h2{
     <input id="employeeEmail" placeholder="Email de l'employé">
 
     <select id="employeeType">
-        <option value="employee1">Employé 1</option>
-        <option value="employee2">Employé 2</option>
+        <option value="e1">Employé 1</option>
+        <option value="e2">Employé 2</option>
     </select>
 
     <button onclick="addEmployee()">Ajouter</button>
@@ -204,7 +204,7 @@ h2{
 
 <!-- =====================================================
      ❌ SUPPRIMER EMPLOYÉ
-===================================================== -->
+============================================================ -->
 <div class="box">
     <h3 style="color:#ff4444;">❌ Supprimer un employé</h3>
 
@@ -217,7 +217,7 @@ h2{
 
 <!-- =====================================================
      📨 Demandes de recharge
-===================================================== -->
+============================================================ -->
 <div class="box">
     <h3>📨 Demandes de recharge</h3>
     <div id="rechargeList"></div>
@@ -247,9 +247,30 @@ h2{
 <audio id="soundValidate" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7b8ad29dbb.mp3?filename=correct-2-46134.mp3"></audio>
 <audio id="soundRefuse" src="https://cdn.pixabay.com/download/audio/2021/09/09/audio_9d6f5bf86d.mp3?filename=error-126627.mp3"></audio>
 
-<script>
+<script type="module">
 /* ============================================================
-   🎛 DROPDOWN STYLE SMMTRENDING
+   FIREBASE (modular v9)
+============================================================ */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import {
+  getFirestore, collection, query, where, getDocs,
+  doc, updateDoc, setDoc, getDoc, writeBatch
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
+  authDomain: "dpstore-officie.firebaseapp.com",
+  projectId: "dpstore-officie",
+  storageBucket: "dpstore-officie.firebasestorage.app",
+  messagingSenderId: "903943973062",
+  appId: "1:903943973062:web:6501a2ec167adb31258fc7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* ============================================================
+   DROPDOWN UI
 ============================================================ */
 let currentAction = "add";
 
@@ -274,114 +295,180 @@ function selectAction(type){
 }
 
 /* ============================================================
-   STORAGE HELPERS
+   SESSION (dpstore_user) - utilisé pour vérifier que l'opérateur est connecté
 ============================================================ */
-function getAllAccounts(){
-    return JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
-}
-function saveAllAccounts(list){
-    localStorage.setItem("dpstore_accounts", JSON.stringify(list));
+let sessionUser = null;
+try{
+    sessionUser = JSON.parse(localStorage.getItem("dpstore_user"));
+}catch(e){ sessionUser = null; }
+
+if(!sessionUser || !sessionUser.email){
+    alert("Aucune session trouvée. Connecte-toi d'abord.");
+    location.href = "index.html";
 }
 
 /* ============================================================
-   ADD / REMOVE FUNDS
+   HELPERS FIRESTORE
+   - findUserByDP(dp) => { id, data } or null
+   - findUserByEmail(email) => { id, data } or null
+   - refreshSessionFromFirestore()
 ============================================================ */
-function processFunds(){
+
+async function findUserByDP(dp){
+    if(!dp) return null;
+    const q = query(collection(db, "users"), where("dp", "==", dp));
+    const snaps = await getDocs(q);
+    if(snaps.empty) return null;
+    const docSnap = snaps.docs[0];
+    return { id: docSnap.id, data: docSnap.data() };
+}
+
+async function findUserByEmail(email){
+    if(!email) return null;
+    const normalized = email.trim().toLowerCase();
+    const q = query(collection(db, "users"), where("email", "==", normalized));
+    const snaps = await getDocs(q);
+    if(snaps.empty) return null;
+    const docSnap = snaps.docs[0];
+    return { id: docSnap.id, data: docSnap.data() };
+}
+
+async function refreshSessionFromFirestore(){
+    try{
+        const r = await findUserByEmail(sessionUser.email);
+        if(!r) return;
+        // update sessionUser and localStorage
+        sessionUser = {
+            email: r.data.email,
+            username: r.data.username || r.data.email.split("@")[0],
+            dp: r.data.dp || "",
+            role: r.data.role || "user",
+            credits: Number(r.data.credits || 0),
+            photo: r.data.photo || null,
+            lastLogin: r.data.lastLogin || null
+        };
+        localStorage.setItem("dpstore_user", JSON.stringify(sessionUser));
+    }catch(e){
+        console.warn("refreshSessionFromFirestore error:", e);
+    }
+}
+
+/* ============================================================
+   ADD / REMOVE FUNDS (Firestore)
+============================================================ */
+async function processFunds(){
     const dp = document.getElementById("dpInput").value.trim();
-    const amount = Number(document.getElementById("amountInput").value);
+    const amountRaw = document.getElementById("amountInput").value;
+    const amount = Number(amountRaw);
 
-    if(dp==="" || amount<=0) return alert("⚠️ Champs invalides");
+    if(dp === "" || !amount || isNaN(amount) || amount <= 0) return alert("⚠️ Champs invalides");
 
-    let accounts = getAllAccounts();
-    let user = accounts.find(u => u.dp === dp);
-
+    // find user by DP
+    const user = await findUserByDP(dp);
     if(!user) return alert("❌ DP introuvable");
 
-    if(currentAction === "add"){
-        user.balance = (user.balance || 0) + amount;
-        alert(`+${amount} crédits ajoutés à ${dp}`);
-    }
-    else{
-        if((user.balance || 0) < amount)
-            return alert("❌ Solde insuffisant!");
+    try{
+        const userRef = doc(db, "users", user.id);
 
-        user.balance -= amount;
-        alert(`-${amount} crédits retirés à ${dp}`);
-    }
+        // Use updateDoc by reading previous credits to avoid race
+        const currentCredits = Number(user.data.credits || 0);
+        let newCredits;
+        if(currentAction === "add"){
+            newCredits = currentCredits + amount;
+        } else {
+            if(currentCredits < amount) return alert("❌ Solde insuffisant!");
+            newCredits = currentCredits - amount;
+        }
 
-    saveAllAccounts(accounts);
+        await updateDoc(userRef, { credits: newCredits, lastActivity: new Date().toISOString() });
+
+        // If operator changed their own account, refresh session
+        if((sessionUser.dp || "").toString() === dp) await refreshSessionFromFirestore();
+
+        alert( (currentAction === "add" ? "+" : "-") + amount + " crédits appliqués à " + dp );
+    }catch(e){
+        console.error("processFunds error:", e);
+        alert("❌ Erreur lors de la mise à jour du solde.");
+    }
 }
 
 /* ============================================================
-   🔍 Vérifier solde (AVEC RÔLE)
+   Vérifier solde (affiche infos depuis Firestore)
 ============================================================ */
-function checkBalance(){
+async function checkBalance(){
     const dp = document.getElementById("dpCheck").value.trim();
-    let accounts = getAllAccounts();
-    let user = accounts.find(u => u.dp === dp);
+    if(!dp) return alert("⚠️ Entrez un DP");
 
+    const user = await findUserByDP(dp);
+    const resultEl = document.getElementById("checkResult");
     if(!user){
-        document.getElementById("checkResult").innerHTML = "❌ DP introuvable";
+        resultEl.innerHTML = "❌ DP introuvable";
         return;
     }
 
-    document.getElementById("checkResult").innerHTML = `
-        <b>Nom :</b> ${user.username || "Non défini"} <br>
-        <b>Email :</b> ${user.email || "Non défini"} <br>
-        <b>Rôle :</b> <span style="color:#00eaff;">${user.role || "user"}</span><br>
-        <b>Solde ${dp} :</b> 
-        <span style="color:yellow;">${user.balance || 0} crédits</span>
+    const d = user.data;
+    resultEl.innerHTML = `
+        <b>Nom :</b> ${d.username || "Non défini"} <br>
+        <b>Email :</b> ${d.email || "Non défini"} <br>
+        <b>Rôle :</b> <span style="color:#00eaff;">${d.role || "user"}</span><br>
+        <b>Solde ${dp} :</b> <span style="color:yellow;">${Number(d.credits || 0)} crédits</span>
     `;
 }
 
 /* ============================================================
-   👔 Ajouter employé
+   Ajouter / Retirer un employé (Firestore)
+   - addEmployee() sets role = "employee" and employeeType field
+   - removeEmployee() sets role = "user" and clears employeeType
 ============================================================ */
-function addEmployee(){
-    const email = document.getElementById("employeeEmail").value.trim();
+async function addEmployee(){
+    const emailRaw = document.getElementById("employeeEmail").value.trim();
     const type = document.getElementById("employeeType").value;
+    if(!emailRaw) return alert("⚠️ Email vide");
 
-    if(email==="") return alert("⚠️ Email vide");
+    const found = await findUserByEmail(emailRaw.toLowerCase());
+    if(!found) return alert("❌ Aucun compte trouvé");
 
-    let accounts = getAllAccounts();
-    let user = accounts.find(u => u.email === email);
+    try{
+        const userRef = doc(db, "users", found.id);
+        await updateDoc(userRef, { role: "employee", employeeType: type });
+        alert("👔 Employé ajouté !");
 
-    if(!user) return alert("❌ Aucun compte trouvé");
+        // refresh session if operator updated themself
+        if(found.data.email && found.data.email.toLowerCase() === sessionUser.email.toLowerCase()){
+            await refreshSessionFromFirestore();
+        }
+    }catch(e){
+        console.error("addEmployee error:", e);
+        alert("❌ Erreur lors de l'ajout d'employé.");
+    }
+}
 
-    user.role = "employee";
-    user.employeeType = type;
+async function removeEmployee(){
+    const emailRaw = document.getElementById("removeEmployeeEmail").value.trim();
+    if(!emailRaw) return alert("⚠️ Email manquant");
 
-    saveAllAccounts(accounts);
+    const found = await findUserByEmail(emailRaw.toLowerCase());
+    if(!found) return alert("❌ Aucun compte trouvé");
 
-    alert("👔 Employé ajouté !");
+    if((found.data.role || "").toLowerCase() !== "employee") return alert("⚠️ Cet utilisateur n'est pas un employé");
+
+    try{
+        const userRef = doc(db, "users", found.id);
+        await updateDoc(userRef, { role: "user", employeeType: null });
+        alert("❌ Employé retiré !");
+        if(found.data.email && found.data.email.toLowerCase() === sessionUser.email.toLowerCase()){
+            await refreshSessionFromFirestore();
+        }
+    }catch(e){
+        console.error("removeEmployee error:", e);
+        alert("❌ Erreur lors de la suppression d'employé.");
+    }
 }
 
 /* ============================================================
-   ❌ SUPPRIMER EMPLOYÉ
-============================================================ */
-function removeEmployee(){
-    const email = document.getElementById("removeEmployeeEmail").value.trim();
-
-    if(email === "") return alert("⚠️ Email manquant");
-
-    let accounts = getAllAccounts();
-    let user = accounts.find(u => u.email === email);
-
-    if(!user) return alert("❌ Aucun compte trouvé");
-
-    if(user.role !== "employee")
-        return alert("⚠️ Cet utilisateur n'est pas un employé");
-
-    user.role = "user";
-    user.employeeType = null;
-
-    saveAllAccounts(accounts);
-
-    alert("❌ Employé retiré !");
-}
-
-/* ============================================================
-   📬 Recharges
+   RECHARGES (localStorage-based as before) + Firestore integration
+   - validateRecharge: credit user in Firestore, archive request locally
+   - refuseRecharge: mark refused locally & archive
 ============================================================ */
 function loadRecharges(){
     let allKeys = Object.keys(localStorage).filter(k => k.startsWith("dp_recharges_"));
@@ -403,7 +490,7 @@ function loadRecharges(){
         return;
     }
 
-    globalList.forEach((r, index) => {
+    globalList.forEach((r) => {
 
         box.innerHTML += `
             <div class="request">
@@ -427,8 +514,8 @@ function loadRecharges(){
                 ${r.receipt ? `<img src="${r.receipt}" alt="Reçu">` : ""}
 
                 <div class="btnRow">
-                    <button class="btnGreen" onclick="validateRecharge('${r._storageKey}', '${r.transcode}')">VALIDER</button>
-                    <button class="btnRed" onclick="refuseRecharge('${r._storageKey}', '${r.transcode}')">REFUSER</button>
+                    <button class="btnGreen" onclick="validateRecharge('${r._storageKey.replace(/'/g,"\\'")}', '${r.transcode.replace(/'/g,"\\'")}')">VALIDER</button>
+                    <button class="btnRed" onclick="refuseRecharge('${r._storageKey.replace(/'/g,"\\'")}', '${r.transcode.replace(/'/g,"\\'")}')">REFUSER</button>
                 </div>
             </div>
         `;
@@ -442,30 +529,36 @@ function addToArchive(item){
     localStorage.setItem("dp_archives", JSON.stringify(arch));
 }
 
-function validateRecharge(storageKey, id){
+async function validateRecharge(storageKey, id){
     let list = JSON.parse(localStorage.getItem(storageKey) || "[]");
     let index = list.findIndex(x => x.transcode === id);
     if(index === -1) return;
 
     let r = list[index];
 
-    let accounts = getAllAccounts();
-    let user = accounts.find(u => u.dp === r.dpID);
+    try{
+        // credit user in Firestore by DP
+        const user = await findUserByDP(r.dpID);
+        if(user){
+            const userRef = doc(db,"users", user.id);
+            const current = Number(user.data.credits || 0);
+            const newCredits = current + Number(r.amount || 0);
+            await updateDoc(userRef, { credits: newCredits, lastActivity: new Date().toISOString() });
 
-    if(user){
-        user.balance = (user.balance || 0) + Number(r.amount);
-        saveAllAccounts(accounts);
+            // If operator updated their own session DP
+            if((sessionUser.dp || "") === r.dpID) await refreshSessionFromFirestore();
+        }
+
+        r.status = "validated";
+        addToArchive(r);
+        list.splice(index, 1);
+        localStorage.setItem(storageKey, JSON.stringify(list));
+        document.getElementById("soundValidate").play();
+        loadRecharges();
+    }catch(e){
+        console.error("validateRecharge error:", e);
+        alert("❌ Erreur lors de la validation.");
     }
-
-    r.status = "validated";
-
-    addToArchive(r);
-
-    list.splice(index, 1);
-    localStorage.setItem(storageKey, JSON.stringify(list));
-
-    document.getElementById("soundValidate").play();
-    loadRecharges();
 }
 
 function refuseRecharge(storageKey, id){
@@ -476,17 +569,26 @@ function refuseRecharge(storageKey, id){
     let r = list[index];
 
     r.status = "refused";
-
     addToArchive(r);
-
     list.splice(index, 1);
     localStorage.setItem(storageKey, JSON.stringify(list));
-
     document.getElementById("soundRefuse").play();
     loadRecharges();
 }
 
-loadRecharges();
+/* ============================================================
+   INIT
+============================================================ */
+(async function init(){
+    try{
+        // refresh session info
+        await refreshSessionFromFirestore();
+    }catch(e){
+        console.warn("init warning:", e);
+    }
+    loadRecharges();
+})();
+
 </script>
 
 </body>
