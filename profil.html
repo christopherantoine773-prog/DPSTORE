@@ -113,24 +113,15 @@ button{
         Dernière connexion : <span id="lastLogin"></span>
     </p>
 
-    <!-- 🔥 BOUTON CREATOR / ADMIN -->
     <button id="creatorModeBtn" class="creator-btn"
             onclick="location.href='creator-space.html'">
         🚀 MODE CREATOR / ADMIN
     </button>
 
-    <!-- 🔥 BOUTON EMPLOYÉ (Ajouté) -->
     <button id="employeeBtn" class="creator-btn"
             onclick="location.href='employee.html'"
             style="background:#ffae00; box-shadow:0 0 15px #ffae00; display:none;">
         🛠️ ESPACE EMPLOYÉ
-    </button>
-
-    <!-- 🔥 BOUTON ACCÈS TMM -->
-    <button id="tmmBtn" class="creator-btn" 
-            style="background:#00ff90; box-shadow:0 0 15px #00ff90; display:block;"
-            onclick="location.href='tmm.html'">
-        🛠️ Gestion Commandes (TMM)
     </button>
 
     <button onclick="location.href='produits.html'">⬅️ Retour aux produits</button>
@@ -140,11 +131,10 @@ button{
 
 <!-- ==================== SCRIPT ==================== -->
 <script type="module">
-/* ====================================
-   FIREBASE CONFIG & INIT
-==================================== */
+
+// ====== FIREBASE ======
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
@@ -158,154 +148,105 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* ====================================
-   CONSTANTES
-==================================== */
-const OWNER_EMAIL = "Christopherantoine773@gmail.com";
-
-/* ====================================
-   🔥 Chargement du compte actif
-==================================== */
+// ====== CHARGEMENT DU COMPTE ======
 let account = JSON.parse(localStorage.getItem("dpstore_user"));
 if(!account){
     alert("Aucun compte détecté !");
     location.href = "index.html";
 }
 
-/* ====================================
-   🚨 Force le rôle du propriétaire
-==================================== */
-(function enforceOwnerRole(){
-    let accs = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
-    let ownerIndex = accs.findIndex(u => (u.email || "").toLowerCase() === OWNER_EMAIL.toLowerCase());
-    if(ownerIndex !== -1){
-        accs[ownerIndex].role = "creator";
-        localStorage.setItem("dpstore_accounts", JSON.stringify(accs));
-    }
-    if((account.email || "").toLowerCase() === OWNER_EMAIL.toLowerCase()){
-        account.role = "creator";
-        localStorage.setItem("dpstore_user", JSON.stringify(account));
-    }
-})();
+// ====== RÉCUPÉRATION DES DONNÉES FIRESTORE ======
+async function loadUserFromFirestore(){
+    try{
+        const safeId = encodeURIComponent(account.email);
+        const userRef = doc(db,"users",safeId);
+        const snap = await getDoc(userRef);
 
-/* ====================================
-   🔄 Synchronisation avec dpstore_accounts
-==================================== */
-let accounts = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
-let accGlobal = accounts.find(u => (u.email || "").toLowerCase() === account.email.toLowerCase());
-if(accGlobal){
-    account.balance = accGlobal.balance ?? account.balance;
-    account.photo = accGlobal.photo ?? account.photo;
-    account.username = accGlobal.username ?? account.username;
-    account.role = accGlobal.role ?? account.role;
-    account.employeeType = accGlobal.employeeType ?? account.employeeType;
-    account.dp = accGlobal.dp ?? account.dp;
-    localStorage.setItem("dpstore_user", JSON.stringify(account));
+        if(snap.exists()){
+            const data = snap.data();
+
+            account.username = data.username;
+            account.dp       = data.dp;
+            account.role     = data.role;
+            account.credits  = data.credits ?? 0;
+            account.photo    = data.photo;
+            account.lastLogin = data.lastLogin;
+
+            localStorage.setItem("dpstore_user",JSON.stringify(account));
+        }
+    }catch(e){
+        console.warn("Erreur Firestore:", e);
+    }
 }
 
-/* ====================================
-   🔥 SYSTÈME ORIGINAL (employee + e1/e2)
-==================================== */
-function getRoleName(role){
-    if(!role) return "Utilisateur";
-    role = role.toLowerCase().trim();
-    if(role === "creator") return "Créateur";
-    if(role === "admin") return "Administrateur";
-    if(role === "employee"){
-        if(account.employeeType === "e1") return "Employé 1";
-        if(account.employeeType === "e2") return "Employé 2";
-        return "Employé";
-    }
-    return "Utilisateur";
-}
+await loadUserFromFirestore();
 
-document.getElementById("role").textContent = getRoleName(account.role);
-
-/* ====================================
-   ✔ Badge (creator, admin, employés)
-==================================== */
-function afficherBadge(role){
-    if(!role) return;
-    role = role.toLowerCase().trim();
-    let show = role === "creator" || role === "admin" || role === "employee";
-    document.getElementById("badge").innerHTML = show ? `<span class="tiktok-badge">✔</span>` : "";
-}
-afficherBadge(account.role);
-
-/* ====================================
-   ✔ Boutons Creator / Admin et Employé
-==================================== */
-let r = (account.role ?? "").toLowerCase();
-if(r === "creator" || r === "admin") document.getElementById("creatorModeBtn").style.display = "block";
-if(r === "employee") document.getElementById("employeeBtn").style.display = "block";
-
-/* ====================================
-   ✔ Infos chargées
-==================================== */
+// ====== AFFICHAGE ======
 document.getElementById("name").textContent = account.username;
-document.getElementById("dp-id").textContent = account.dp;
 document.getElementById("email").textContent = account.email;
-document.getElementById("credits").textContent = account.balance ?? 0;
+document.getElementById("dp-id").textContent = account.dp;
+document.getElementById("credits").textContent = account.credits;
 document.getElementById("lastLogin").textContent = account.lastLogin ?? "—";
 
-/* ====================================
-   📸 Gestion Photo + Firebase (email + DP sauvegardés)
-==================================== */
-if(account.photo){
-    document.getElementById("profile-pic").src = account.photo;
-} else {
-    document.getElementById("profile-pic").src = "https://via.placeholder.com/120x120?text=DP";
+// ===== Badge =====
+if(account.role === "creator" || account.role === "employee" || account.role === "admin"){
+    document.getElementById("badge").innerHTML = `<span class="tiktok-badge">✔</span>`;
 }
 
-document.getElementById("changePhotoBtn").onclick = () => document.getElementById("photoInput").click();
+// ===== Rôle =====
+document.getElementById("role").textContent = 
+    account.role === "creator" ? "Créateur" :
+    account.role === "employee" ? "Employé" :
+    account.role === "admin" ? "Administrateur" : "Utilisateur";
 
-document.getElementById("photoInput").onchange = e => {
+// ===== Boutons spéciaux =====
+if(account.role === "creator" || account.role === "admin"){
+    document.getElementById("creatorModeBtn").style.display = "block";
+}
+if(account.role === "employee"){
+    document.getElementById("employeeBtn").style.display = "block";
+}
+
+// ===== Photo =====
+document.getElementById("profile-pic").src = account.photo || "https://via.placeholder.com/120";
+
+// Modifier photo
+document.getElementById("changePhotoBtn").onclick = () =>{
+    document.getElementById("photoInput").click();
+};
+
+document.getElementById("photoInput").onchange = e =>{
     let file = e.target.files[0];
-    if(!file) return;
     let reader = new FileReader();
-    reader.onload = evt => {
-        document.getElementById("profile-pic").src = evt.target.result;
+    reader.onload = x =>{
+        document.getElementById("profile-pic").src = x.target.result;
         document.getElementById("savePhotoBtn").style.display = "inline-block";
     };
     reader.readAsDataURL(file);
 };
 
-document.getElementById("savePhotoBtn").onclick = async () => {
+// Sauvegarder photo
+document.getElementById("savePhotoBtn").onclick = async()=>{
     account.photo = document.getElementById("profile-pic").src;
 
-    let accs = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
-    let X = accs.find(u => (u.email || "").toLowerCase() === account.email.toLowerCase());
-    if(X){
-        X.photo = account.photo;
-        localStorage.setItem("dpstore_accounts", JSON.stringify(accs));
-    }
-    localStorage.setItem("dpstore_user", JSON.stringify(account));
+    localStorage.setItem("dpstore_user",JSON.stringify(account));
 
-    // 🔥 FIREBASE : sauvegarde email + DP + photo
-    try{
-        const emailSafe = encodeURIComponent(account.email);
-        const userRef = doc(db,"users",emailSafe);
-        await setDoc(userRef, {
-            email: account.email,
-            dp: account.dp,
-            photo: account.photo
-        }, { merge: true });
-        console.log("Email et DP sauvegardés sur Firebase");
-    } catch(e){
-        console.warn("Erreur Firebase update:", e);
-    }
+    const safeId = encodeURIComponent(account.email);
+    await setDoc(doc(db,"users",safeId),{
+        photo: account.photo
+    },{merge:true});
 
-    document.getElementById("savePhotoBtn").style.display = "none";
     alert("Photo enregistrée !");
+    document.getElementById("savePhotoBtn").style.display = "none";
 };
 
-/* ====================================
-   🔴 Déconnexion
-==================================== */
+// Déconnexion
 function logout(){
     localStorage.removeItem("dpstore_user");
     location.href = "index.html";
 }
+window.logout = logout;
+
 </script>
 
 </body>
