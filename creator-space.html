@@ -9,9 +9,9 @@
 body{
     background:black;
     color:white;
-    font-family:Arial, sans-serif;
+    font-family:Arial;
     padding:20px;
-    display:none; /* caché jusqu'à vérification */
+    display:block;
 }
 
 /* ====== BOX ====== */
@@ -128,11 +128,20 @@ h2{
 .optionItem:hover{
     background:#0060cc;
 }
+.infoNote{
+    background:#0b2b2b;
+    padding:10px;
+    border-radius:8px;
+    margin-top:8px;
+    color:#9fe7ff;
+}
 </style>
 </head>
 <body>
 
 <h2>🚀 MODE CREATOR / ADMIN</h2>
+
+<p class="infoNote" id="infoNote">ℹ️ Données en cours de chargement...</p>
 
 <button style="background:#00eaff;color:black;font-weight:bold;padding:6px 14px;border-radius:8px;font-size:14px;margin-bottom:10px;cursor:pointer;width:auto;" onclick="location.href='dp.html'">
     DP
@@ -169,8 +178,9 @@ h2{
     <h3>👔 Ajouter un employé</h3>
     <input id="employeeEmail" placeholder="Email de l'employé">
     <select id="employeeType">
-        <option value="employee1">Employé 1</option>
-        <option value="employee2">Employé 2</option>
+        <option value="employee">Employé</option>
+        <option value="creator">Créateur</option>
+        <option value="admin">Admin</option>
     </select>
     <button onclick="addEmployee()">Ajouter</button>
 </div>
@@ -194,6 +204,17 @@ h2{
     <div id="rechargeList"></div>
 </div>
 
+<div class="box">
+    <h3>🔧 Fonctions supplémentaires</h3>
+    <button onclick="findUserByEmail()">Chercher utilisateur par email</button>
+    <button onclick="listAllUsers()">Afficher tous les utilisateurs</button>
+    <button onclick="resetBalance()">Réinitialiser solde utilisateur</button>
+    <button onclick="addCredits()">Ajouter des crédits</button>
+    <button onclick="showTransactions()">Voir historique transactions</button>
+    <button onclick="sendMessage()">Envoyer un message</button>
+    <button onclick="clearOldTransactions()">Archiver anciennes transactions</button>
+</div>
+
 <button style="background:#005eff; margin-top:20px;" onclick="location.href='verifi.html'">
 🔍 Vérifier tous les DP
 </button>
@@ -210,13 +231,18 @@ h2{
 ⚡ Ouvrir OFF/ON
 </button>
 
+<button style="background:#00ffaa; margin-top:20px; color:black; font-weight:bold;" onclick="location.href='espace.html'">
+🌐 Aller à l'Espace
+</button>
+
 <audio id="soundValidate" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7b8ad29dbb.mp3?filename=correct-2-46134.mp3"></audio>
 <audio id="soundRefuse" src="https://cdn.pixabay.com/download/audio/2021/09/09/audio_9d6f5bf86d.mp3?filename=error-126627.mp3"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
+// ===== CONFIG FIREBASE =====
 const firebaseConfig = {
   apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
   authDomain: "dpstore-officie.firebaseapp.com",
@@ -225,170 +251,219 @@ const firebaseConfig = {
   messagingSenderId: "903943973062",
   appId: "1:903943973062:web:6501a2ec167adb31258fc7"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ===== DROPDOWN =====
-let currentAction = "add";
-function toggleMenu(){ document.getElementById("actionMenu").style.display = (document.getElementById("actionMenu").style.display==="block")?"none":"block"; }
-function selectAction(type){
-    currentAction = type;
-    document.getElementById("selectedAction").innerText = type==="add"?"Ajouter des fonds":"Retirer des fonds";
-    document.getElementById("fundTitle").innerText = type==="add"?"💰 Ajouter des fonds":"💸 Retirer des fonds";
-    document.getElementById("fundBtn").innerText = type==="add"?"Ajouter":"Retirer";
-    toggleMenu();
-}
-
-// ===== CHECK SESSION STORAGE =====
-let currentUserData = null;
-try {
-    currentUserData = JSON.parse(sessionStorage.getItem("dpstore_user"));
-} catch(e){ currentUserData = null; }
-
-if(!currentUserData || !["creator","admin"].includes(currentUserData.role)){
-    alert("⚠️ Aucun compte connecté ou rôle insuffisant !");
-    location.href="index.html";
-} else {
-    document.body.style.display = "block";
-}
-
 // ===== UTIL =====
-async function getUserByDP(dpID){
-    if(!dpID) return null;
-    const snap = await getDoc(doc(db,"users",encodeURIComponent(dpID)));
-    return snap.exists() ? snap.data() : null;
+let allUsers = [];
+let allRecharges = [];
+let currentAction="add";
+
+// Charger utilisateurs
+async function loadUsersFromFirestore(){
+    const snapshot = await getDocs(collection(db, "users"));
+    allUsers = snapshot.docs.map(d=>({id:d.id, data:d.data()}));
+    showInfoNote(`✔ ${allUsers.length} utilisateurs chargés depuis Firestore`);
+}
+
+// Trouver utilisateur par DP
+function findUserByDP(dpID){
+    return allUsers.find(u => (u.data.dp || u.id) === dpID) || null;
 }
 
 // ===== FONCTIONS =====
 async function processFunds(){
-    const dpID=document.getElementById("dpInput").value.trim();
-    const amount=Number(document.getElementById("amountInput").value);
-    if(dpID===""||amount<=0) return alert("⚠️ Champs invalides");
+    const dp = document.getElementById("dpInput").value.trim();
+    const amount = parseFloat(document.getElementById("amountInput").value);
+    if(!dp || isNaN(amount) || amount<=0){ alert("DP ou montant invalide"); return; }
 
-    const userData = await getUserByDP(dpID);
-    if(!userData) return alert("❌ DP introuvable");
+    const user = findUserByDP(dp);
+    if(!user){ alert("DP introuvable"); return; }
 
-    let newBalance = (userData.balance||0) + (currentAction==="add"?amount:-amount);
-    if(currentAction==="remove" && newBalance<0) return alert("❌ Solde insuffisant !");
+    const newBalance = currentAction==="add" ? (parseFloat(user.data.balance)||0)+amount : (parseFloat(user.data.balance)||0)-amount;
+    if(newBalance<0){ alert("Solde insuffisant"); return; }
 
-    await setDoc(doc(db,"users",encodeURIComponent(dpID)),{balance:newBalance},{merge:true});
-    alert(`${currentAction==="add"?"+":"-"}${amount} crédits ${currentAction==="add"?"ajoutés":"retirés"} à ${dpID}`);
+    await updateDoc(doc(db,"users",user.id), { balance:newBalance });
+    alert(`✅ Solde mis à jour : ${newBalance}`);
+    loadUsersFromFirestore();
+    document.getElementById("checkResult").innerText = `Solde actuel : ${newBalance}`;
+    playValidateSound();
 }
 
 async function checkBalance(){
-    const dpID=document.getElementById("dpCheck").value.trim();
-    const data = await getUserByDP(dpID);
-    const result = document.getElementById("checkResult");
-    if(!data){ result.innerHTML="❌ DP introuvable"; return; }
-
-    result.innerHTML=`
-        <b>Nom :</b> ${data.username||"Non défini"}<br>
-        <b>Email :</b> ${data.email||"Non défini"}<br>
-        <b>Rôle :</b> <span style="color:#00eaff;">${data.role||"user"}</span><br>
-        <b>Solde ${dpID} :</b> <span style="color:yellow;">${data.balance||0} crédits</span>
-    `;
+    const dp = document.getElementById("dpCheck").value.trim();
+    const user = findUserByDP(dp);
+    if(!user){ document.getElementById("checkResult").innerText="❌ DP introuvable"; playRefuseSound(); return; }
+    document.getElementById("checkResult").innerText = `💰 Solde : ${user.data.balance ?? 0}`;
+    playValidateSound();
 }
 
 async function addEmployee(){
-    const email=document.getElementById("employeeEmail").value.trim();
-    const type=document.getElementById("employeeType").value;
-    if(email==="") return alert("⚠️ Email vide");
-
-    const userRef = doc(db,"users",encodeURIComponent(email));
-    const snap = await getDoc(userRef);
-    if(!snap.exists()) return alert("❌ Aucun compte trouvé");
-
-    await setDoc(userRef,{role:"employee",employeeType:type},{merge:true});
-    alert("👔 Employé ajouté !");
+    const email = document.getElementById("employeeEmail").value.trim();
+    const type = document.getElementById("employeeType").value;
+    if(!email){ alert("Email requis"); return; }
+    const newDP = `DP-${Date.now().toString().slice(-6)}`;
+    const newUser = { id:newDP, dp:newDP, username:email.split("@")[0], email, role:type, balance:0, credits:0, createdAt:new Date().toISOString() };
+    await addDoc(collection(db,"users"), newUser);
+    alert(`✅ Employé ajouté : ${newDP}`);
+    loadUsersFromFirestore();
+    playValidateSound();
 }
 
 async function removeEmployee(){
-    const email=document.getElementById("removeEmployeeEmail").value.trim();
-    if(!email) return alert("⚠️ Email manquant");
-
-    const userRef = doc(db,"users",encodeURIComponent(email));
-    const snap = await getDoc(userRef);
-    if(!snap.exists()) return alert("❌ Aucun compte trouvé");
-    if(snap.data().role!=="employee") return alert("⚠️ Cet utilisateur n'est pas un employé");
-
-    await setDoc(userRef,{role:"user",employeeType:null},{merge:true});
-    alert("❌ Employé retiré !");
+    const email = document.getElementById("removeEmployeeEmail").value.trim();
+    if(!email){ alert("Email requis"); return; }
+    const user = allUsers.find(u => (u.data.email||"").toLowerCase()===email.toLowerCase());
+    if(!user){ alert("Utilisateur non trouvé"); return; }
+    await updateDoc(doc(db,"users",user.id), { role:"removed" });
+    alert(`❌ Employé supprimé : ${email}`);
+    loadUsersFromFirestore();
+    playRefuseSound();
 }
 
-// ===== NOUVELLE FONCTION MISE À JOUR =====
 async function updateUser(){
-    const dpID = document.getElementById("updateDP").value.trim();
+    const dp = document.getElementById("updateDP").value.trim();
     const field = document.getElementById("updateField").value.trim();
-    const value = document.getElementById("updateValue").value.trim();
-
-    if(!dpID || !field || !value) return alert("⚠️ Tous les champs sont requis");
-
-    const userRef = doc(db,"users",encodeURIComponent(dpID));
-    const snap = await getDoc(userRef);
-    if(!snap.exists()) return alert("❌ Utilisateur introuvable");
-
-    // Sécurité : ne pas modifier le rôle du créateur/admin actuel
-    if(dpID === currentUserData.dp && field === "role") return alert("⚠️ Impossible de modifier votre rôle");
-
-    const updateObj = {};
-    updateObj[field] = field === "balance" ? Number(value) : value;
-
-    await setDoc(userRef, updateObj, {merge:true});
-    alert(`✅ ${field} mis à jour pour ${dpID}`);
+    let value = document.getElementById("updateValue").value.trim();
+    const user = findUserByDP(dp);
+    if(!user){ alert("Utilisateur introuvable"); return; }
+    if(field==="balance"||field==="credits"){ value=parseFloat(value); if(isNaN(value)){ alert("Valeur numérique requise"); return; } }
+    await updateDoc(doc(db,"users",user.id), { [field]:value });
+    alert(`✅ ${field} mis à jour pour ${dp}`);
+    loadUsersFromFirestore();
+    playValidateSound();
 }
 
-async function loadRecharges(){
-    const rechargeCol=collection(db,"recharges");
-    const snapshot=await getDocs(rechargeCol);
-    const box=document.getElementById("rechargeList");
-    box.innerHTML="";
-
-    if(snapshot.empty){ box.innerHTML="<p>Aucune demande.</p>"; return; }
-
-    snapshot.forEach(docSnap=>{
-        const r=docSnap.data();
-        const docID=docSnap.id;
-
-        box.innerHTML+=`
-        <div class="request">
-            <p><b>${r.name}</b> (${r.email})</p>
-            ${r.phone?`<p>WhatsApp : ${r.phone}</p>`:""}
-            <p><b>DP-ID :</b> ${r.dpID||"Non fourni"}</p>
-            <p><b>Montant :</b> <span style="color:yellow;">${r.amount} HTG</span></p>
-            <p><b>Date :</b> ${r.created}</p>
-            <p>Status : <span class="status ${r.status}">${r.status.toUpperCase()}</span></p>
-            ${r.receipt?`<img src="${r.receipt}" alt="Reçu">`:""}
+// ===== RECHARGES =====
+async function loadRechargesFromFirestore(){
+    const snapshot = await getDocs(collection(db,"transactions"));
+    allRecharges = snapshot.docs.map(d=>({id:d.id, data:d.data()}));
+    const list = document.getElementById("rechargeList");
+    list.innerHTML="";
+    allRecharges.forEach(r=>{
+        const d=r.data;
+        const div=document.createElement("div");
+        div.className="request";
+        div.innerHTML=`
+            <p><b>ID:</b> ${r.id} — <b>DP:</b> ${d.dpID || d.dp || '—'}</p>
+            <p><b>Montant:</b> ${d.amount}</p>
             <div class="btnRow">
-                <button class="btnGreen" onclick="validateRecharge('${docID}')">VALIDER</button>
-                <button class="btnRed" onclick="refuseRecharge('${docID}')">REFUSER</button>
+                <button class="btnGreen" onclick="validateRecharge('${r.id}')">Valider</button>
+                <button class="btnRed" onclick="refuseRecharge('${r.id}')">Refuser</button>
             </div>
-        </div>
         `;
+        list.appendChild(div);
     });
 }
 
 async function validateRecharge(id){
-    const ref=doc(db,"recharges",id);
-    const snap=await getDoc(ref);
-    if(!snap.exists()) return;
-    const r=snap.data();
-    const userRef=doc(db,"users",encodeURIComponent(r.dpID));
-    const userSnap=await getDoc(userRef);
-    if(userSnap.exists()) await setDoc(userRef,{balance:(userSnap.data().balance||0)+Number(r.amount)},{merge:true});
-    await setDoc(ref,{status:"validated"},{merge:true});
-    document.getElementById("soundValidate").play();
-    loadRecharges();
+    const r = allRecharges.find(x=>x.id===id); if(!r){ alert("Introuvable"); return; }
+    await updateDoc(doc(db,"transactions",id), { status:"validated" });
+    const user = findUserByDP(r.data.dpID); if(user){ await updateDoc(doc(db,"users",user.id), { balance:(parseFloat(user.data.balance)||0)+parseFloat(r.data.amount) }); }
+    alert("✅ Recharge validée");
+    loadRechargesFromFirestore();
+    playValidateSound();
 }
-
 async function refuseRecharge(id){
-    await setDoc(doc(db,"recharges",id),{status:"refused"},{merge:true});
-    document.getElementById("soundRefuse").play();
-    loadRecharges();
+    await updateDoc(doc(db,"transactions",id), { status:"refused" });
+    alert("❌ Recharge refusée");
+    loadRechargesFromFirestore();
+    playRefuseSound();
 }
 
-// Charger les recharges après affichage
-loadRecharges().catch(()=>{});
+// ===== MENU =====
+function toggleMenu(){ document.getElementById("actionMenu").style.display = document.getElementById("actionMenu").style.display==="block"?"none":"block"; }
+function selectAction(type){ currentAction=type; document.getElementById("selectedAction").innerText=type==="add"?"Ajouter des fonds":"Retirer des fonds"; document.getElementById("fundTitle").innerText=type==="add"?"💰 Ajouter des fonds":"💸 Retirer des fonds"; document.getElementById("fundBtn").innerText=type==="add"?"Ajouter":"Retirer"; }
+function showInfoNote(txt,error=false){ const n=document.getElementById("infoNote"); n.innerText=txt; n.style.background=error?"#3a0b0b":"#0b2b2b"; }
+function playValidateSound(){ try{document.getElementById("soundValidate").play()}catch(e){} }
+function playRefuseSound(){ try{document.getElementById("soundRefuse").play()}catch(e){} }
+
+// ===== FONCTIONS SUPPLÉMENTAIRES =====
+async function findUserByEmail(){
+    const email = prompt("Email utilisateur :");
+    if(!email) return;
+    const user = allUsers.find(u => (u.data.email||"").toLowerCase() === email.toLowerCase());
+    if(!user) return alert("Utilisateur introuvable");
+    alert(`✅ ${user.data.username} | DP: ${user.data.dp} | Solde: ${user.data.balance}`);
+}
+
+async function listAllUsers(){
+    alert(allUsers.map(u => `DP:${u.data.dp} | Email:${u.data.email||"—"} | Solde:${u.data.balance||0} | Role:${u.data.role}`).join("\n"));
+}
+
+async function resetBalance(){
+    const dp = prompt("DP utilisateur :");
+    if(!dp) return;
+    const user = findUserByDP(dp);
+    if(!user) return alert("Utilisateur introuvable");
+    await updateDoc(doc(db,"users",user.id), { balance: 0 });
+    alert("✅ Solde réinitialisé");
+    loadUsersFromFirestore();
+}
+
+async function addCredits(){
+    const dp = prompt("DP utilisateur :");
+    const amt = parseFloat(prompt("Montant crédits :"));
+    if(!dp || isNaN(amt)) return alert("Valeur invalide");
+    const user = findUserByDP(dp);
+    if(!user) return alert("Utilisateur introuvable");
+    await updateDoc(doc(db,"users",user.id), { credits: (parseFloat(user.data.credits)||0)+amt });
+    alert("✅ Crédits ajoutés");
+    loadUsersFromFirestore();
+}
+
+async function showTransactions(){
+    const dp = prompt("DP utilisateur :");
+    if(!dp) return;
+    const tx = allRecharges.filter(r => r.data.dpID === dp);
+    if(tx.length===0) return alert("Aucune transaction");
+    alert(tx.map(t => `ID:${t.id} | Montant:${t.data.amount} | Status:${t.data.status}`).join("\n"));
+}
+
+async function sendMessage(){
+    const dp = prompt("DP utilisateur :");
+    const msg = prompt("Message :");
+    if(!dp || !msg) return;
+    const user = findUserByDP(dp);
+    if(!user) return alert("Utilisateur introuvable");
+    await addDoc(collection(db,"messages"), { dp, message: msg, date: new Date().toISOString() });
+    alert("✅ Message envoyé");
+}
+
+async function clearOldTransactions(){
+    if(!confirm("Supprimer toutes les transactions validées/refusées ?")) return;
+    const old = allRecharges.filter(r => r.data.status==="validated"||r.data.status==="refused");
+    for(const r of old){
+        await updateDoc(doc(db,"transactions",r.id), { status:"archived" });
+    }
+    alert(`✅ ${old.length} transactions archivées`);
+    loadRechargesFromFirestore();
+}
+
+// ===== INIT =====
+await loadUsersFromFirestore();
+await loadRechargesFromFirestore();
+showInfoNote(`✔ Données chargées depuis Firestore (${allUsers.length} utilisateurs)`);
+
+// Rendre fonctions globales pour boutons inline
+window.processFunds=processFunds;
+window.checkBalance=checkBalance;
+window.addEmployee=addEmployee;
+window.removeEmployee=removeEmployee;
+window.updateUser=updateUser;
+window.loadRechargesFromFirestore=loadRechargesFromFirestore;
+window.validateRecharge=validateRecharge;
+window.refuseRecharge=refuseRecharge;
+window.toggleMenu=toggleMenu;
+window.selectAction=selectAction;
+
+window.findUserByEmail = findUserByEmail;
+window.listAllUsers = listAllUsers;
+window.resetBalance = resetBalance;
+window.addCredits = addCredits;
+window.showTransactions = showTransactions;
+window.sendMessage = sendMessage;
+window.clearOldTransactions = clearOldTransactions;
 
 </script>
 
