@@ -11,7 +11,7 @@ body{
     color:white;
     font-family:Arial, sans-serif;
     padding:20px;
-    display:none; /* caché par défaut */
+    display:none; /* caché jusqu'à vérification */
 }
 
 /* ====== BOX ====== */
@@ -103,10 +103,12 @@ h2{
     margin-bottom:10px;
     box-shadow:0 0 12px #007bff;
 }
+
 .selectorBox img{
     width:30px;
     margin-right:10px;
 }
+
 .optionList{
     width:95%;
     background:#004ea3;
@@ -117,6 +119,7 @@ h2{
     overflow:hidden;
     box-shadow:0 0 12px #004ea3;
 }
+
 .optionItem{
     padding:12px 15px;
     border-bottom:1px solid rgba(255,255,255,0.15);
@@ -131,15 +134,9 @@ h2{
 
 <h2>🚀 MODE CREATOR / ADMIN</h2>
 
-<div class="box">
-    <h3>👤 Infos du compte</h3>
-    <p><b>Nom :</b> <span id="name"></span></p>
-    <p><b>Email :</b> <span id="email"></span></p>
-    <p><b>Rôle :</b> <span id="role" style="color:#00eaff;"></span></p>
-    <p><b>DP-ID :</b> <span id="dp-id"></span></p>
-    <p><b>Solde :</b> <span id="credits" style="color:yellow;"></span> crédits</p>
-    <img id="profile-pic" src="" style="width:120px;height:120px;border-radius:50%;border:4px solid #00eaff;object-fit:cover;">
-</div>
+<button style="background:#00eaff;color:black;font-weight:bold;padding:6px 14px;border-radius:8px;font-size:14px;margin-bottom:10px;cursor:pointer;width:auto;" onclick="location.href='dp.html'">
+    DP
+</button>
 
 <div class="selectorBox" onclick="toggleMenu()">
     <div style="display:flex;align-items:center;">
@@ -185,12 +182,32 @@ h2{
 </div>
 
 <div class="box">
+    <h3 style="color:#ffaa00;">⚙️ Mettre à jour un utilisateur</h3>
+    <input id="updateDP" placeholder="DP ID de l'utilisateur">
+    <input id="updateField" placeholder="Champ à mettre à jour (ex: username, email, role, balance)">
+    <input id="updateValue" placeholder="Nouvelle valeur">
+    <button onclick="updateUser()">Mettre à jour</button>
+</div>
+
+<div class="box">
     <h3>📨 Demandes de recharge</h3>
     <div id="rechargeList"></div>
 </div>
 
+<button style="background:#005eff; margin-top:20px;" onclick="location.href='verifi.html'">
+🔍 Vérifier tous les DP
+</button>
+
+<button style="background:#00eaff; margin-top:20px;" onclick="location.href='Archi.html'">
+📁 Voir l'historique (Archive)
+</button>
+
 <button style="background:red; margin-top:20px;" onclick="location.href='profil.html'">
 ⬅️ Retour au profil
+</button>
+
+<button style="background:orange; margin-top:20px;" onclick="location.href='offon.html'">
+⚡ Ouvrir OFF/ON
 </button>
 
 <audio id="soundValidate" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7b8ad29dbb.mp3?filename=correct-2-46134.mp3"></audio>
@@ -214,7 +231,7 @@ const db = getFirestore(app);
 
 // ===== DROPDOWN =====
 let currentAction = "add";
-function toggleMenu(){ document.getElementById("actionMenu").style.display = document.getElementById("actionMenu").style.display==="block"?"none":"block"; }
+function toggleMenu(){ document.getElementById("actionMenu").style.display = (document.getElementById("actionMenu").style.display==="block")?"none":"block"; }
 function selectAction(type){
     currentAction = type;
     document.getElementById("selectedAction").innerText = type==="add"?"Ajouter des fonds":"Retirer des fonds";
@@ -223,62 +240,63 @@ function selectAction(type){
     toggleMenu();
 }
 
-// ===== SESSION STORAGE (AUTH SAFE) =====
+// ===== CHECK SESSION STORAGE =====
 let currentUserData = null;
-try{ currentUserData = JSON.parse(sessionStorage.getItem("dpstore_user")); }catch(e){ currentUserData=null; }
+try {
+    currentUserData = JSON.parse(sessionStorage.getItem("dpstore_user"));
+} catch(e){ currentUserData = null; }
 
 if(!currentUserData || !["creator","admin"].includes(currentUserData.role)){
-    alert("Aucun compte connecté ou accès refusé !");
+    alert("⚠️ Aucun compte connecté ou rôle insuffisant !");
     location.href="index.html";
-}else{
-    document.body.style.display = "block"; // afficher page
-    document.getElementById("name").textContent = currentUserData.username || "Non défini";
-    document.getElementById("email").textContent = currentUserData.email || "Non défini";
-    document.getElementById("role").textContent = currentUserData.role || "user";
-    document.getElementById("dp-id").textContent = currentUserData.dp || "—";
-    document.getElementById("credits").textContent = currentUserData.credits || 0;
-    document.getElementById("profile-pic").src = currentUserData.photo || "https://via.placeholder.com/120";
+} else {
+    document.body.style.display = "block";
 }
 
-// ===== FIRESTORE FUNCTIONS =====
+// ===== UTIL =====
+async function getUserByDP(dpID){
+    if(!dpID) return null;
+    const snap = await getDoc(doc(db,"users",encodeURIComponent(dpID)));
+    return snap.exists() ? snap.data() : null;
+}
+
+// ===== FONCTIONS =====
 async function processFunds(){
     const dpID=document.getElementById("dpInput").value.trim();
     const amount=Number(document.getElementById("amountInput").value);
-    if(!dpID||amount<=0) return alert("⚠️ Champs invalides");
+    if(dpID===""||amount<=0) return alert("⚠️ Champs invalides");
 
-    const userRef = doc(db,"users",encodeURIComponent(dpID));
-    const snap = await getDoc(userRef);
-    if(!snap.exists()) return alert("❌ DP introuvable");
+    const userData = await getUserByDP(dpID);
+    if(!userData) return alert("❌ DP introuvable");
 
-    const data = snap.data();
-    let newBalance = (data.balance||0)+(currentAction==="add"?amount:-amount);
+    let newBalance = (userData.balance||0) + (currentAction==="add"?amount:-amount);
     if(currentAction==="remove" && newBalance<0) return alert("❌ Solde insuffisant !");
-    await setDoc(userRef,{balance:newBalance},{merge:true});
+
+    await setDoc(doc(db,"users",encodeURIComponent(dpID)),{balance:newBalance},{merge:true});
     alert(`${currentAction==="add"?"+":"-"}${amount} crédits ${currentAction==="add"?"ajoutés":"retirés"} à ${dpID}`);
 }
 
 async function checkBalance(){
-    const dpID = document.getElementById("dpCheck").value.trim();
-    const userRef = doc(db,"users",encodeURIComponent(dpID));
-    const snap = await getDoc(userRef);
-    if(!snap.exists()){ document.getElementById("checkResult").innerText="❌ DP introuvable"; return; }
+    const dpID=document.getElementById("dpCheck").value.trim();
+    const data = await getUserByDP(dpID);
+    const result = document.getElementById("checkResult");
+    if(!data){ result.innerHTML="❌ DP introuvable"; return; }
 
-    const data = snap.data();
-    document.getElementById("checkResult").innerHTML=`
+    result.innerHTML=`
         <b>Nom :</b> ${data.username||"Non défini"}<br>
         <b>Email :</b> ${data.email||"Non défini"}<br>
         <b>Rôle :</b> <span style="color:#00eaff;">${data.role||"user"}</span><br>
-        <b>Solde :</b> <span style="color:yellow;">${data.balance||0} crédits</span>
+        <b>Solde ${dpID} :</b> <span style="color:yellow;">${data.balance||0} crédits</span>
     `;
 }
 
 async function addEmployee(){
     const email=document.getElementById("employeeEmail").value.trim();
     const type=document.getElementById("employeeType").value;
-    if(!email) return alert("⚠️ Email vide");
+    if(email==="") return alert("⚠️ Email vide");
 
-    const userRef=doc(db,"users",encodeURIComponent(email));
-    const snap=await getDoc(userRef);
+    const userRef = doc(db,"users",encodeURIComponent(email));
+    const snap = await getDoc(userRef);
     if(!snap.exists()) return alert("❌ Aucun compte trouvé");
 
     await setDoc(userRef,{role:"employee",employeeType:type},{merge:true});
@@ -289,8 +307,8 @@ async function removeEmployee(){
     const email=document.getElementById("removeEmployeeEmail").value.trim();
     if(!email) return alert("⚠️ Email manquant");
 
-    const userRef=doc(db,"users",encodeURIComponent(email));
-    const snap=await getDoc(userRef);
+    const userRef = doc(db,"users",encodeURIComponent(email));
+    const snap = await getDoc(userRef);
     if(!snap.exists()) return alert("❌ Aucun compte trouvé");
     if(snap.data().role!=="employee") return alert("⚠️ Cet utilisateur n'est pas un employé");
 
@@ -298,19 +316,41 @@ async function removeEmployee(){
     alert("❌ Employé retiré !");
 }
 
+// ===== NOUVELLE FONCTION MISE À JOUR =====
+async function updateUser(){
+    const dpID = document.getElementById("updateDP").value.trim();
+    const field = document.getElementById("updateField").value.trim();
+    const value = document.getElementById("updateValue").value.trim();
+
+    if(!dpID || !field || !value) return alert("⚠️ Tous les champs sont requis");
+
+    const userRef = doc(db,"users",encodeURIComponent(dpID));
+    const snap = await getDoc(userRef);
+    if(!snap.exists()) return alert("❌ Utilisateur introuvable");
+
+    // Sécurité : ne pas modifier le rôle du créateur/admin actuel
+    if(dpID === currentUserData.dp && field === "role") return alert("⚠️ Impossible de modifier votre rôle");
+
+    const updateObj = {};
+    updateObj[field] = field === "balance" ? Number(value) : value;
+
+    await setDoc(userRef, updateObj, {merge:true});
+    alert(`✅ ${field} mis à jour pour ${dpID}`);
+}
+
 async function loadRecharges(){
-    const rechargeCol = collection(db,"recharges");
-    const snapshot = await getDocs(rechargeCol);
-    const box = document.getElementById("rechargeList");
-    box.innerHTML = "";
+    const rechargeCol=collection(db,"recharges");
+    const snapshot=await getDocs(rechargeCol);
+    const box=document.getElementById("rechargeList");
+    box.innerHTML="";
 
     if(snapshot.empty){ box.innerHTML="<p>Aucune demande.</p>"; return; }
 
     snapshot.forEach(docSnap=>{
-        const r = docSnap.data();
-        const docID = docSnap.id;
+        const r=docSnap.data();
+        const docID=docSnap.id;
 
-        box.innerHTML += `
+        box.innerHTML+=`
         <div class="request">
             <p><b>${r.name}</b> (${r.email})</p>
             ${r.phone?`<p>WhatsApp : ${r.phone}</p>`:""}
@@ -347,8 +387,9 @@ async function refuseRecharge(id){
     loadRecharges();
 }
 
-// Charger les recharges au démarrage
-loadRecharges();
+// Charger les recharges après affichage
+loadRecharges().catch(()=>{});
+
 </script>
 
 </body>
