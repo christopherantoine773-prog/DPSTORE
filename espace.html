@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Espace Utilisateurs — DPSTORE</title>
+
+<style>
+body{
+    background:#000;
+    font-family:"Poppins", sans-serif;
+    margin:0;
+    padding:20px;
+    color:#fff;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+/* HEADER */
+header{
+    width:100%;
+    max-width:1200px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+header h1{
+    color:#f9d71c;
+    font-size:1.8em;
+}
+header button{
+    padding:10px 20px;
+    border:none;
+    border-radius:8px;
+    background:#f9d71c;
+    color:#000;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+}
+header button:hover{
+    background:#fff700;
+}
+
+/* FILTRE */
+.filter-container{
+    margin-bottom:20px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+.filter-container select, .filter-container input{
+    padding:8px 12px;
+    border-radius:6px;
+    border:none;
+    background:#111;
+    color:#f9d71c;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* CARDS */
+.cards-container{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap:20px;
+    width:100%;
+    max-width:1200px;
+}
+
+.card{
+    background:#111;
+    border-radius:15px;
+    padding:20px;
+    box-shadow:0 0 25px #f9d71c;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-align:center;
+}
+.card:hover{
+    transform: translateY(-5px);
+    box-shadow:0 0 35px #f9d71c;
+}
+.card img{
+    width:100px;
+    height:100px;
+    border-radius:50%;
+    object-fit:cover;
+    border:3px solid #f9d71c;
+    display:block;
+    margin:0 auto 15px auto;
+}
+.card h3{
+    margin-bottom:10px;
+    color:#f9d71c;
+}
+.card p{
+    margin:5px 0;
+    font-size:14px;
+    color:#ccc;
+}
+.card button{
+    margin-top:10px;
+    padding:8px 12px;
+    border:none;
+    border-radius:6px;
+    background:#f9d71c;
+    color:#000;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+}
+.card button:hover{
+    background:#fff700;
+}
+
+.status{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:12px;
+    font-weight:bold;
+    margin-top:5px;
+    text-align:center;
+}
+.status.user{background:#555;color:#fff;}
+.status.employee{background:#00ff88;color:#000;}
+.status.creator{background:#ffbb00;color:#000;}
+.status.admin{background:#ff4444;color:#fff;}
+
+/* MODAL */
+.modal{
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.85);
+    justify-content:center;
+    align-items:center;
+    z-index:1000;
+}
+.modal-content{
+    background:#111;
+    padding:20px;
+    border-radius:12px;
+    width:90%;
+    max-width:700px;
+    max-height:90%;
+    overflow-y:auto;
+    position:relative;
+}
+.modal-content h2{
+    color:#f9d71c;
+    margin-bottom:15px;
+}
+.modal-content p{
+    color:#ccc;
+    margin:5px 0;
+}
+.modal-content button.close{
+    position:absolute;
+    top:15px;
+    right:15px;
+    padding:6px 12px;
+    background:#ff4444;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+/* TRANSACTIONS */
+.transaction{
+    background:#222;
+    padding:10px;
+    margin:8px 0;
+    border-radius:8px;
+    border-left:4px solid #f9d71c;
+    font-size:14px;
+}
+.transaction.in{border-color:#00ff88;}
+.transaction.out{border-color:#ff4444;}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>📊 ESPACE UTILISATEURS</h1>
+    <button onclick="location.href='profil.html'">⬅️ Retour</button>
+</header>
+
+<div class="filter-container">
+    <label for="roleFilter">Filtrer par rôle:</label>
+    <select id="roleFilter" onchange="filterUsers()">
+        <option value="all">Tous</option>
+        <option value="user">Utilisateur</option>
+        <option value="employee">Employé</option>
+        <option value="creator">Créateur</option>
+        <option value="admin">Admin</option>
+    </select>
+    <input type="text" id="searchUser" placeholder="Rechercher..." oninput="filterUsers()">
+</div>
+
+<div class="cards-container" id="cardsContainer">
+    <p style="text-align:center;">Chargement des utilisateurs...</p>
+</div>
+
+<!-- MODAL PROFIL -->
+<div class="modal" id="profileModal">
+    <div class="modal-content" id="modalContent">
+        <button class="close" onclick="closeModal()">X</button>
+        <div id="profileDetails"></div>
+        <button id="toggleTransactionsBtn" style="margin-top:10px; padding:8px 12px; border:none; border-radius:6px; background:#f9d71c; color:#000; font-weight:bold; cursor:pointer;">📄 Voir Transactions</button>
+        <div id="transactionsList" style="display:none; margin-top:10px;"></div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
+  authDomain: "dpstore-officie.firebaseapp.com",
+  projectId: "dpstore-officie",
+  storageBucket: "dpstore-officie.appspot.com",
+  messagingSenderId: "903943973062",
+  appId: "1:903943973062:web:6501a2ec167adb31258fc7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let allUsers = [];
+
+async function loadUsers(){
+    const userCol = collection(db,"users");
+    const snapshot = await getDocs(userCol);
+    allUsers = snapshot.docs.map(docSnap => ({ id: docSnap.id, data: docSnap.data() || {} }));
+    renderUsers(allUsers);
+}
+
+function renderUsers(users){
+    const container = document.getElementById("cardsContainer");
+    container.innerHTML = "";
+    if(users.length === 0){
+        container.innerHTML = "<p style='text-align:center;'>Aucun utilisateur trouvé</p>";
+        return;
+    }
+    const fragment = document.createDocumentFragment();
+    users.forEach(user => {
+        const data = user.data;
+        const dp = data.dp || user.id;
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+            <img src="${data.photo || 'https://via.placeholder.com/100'}" alt="Photo">
+            <h3>${data.username || "Non défini"}</h3>
+            <p><b>Email:</b> ${data.email || "—"}</p>
+            <p><b>DP-ID:</b> ${dp}</p>
+            <p><b>Crédits:</b> ${data.credits ?? 0} | <b>Solde:</b> ${data.balance ?? 0}</p>
+            <p><b>Créé le:</b> ${data.createdAt || "—"}</p>
+            <span class="status ${data.role || 'user'}">${data.role || 'user'}</span>
+            <button onclick="viewProfile('${dp}')">Voir Profil</button>
+        `;
+        fragment.appendChild(card);
+    });
+    container.appendChild(fragment);
+}
+
+function filterUsers(){
+    const role = document.getElementById("roleFilter").value;
+    const keyword = document.getElementById("searchUser").value.toLowerCase();
+    let filtered = allUsers;
+
+    if(role !== "all") filtered = filtered.filter(u => (u.data.role || 'user') === role);
+    if(keyword) filtered = filtered.filter(u => 
+        (u.data.username || "").toLowerCase().includes(keyword) || 
+        (u.data.email || "").toLowerCase().includes(keyword)
+    );
+
+    renderUsers(filtered);
+}
+
+function closeModal(){
+    document.getElementById("profileModal").style.display = "none";
+}
+
+async function viewProfile(dp){
+    const userDoc = allUsers.find(u => (u.data.dp || u.id) === dp);
+    if(!userDoc) return alert("Utilisateur introuvable !");
+    const data = userDoc.data;
+
+    const username = data.username || "Non défini";
+    const email = data.email || "—";
+    const role = data.role || "user";
+    const credits = data.credits ?? 0;
+    const balance = data.balance ?? 0;
+    const createdAt = data.createdAt || "—";
+    const photo = data.photo || "https://via.placeholder.com/100";
+
+    const profileDiv = document.getElementById("profileDetails");
+    profileDiv.innerHTML = `
+        <h2>${username}</h2>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>DP-ID:</b> ${dp}</p>
+        <p><b>Rôle:</b> ${role}</p>
+        <p><b>Crédits:</b> ${credits}</p>
+        <p><b>Solde:</b> ${balance}</p>
+        <p><b>Créé le:</b> ${createdAt}</p>
+        <img src="${photo}" width="100" height="100" style="border-radius:50%; margin-top:10px;">
+    `;
+
+    const transDiv = document.getElementById("transactionsList");
+    const toggleBtn = document.getElementById("toggleTransactionsBtn");
+    transDiv.style.display = "none";
+    toggleBtn.textContent = "📄 Voir Transactions";
+
+    toggleBtn.onclick = async () => {
+        if(transDiv.style.display === "none"){
+            transDiv.style.display = "block";
+            toggleBtn.textContent = "📄 Masquer Transactions";
+
+            if(transDiv.innerHTML === ""){
+                transDiv.innerHTML = "<p>Chargement des transactions...</p>";
+                try {
+                    const transCol = collection(db, "transactions");
+                    const q = query(transCol, where("dpID", "==", dp));
+                    const snapshot = await getDocs(q);
+                    if(snapshot.empty){
+                        transDiv.innerHTML = "<p>Aucune transaction.</p>";
+                    } else {
+                        transDiv.innerHTML = "";
+                        snapshot.forEach(docSnap => {
+                            const t = docSnap.data();
+                            transDiv.innerHTML += `
+                                <div class="transaction ${t.type || 'in'}">
+                                    <b>${t.type === 'in' ? '+' : '-'}</b> ${t.amount ?? 0} crédits — ${t.reason || 'N/A'} — <small>${t.date || '—'}</small>
+                                </div>
+                            `;
+                        });
+                    }
+                } catch(e){
+                    console.error(e);
+                    transDiv.innerHTML = "<p>Erreur chargement transactions.</p>";
+                }
+            }
+        } else {
+            transDiv.style.display = "none";
+            toggleBtn.textContent = "📄 Voir Transactions";
+        }
+    };
+
+    document.getElementById("profileModal").style.display = "flex";
+}
+
+loadUsers().catch(err=>console.error(err));
+</script>
+
+</body>
+</html>
