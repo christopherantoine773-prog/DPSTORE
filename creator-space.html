@@ -4,217 +4,84 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Creator Space — DPSTORE</title>
-
 <style>
-body{
-    background:black;
-    color:white;
-    font-family:Arial;
-    padding:20px;
-}
-
-/* ====== BOX ====== */
-.box{
-    background:#111;
-    padding:20px;
-    border-radius:15px;
-    width:95%;
-    margin:auto;
-    margin-bottom:20px;
-    box-shadow:0 0 20px #00eaff;
-}
-
-/* ====== INPUTS / BUTTONS ====== */
-input, button, select{
-    width:95%;
-    margin-top:10px;
-    padding:12px;
-    border-radius:10px;
-    border:none;
-    font-size:16px;
-}
-button{
-    background:#00eaff;
-    color:black;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-/* ===== TITRES ====== */
-h2{
-    color:#00eaff;
-    text-align:center;
-}
-
-/* ====== REQUEST (recharges) ====== */
-.request{
-    background:#222;
-    padding:12px;
-    border-radius:10px;
-    margin-top:15px;
-    border-left:4px solid #00eaff;
-}
-.request img{
-    width:100%;
-    border-radius:10px;
-    margin-top:10px;
-    border:1px solid #00eaff;
-}
-.btnRow{
-    display:flex;
-    gap:10px;
-    margin-top:10px;
-}
-.btnGreen{
-    background:#00ff88;
-    color:black;
-    font-weight:bold;
-}
-.btnRed{
-    background:#ff4444;
-    color:white;
-    font-weight:bold;
-}
-
-/* STATUS BADGE */
-.status{
-    font-weight:bold;
-    padding:3px 8px;
-    border-radius:5px;
-}
+body{background:black;color:white;font-family:Arial;padding:20px;}
+.box{background:#111;padding:20px;border-radius:15px;width:95%;margin:auto;margin-bottom:20px;box-shadow:0 0 20px #00eaff;}
+input,button,select{width:95%;margin-top:10px;padding:12px;border-radius:10px;border:none;font-size:16px;}
+button{background:#00eaff;color:black;font-weight:bold;cursor:pointer;}
+h2{color:#00eaff;text-align:center;}
+.request{background:#222;padding:12px;border-radius:10px;margin-top:15px;border-left:4px solid #00eaff;}
+.request img{width:100%;border-radius:10px;margin-top:10px;border:1px solid #00eaff;}
+.btnRow{display:flex;gap:10px;margin-top:10px;}
+.btnGreen{background:#00ff88;color:black;font-weight:bold;}
+.btnRed{background:#ff4444;color:white;font-weight:bold;}
+.status{font-weight:bold;padding:3px 8px;border-radius:5px;}
 .status.pending{background:#555;}
 .status.validated{background:#00ff88;color:black;}
 .status.refused{background:#ff4444;}
-
-/* ===== MENU STYLE ===== */
-.selectorBox{
-    width:95%;
-    background:#007bff;
-    padding:15px;
-    border-radius:14px;
-    margin:auto;
-    color:white;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    font-size:18px;
-    cursor:pointer;
-    margin-bottom:10px;
-    box-shadow:0 0 12px #007bff;
-}
-
-.selectorBox img{
-    width:30px;
-    margin-right:10px;
-}
-
-.optionList{
-    width:95%;
-    background:#004ea3;
-    border-radius:12px;
-    margin:auto;
-    margin-bottom:15px;
-    display:none;
-    overflow:hidden;
-    box-shadow:0 0 12px #004ea3;
-}
-
-.optionItem{
-    padding:12px 15px;
-    border-bottom:1px solid rgba(255,255,255,0.15);
-    cursor:pointer;
-}
-.optionItem:hover{
-    background:#0060cc;
-}
+.selectorBox{width:95%;background:#007bff;padding:15px;border-radius:14px;margin:auto;color:white;display:flex;align-items:center;justify-content:space-between;font-size:18px;cursor:pointer;margin-bottom:10px;box-shadow:0 0 12px #007bff;}
+.selectorBox img{width:30px;margin-right:10px;}
+.optionList{width:95%;background:#004ea3;border-radius:12px;margin:auto;margin-bottom:15px;display:none;overflow:hidden;box-shadow:0 0 12px #004ea3;}
+.optionItem{padding:12px 15px;border-bottom:1px solid rgba(255,255,255,0.15);cursor:pointer;}
+.optionItem:hover{background:#0060cc;}
 </style>
 </head>
 <body>
 
 <h2>🚀 MODE CREATOR / ADMIN</h2>
 
-<button style="background:#00eaff;color:black;font-weight:bold;padding:6px 14px;border-radius:8px;font-size:14px;margin-bottom:10px;cursor:pointer;width:auto;" onclick="location.href='dp.html'">
-    DP
-</button>
-
 <div class="selectorBox" onclick="toggleMenu()">
-    <div style="display:flex;align-items:center;">
-        <img src="https://cdn-icons-png.flaticon.com/512/833/833524.png">
-        <span id="selectedAction">Ajouter des fonds</span>
-    </div>
-    <span>▼</span>
+  <div style="display:flex;align-items:center;">
+    <img src="https://cdn-icons-png.flaticon.com/512/833/833524.png">
+    <span id="selectedAction">Ajouter des fonds</span>
+  </div>
+  <span>▼</span>
 </div>
 
 <div class="optionList" id="actionMenu">
-    <div class="optionItem" onclick="selectAction('add')">Ajouter des fonds</div>
-    <div class="optionItem" onclick="selectAction('remove')">Retirer des fonds</div>
+  <div class="optionItem" onclick="selectAction('add')">Ajouter des fonds</div>
+  <div class="optionItem" onclick="selectAction('remove')">Retirer des fonds</div>
 </div>
 
 <div class="box">
-    <h3 id="fundTitle">💰 Ajouter des fonds</h3>
-
-    <input id="dpInput" placeholder="DP ID (ex : DP-123456)">
-    <input id="amountInput" type="number" placeholder="Montant">
-
-    <button id="fundBtn" onclick="processFunds()">Ajouter</button>
+  <h3 id="fundTitle">💰 Ajouter des fonds</h3>
+  <input id="dpInput" placeholder="DP ID (ex : DP-123456)">
+  <input id="amountInput" type="number" placeholder="Montant">
+  <button id="fundBtn" onclick="processFunds()">Ajouter</button>
 </div>
 
 <div class="box">
-    <h3>🔍 Vérifier un solde</h3>
-    <input id="dpCheck" placeholder="DP ID">
-    <button onclick="checkBalance()">Vérifier</button>
-    <p id="checkResult" style="margin-top:10px; font-size:18px;"></p>
+  <h3>🔍 Vérifier un solde</h3>
+  <input id="dpCheck" placeholder="DP ID">
+  <button onclick="checkBalance()">Vérifier</button>
+  <p id="checkResult" style="margin-top:10px; font-size:18px;"></p>
 </div>
 
 <div class="box">
-    <h3>👔 Ajouter un employé</h3>
-
-    <input id="employeeEmail" placeholder="Email de l'employé">
-
-    <select id="employeeType">
-        <option value="employee1">Employé 1</option>
-        <option value="employee2">Employé 2</option>
-    </select>
-
-    <button onclick="addEmployee()">Ajouter</button>
+  <h3>👔 Ajouter un employé</h3>
+  <input id="employeeEmail" placeholder="Email de l'employé">
+  <select id="employeeType">
+    <option value="employee1">Employé 1</option>
+    <option value="employee2">Employé 2</option>
+  </select>
+  <button onclick="addEmployee()">Ajouter</button>
 </div>
 
 <div class="box">
-    <h3 style="color:#ff4444;">❌ Supprimer un employé</h3>
-
-    <input id="removeEmployeeEmail" placeholder="Email de l'employé">
-
-    <button style="background:#ff4444; color:white;" onclick="removeEmployee()">
-        Supprimer
-    </button>
+  <h3 style="color:#ff4444;">❌ Supprimer un employé</h3>
+  <input id="removeEmployeeEmail" placeholder="Email de l'employé">
+  <button style="background:#ff4444;color:white;" onclick="removeEmployee()">Supprimer</button>
 </div>
 
 <div class="box">
-    <h3>📨 Demandes de recharge</h3>
-    <div id="rechargeList"></div>
+  <h3>📨 Demandes de recharge</h3>
+  <div id="rechargeList"></div>
 </div>
-
-<button style="background:#005eff; margin-top:20px;" onclick="location.href='verifi.html'">
-🔍 Vérifier tous les DP
-</button>
-
-<button style="background:#00eaff; margin-top:20px;" onclick="location.href='Archi.html'">
-📁 Voir l'historique (Archive)
-</button>
-
-<button style="background:red; margin-top:20px;" onclick="location.href='profil.html'">
-⬅️ Retour au profil
-</button>
-
-<button style="background:orange; margin-top:20px;" onclick="location.href='offon.html'">
-⚡ Ouvrir OFF/ON
-</button>
 
 <audio id="soundValidate" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7b8ad29dbb.mp3?filename=correct-2-46134.mp3"></audio>
 <audio id="soundRefuse" src="https://cdn.pixabay.com/download/audio/2021/09/09/audio_9d6f5bf86d.mp3?filename=error-126627.mp3"></audio>
 
 <script type="module">
-// ===== FIREBASE =====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
@@ -234,145 +101,124 @@ const auth = getAuth();
 
 // ===== DROPDOWN =====
 let currentAction = "add";
-function toggleMenu(){ 
-    document.getElementById("actionMenu").style.display = (document.getElementById("actionMenu").style.display==="block")?"none":"block"; 
-}
+function toggleMenu(){ document.getElementById("actionMenu").style.display = (document.getElementById("actionMenu").style.display==="block")?"none":"block"; }
 function selectAction(type){
-    currentAction = type;
-    document.getElementById("selectedAction").innerText = type==="add"?"Ajouter des fonds":"Retirer des fonds";
-    document.getElementById("fundTitle").innerText = type==="add"?"💰 Ajouter des fonds":"💸 Retirer des fonds";
-    document.getElementById("fundBtn").innerText = type==="add"?"Ajouter":"Retirer";
-    toggleMenu();
+  currentAction = type;
+  document.getElementById("selectedAction").innerText = type==="add"?"Ajouter des fonds":"Retirer des fonds";
+  document.getElementById("fundTitle").innerText = type==="add"?"💰 Ajouter des fonds":"💸 Retirer des fonds";
+  document.getElementById("fundBtn").innerText = type==="add"?"Ajouter":"Retirer";
+  toggleMenu();
 }
 
-// ===== AUTH & SECURE ACCESS =====
-document.body.style.display = "none"; // cacher la page tant que non connecté
-let currentUserData = null;
-
-onAuthStateChanged(auth, async (user) => {
-    if(!user){ location.href="index.html"; return; }
-
-    const emailKey = encodeURIComponent(user.email);
-    const userRef = doc(db,"users",emailKey);
-    const snap = await getDoc(userRef);
-
-    if(!snap.exists() || !["creator","admin"].includes(snap.data().role)){
-        alert("Accès refusé !");
-        location.href="index.html";
-        return;
-    }
-
-    currentUserData = snap.data();
-    document.body.style.display = "block"; // afficher après vérification
-    loadRecharges();
+// ===== AUTH =====
+document.body.style.display = "none";
+onAuthStateChanged(auth, async (user)=>{
+  if(!user) location.href="index.html";
+  const userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
+  if(!snap.exists() || !["creator","admin"].includes(snap.data().role)){
+    alert("Accès refusé !");
+    location.href="index.html";
+    return;
+  }
+  document.body.style.display="block";
+  loadRecharges();
 });
 
-// ===== FONCTIONS =====
+// ===== FUNCTIONS =====
 async function processFunds(){
-    const dpID = document.getElementById("dpInput").value.trim();
-    const amount = Number(document.getElementById("amountInput").value);
-    if(dpID===""||amount<=0) return alert("⚠️ Champs invalides");
-
-    const userRef = doc(db,"users",dpID);
-    const snap = await getDoc(userRef);
-    if(!snap.exists()) return alert("❌ DP introuvable");
-
-    const data = snap.data();
-    let newBalance = (data.balance||0) + (currentAction==="add"?amount:-amount);
-    if(currentAction==="remove" && newBalance<0) return alert("❌ Solde insuffisant !");
-    await setDoc(userRef,{balance:newBalance},{merge:true});
-    alert(`${currentAction==="add"?"+":"-"}${amount} crédits ${currentAction==="add"?"ajoutés":"retirés"} à ${dpID}`);
+  const dpID = document.getElementById("dpInput").value.trim();
+  const amount = Number(document.getElementById("amountInput").value);
+  if(dpID===""||amount<=0) return alert("⚠️ Champs invalides");
+  const userRef = doc(db,"users",dpID);
+  const snap = await getDoc(userRef);
+  if(!snap.exists()) return alert("❌ DP introuvable");
+  const newBalance = (snap.data().balance||0) + (currentAction==="add"?amount:-amount);
+  if(currentAction==="remove" && newBalance<0) return alert("❌ Solde insuffisant !");
+  await setDoc(userRef,{balance:newBalance},{merge:true});
+  alert(`${currentAction==="add"?"+":"-"}${amount} crédits ${currentAction==="add"?"ajoutés":"retirés"} à ${dpID}`);
 }
 
 async function checkBalance(){
-    const dpID = document.getElementById("dpCheck").value.trim();
-    const userRef = doc(db,"users",dpID);
-    const snap = await getDoc(userRef);
-    if(!snap.exists()){ document.getElementById("checkResult").innerHTML="❌ DP introuvable"; return; }
-
-    const data = snap.data();
-    document.getElementById("checkResult").innerHTML=`
-        <b>Nom :</b> ${data.username||"Non défini"}<br>
-        <b>Email :</b> ${data.email||"Non défini"}<br>
-        <b>Rôle :</b> <span style="color:#00eaff;">${data.role||"user"}</span><br>
-        <b>Solde ${dpID} :</b> <span style="color:yellow;">${data.balance||0} crédits</span>
-    `;
+  const dpID = document.getElementById("dpCheck").value.trim();
+  const userRef = doc(db,"users",dpID);
+  const snap = await getDoc(userRef);
+  if(!snap.exists()){ document.getElementById("checkResult").innerHTML="❌ DP introuvable"; return; }
+  const data = snap.data();
+  document.getElementById("checkResult").innerHTML=`
+    <b>Nom :</b> ${data.username||"Non défini"}<br>
+    <b>Email :</b> ${data.email||"Non défini"}<br>
+    <b>Rôle :</b> <span style="color:#00eaff;">${data.role||"user"}</span><br>
+    <b>Solde :</b> <span style="color:yellow;">${data.balance||0} crédits</span>
+  `;
 }
 
 async function addEmployee(){
-    const email = document.getElementById("employeeEmail").value.trim();
-    const type = document.getElementById("employeeType").value;
-    if(email==="") return alert("⚠️ Email vide");
-
-    const userRef = doc(db,"users",encodeURIComponent(email));
-    const snap = await getDoc(userRef);
-    if(!snap.exists()) return alert("❌ Aucun compte trouvé");
-
-    await setDoc(userRef,{role:"employee",employeeType:type},{merge:true});
-    alert("👔 Employé ajouté !");
+  const email = document.getElementById("employeeEmail").value.trim();
+  const type = document.getElementById("employeeType").value;
+  if(!email) return alert("⚠️ Email vide");
+  const userRef = doc(db,"users",email);
+  const snap = await getDoc(userRef);
+  if(!snap.exists()) return alert("❌ Aucun compte trouvé");
+  await setDoc(userRef,{role:"employee",employeeType:type},{merge:true});
+  alert("👔 Employé ajouté !");
 }
 
 async function removeEmployee(){
-    const email = document.getElementById("removeEmployeeEmail").value.trim();
-    if(email==="") return alert("⚠️ Email manquant");
-
-    const userRef = doc(db,"users",encodeURIComponent(email));
-    const snap = await getDoc(userRef);
-    if(!snap.exists()) return alert("❌ Aucun compte trouvé");
-
-    if(snap.data().role!=="employee") return alert("⚠️ Cet utilisateur n'est pas un employé");
-
-    await setDoc(userRef,{role:"user",employeeType:null},{merge:true});
-    alert("❌ Employé retiré !");
+  const email = document.getElementById("removeEmployeeEmail").value.trim();
+  if(!email) return alert("⚠️ Email manquant");
+  const userRef = doc(db,"users",email);
+  const snap = await getDoc(userRef);
+  if(!snap.exists()) return alert("❌ Aucun compte trouvé");
+  if(snap.data().role!=="employee") return alert("⚠️ Cet utilisateur n'est pas un employé");
+  await setDoc(userRef,{role:"user",employeeType:null},{merge:true});
+  alert("❌ Employé retiré !");
 }
 
 async function loadRecharges(){
-    const rechargeCol = collection(db,"recharges");
-    const snapshot = await getDocs(rechargeCol);
-    const box = document.getElementById("rechargeList");
-    box.innerHTML = "";
-
-    if(snapshot.empty){ box.innerHTML="<p>Aucune demande.</p>"; return; }
-
-    snapshot.forEach(docSnap=>{
-        const r = docSnap.data();
-        const docID = docSnap.id;
-
-        box.innerHTML += `
-        <div class="request">
-            <p><b>${r.name}</b> (${r.email})</p>
-            ${r.phone?`<p>WhatsApp : ${r.phone}</p>`:""}
-            <p><b>DP-ID :</b> ${r.dpID||"Non fourni"}</p>
-            <p><b>Montant :</b> <span style="color:yellow;">${r.amount} HTG</span></p>
-            <p><b>Date :</b> ${r.created}</p>
-            <p>Status : <span class="status ${r.status}">${r.status.toUpperCase()}</span></p>
-            ${r.receipt?`<img src="${r.receipt}" alt="Reçu">`:""}
-            <div class="btnRow">
-                <button class="btnGreen" onclick="validateRecharge('${docID}')">VALIDER</button>
-                <button class="btnRed" onclick="refuseRecharge('${docID}')">REFUSER</button>
-            </div>
-        </div>
-        `;
-    });
+  const rechargeCol = collection(db,"recharges");
+  const snapshot = await getDocs(rechargeCol);
+  const box = document.getElementById("rechargeList");
+  box.innerHTML="";
+  if(snapshot.empty) { box.innerHTML="<p>Aucune demande.</p>"; return; }
+  snapshot.forEach(docSnap=>{
+    const r = docSnap.data();
+    const docID = docSnap.id;
+    box.innerHTML+=`
+    <div class="request">
+      <p><b>${r.name}</b> (${r.email})</p>
+      ${r.phone?`<p>WhatsApp : ${r.phone}</p>`:""}
+      <p><b>DP-ID :</b> ${r.dpID||"Non fourni"}</p>
+      <p><b>Montant :</b> <span style="color:yellow;">${r.amount} HTG</span></p>
+      <p><b>Date :</b> ${r.created}</p>
+      <p>Status : <span class="status ${r.status}">${r.status.toUpperCase()}</span></p>
+      ${r.receipt?`<img src="${r.receipt}" alt="Reçu">`:""}
+      <div class="btnRow">
+        <button class="btnGreen" onclick="validateRecharge('${docID}')">VALIDER</button>
+        <button class="btnRed" onclick="refuseRecharge('${docID}')">REFUSER</button>
+      </div>
+    </div>
+    `;
+  });
 }
 
 async function validateRecharge(id){
-    const ref = doc(db,"recharges",id);
-    const snap = await getDoc(ref);
-    if(!snap.exists()) return;
-    const r = snap.data();
-    const userRef = doc(db,"users",r.dpID);
-    const userSnap = await getDoc(userRef);
-    if(userSnap.exists()) await setDoc(userRef,{balance:(userSnap.data().balance||0)+Number(r.amount)},{merge:true});
-    await setDoc(ref,{status:"validated"},{merge:true});
-    document.getElementById("soundValidate").play();
-    loadRecharges();
+  const ref = doc(db,"recharges",id);
+  const snap = await getDoc(ref);
+  if(!snap.exists()) return;
+  const r = snap.data();
+  const userRef = doc(db,"users",r.dpID);
+  const userSnap = await getDoc(userRef);
+  if(userSnap.exists()) await setDoc(userRef,{balance:(userSnap.data().balance||0)+Number(r.amount)},{merge:true});
+  await setDoc(ref,{status:"validated"},{merge:true});
+  document.getElementById("soundValidate").play();
+  loadRecharges();
 }
 
 async function refuseRecharge(id){
-    await setDoc(doc(db,"recharges",id),{status:"refused"},{merge:true});
-    document.getElementById("soundRefuse").play();
-    loadRecharges();
+  await setDoc(doc(db,"recharges",id),{status:"refused"},{merge:true});
+  document.getElementById("soundRefuse").play();
+  loadRecharges();
 }
 </script>
 
