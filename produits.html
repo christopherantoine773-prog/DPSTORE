@@ -167,7 +167,6 @@
     vertical-align: middle;
   }
 
-  /* 🔵 BOUTON MESSAGERIE */
   #chatBtn {
     position: fixed;
     bottom: 25px;
@@ -201,7 +200,6 @@
   <div class="balance-container">
     <span id="user-name"></span>
     <img id="badge" class="verified-badge hidden" src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg">
-
     <span id="user-balance">Solde : 0 G</span>
 
     <select id="currency-select">
@@ -314,7 +312,6 @@
         <button class="btn-primary" onclick="openPage('prodp.html')">Ouvrir</button>
       </div>
 
-      <!-- 🆕 AJOUT DEMANDÉ -->
       <div class="card">
         <h3>New Prod +</h3>
         <p>Créer un nouveau produit instantanément.</p>
@@ -328,44 +325,37 @@
 
 <footer>© 2025 DPSTORE — Tous droits réservés</footer>
 
-<!-- 🔵 BOUTON MESSAGERIE UTILISATEUR -->
 <button id="chatBtn" title="Messagerie" onclick="openUserChat()">💬</button>
 
 <script>
 /* ===============================
-      🔥 SYNCHRONISATION COMPLÈTE  
+      🔥 SYNCHRONISATION SESSION
    =============================== */
 
-let user = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
+let user = JSON.parse(sessionStorage.getItem("dpstore_user") || "{}");
 if (!user.email) {
   alert("⚠️ Aucun compte connecté !");
   window.location.href = "index.html";
 }
 
-let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-let mainAccount = accounts.find(a => a.email === user.email);
+function syncUser() {
+  let accounts = JSON.parse(sessionStorage.getItem("dpstore_accounts") || "[]");
+  let mainAccount = accounts.find(a => a.email === user.email);
 
-if (!mainAccount) {
-  alert("⚠️ Compte introuvable dans la base !");
-  window.location.href = "index.html";
-}
+  if (mainAccount) {
+    user = {
+      ...user,
+      balance: mainAccount.balance ?? user.balance,
+      username: mainAccount.username ?? user.username,
+      photo: mainAccount.photo ?? user.photo,
+      dp: mainAccount.dp ?? user.dp,
+      role: mainAccount.role ?? user.role,
+      employeeType: mainAccount.employeeType ?? user.employeeType
+    };
+    sessionStorage.setItem("dpstore_user", JSON.stringify(user));
+  }
 
-/* ⚡ Synchronisation correcte */
-user.balance = mainAccount.balance ?? user.balance;
-user.username = mainAccount.username ?? user.username;
-user.photo = mainAccount.photo ?? user.photo;
-user.dp = mainAccount.dp ?? user.dp;
-user.role = mainAccount.role ?? user.role;
-user.employeeType = mainAccount.employeeType ?? user.employeeType;
-
-/* 🔄 Mise à jour dpstore_user */
-localStorage.setItem("dpstore_user", JSON.stringify(user));
-
-/* 🔄 Mise à jour dpstore_accounts */
-let idx = accounts.findIndex(a => a.email === user.email);
-if (idx !== -1) {
-  accounts[idx] = user;
-  localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+  updateDisplay();
 }
 
 /* ===============================
@@ -373,23 +363,27 @@ if (idx !== -1) {
    =============================== */
 
 const RATES = { HTG: 1, USD: 205, EUR: 205/1.4 };
-
-document.getElementById("user-name").textContent =
-  user.username || user.name || "Utilisateur";
-
+const userNameEl = document.getElementById("user-name");
 const balanceEl = document.getElementById("user-balance");
+const badgeEl = document.getElementById("badge");
 const select = document.getElementById("currency-select");
 
-function updateBalance() {
-  let value = user.balance;
+function updateDisplay() {
+  userNameEl.textContent = user.username || "Utilisateur";
+
+  if (["creator", "admin", "employee"].includes(user.role)) {
+    badgeEl.classList.remove("hidden");
+  } else {
+    badgeEl.classList.add("hidden");
+  }
+
+  let value = user.balance ?? 0;
   let unit = "G";
 
   if (select.value === "USD") {
     value = (value / RATES.USD).toFixed(2);
     unit = "USD";
-  }
-
-  if (select.value === "EUR") {
+  } else if (select.value === "EUR") {
     value = (value / RATES.EUR).toFixed(2);
     unit = "EUR";
   }
@@ -397,21 +391,17 @@ function updateBalance() {
   balanceEl.innerText = `Solde : ${value} ${unit}`;
 }
 
-select.addEventListener("change", updateBalance);
-updateBalance();
+select.addEventListener("change", updateDisplay);
+setInterval(syncUser, 500);
 
 /* ===============================
       ⭐ BOUTON RECHARGE
    =============================== */
-
-function openRecharge() {
-  window.location.href = "rechargex.html";
-}
+function openRecharge() { window.location.href = "rechargex.html"; }
 
 /* ===============================
       🌟 NAVIGATION
    =============================== */
-
 function openPage(p) { window.location.href = p; }
 function openProfile() { window.location.href = "profil.html"; }
 function openCart() { window.location.href = "cart.html"; }
@@ -420,20 +410,8 @@ function openContact() { window.location.href = "contact.html"; }
 /* ===============================
       🔵 BOUTON MESSAGERIE
    =============================== */
+function openUserChat() { window.location.href = "user.html"; }
 
-function openUserChat() {
-    window.location.href = "user.html";
-}
-
-/* ===============================
-      🔵 BADGE VERIFIED
-   =============================== */
-
-if (["creator", "admin", "employee"].includes(user.role)) {
-    document.getElementById("badge").classList.remove("hidden");
-} else {
-    document.getElementById("badge").classList.add("hidden");
-}
 </script>
 
 </body>
