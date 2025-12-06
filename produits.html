@@ -189,7 +189,6 @@
     color: black;
     box-shadow: 0 0 20px #FFD700aa;
   }
-
 </style>
 </head>
 <body>
@@ -200,6 +199,7 @@
   <div class="balance-container">
     <span id="user-name"></span>
     <img id="badge" class="verified-badge hidden" src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg">
+
     <span id="user-balance">Solde : 0 G</span>
 
     <select id="currency-select">
@@ -216,7 +216,6 @@
 </header>
 
 <div class="container">
-
   <!-- 🕹️ Jeux -->
   <div class="section">
     <h2 class="section-title">🎮 Jeux</h2>
@@ -320,7 +319,6 @@
 
     </div>
   </div>
-
 </div>
 
 <footer>© 2025 DPSTORE — Tous droits réservés</footer>
@@ -329,61 +327,30 @@
 
 <script>
 /* ===============================
-      🔥 SYNCHRONISATION SESSION
+      🔥 SYNCHRONISATION DU SOLDE AVEC PROFIL
    =============================== */
 
 let user = JSON.parse(sessionStorage.getItem("dpstore_user") || "{}");
-if (!user.email) {
+if(!user.email){
   alert("⚠️ Aucun compte connecté !");
   window.location.href = "index.html";
 }
 
-function syncUser() {
-  let accounts = JSON.parse(sessionStorage.getItem("dpstore_accounts") || "[]");
-  let mainAccount = accounts.find(a => a.email === user.email);
+document.getElementById("user-name").textContent = user.username || "Utilisateur";
 
-  if (mainAccount) {
-    user = {
-      ...user,
-      balance: mainAccount.balance ?? user.balance,
-      username: mainAccount.username ?? user.username,
-      photo: mainAccount.photo ?? user.photo,
-      dp: mainAccount.dp ?? user.dp,
-      role: mainAccount.role ?? user.role,
-      employeeType: mainAccount.employeeType ?? user.employeeType
-    };
-    sessionStorage.setItem("dpstore_user", JSON.stringify(user));
-  }
-
-  updateDisplay();
-}
-
-/* ===============================
-      🔥 AFFICHAGE UTILISATEUR
-   =============================== */
-
-const RATES = { HTG: 1, USD: 205, EUR: 205/1.4 };
-const userNameEl = document.getElementById("user-name");
 const balanceEl = document.getElementById("user-balance");
-const badgeEl = document.getElementById("badge");
 const select = document.getElementById("currency-select");
 
-function updateDisplay() {
-  userNameEl.textContent = user.username || "Utilisateur";
+const RATES = { HTG:1, USD:205, EUR:205/1.4 };
 
-  if (["creator", "admin", "employee"].includes(user.role)) {
-    badgeEl.classList.remove("hidden");
-  } else {
-    badgeEl.classList.add("hidden");
-  }
-
-  let value = user.balance ?? 0;
+function updateBalance(){
+  let value = Number(user.balance ?? 0);
   let unit = "G";
 
-  if (select.value === "USD") {
+  if(select.value === "USD"){
     value = (value / RATES.USD).toFixed(2);
     unit = "USD";
-  } else if (select.value === "EUR") {
+  } else if(select.value === "EUR"){
     value = (value / RATES.EUR).toFixed(2);
     unit = "EUR";
   }
@@ -391,27 +358,21 @@ function updateDisplay() {
   balanceEl.innerText = `Solde : ${value} ${unit}`;
 }
 
-select.addEventListener("change", updateDisplay);
-setInterval(syncUser, 500);
+select.addEventListener("change", updateBalance);
+updateBalance();
 
-/* ===============================
-      ⭐ BOUTON RECHARGE
-   =============================== */
-function openRecharge() { window.location.href = "rechargex.html"; }
+function openRecharge(){ window.location.href="rechargex.html"; }
+function openPage(p){ window.location.href=p; }
+function openProfile(){ window.location.href="profil.html"; }
+function openCart(){ window.location.href="cart.html"; }
+function openContact(){ window.location.href="contact.html"; }
+function openUserChat(){ window.location.href="user.html"; }
 
-/* ===============================
-      🌟 NAVIGATION
-   =============================== */
-function openPage(p) { window.location.href = p; }
-function openProfile() { window.location.href = "profil.html"; }
-function openCart() { window.location.href = "cart.html"; }
-function openContact() { window.location.href = "contact.html"; }
-
-/* ===============================
-      🔵 BOUTON MESSAGERIE
-   =============================== */
-function openUserChat() { window.location.href = "user.html"; }
-
+if(["creator","admin","employee"].includes(user.role)){
+  document.getElementById("badge").classList.remove("hidden");
+} else {
+  document.getElementById("badge").classList.add("hidden");
+}
 </script>
 
 </body>
