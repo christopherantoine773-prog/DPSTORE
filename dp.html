@@ -1,294 +1,361 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>DPSTORE — Gestion des produits</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Espace Utilisateurs — DPSTORE</title>
 
 <style>
-    body {
-        background:#000;
-        color:white;
-        font-family:Arial;
-        padding:20px;
-    }
-    h1 {
-        text-align:center;
-        color:#00eaff;
-    }
-    .box {
-        background:#111;
-        padding:15px;
-        border-radius:12px;
-        border:1px solid #00eaff55;
-        margin-bottom:20px;
-    }
-    input, textarea {
-        width:95%;
-        background:#1a1a1a;
-        border:none;
-        padding:10px;
-        border-radius:8px;
-        color:white;
-        margin-top:8px;
-    }
-    button {
-        width:95%;
-        padding:12px;
-        border:none;
-        border-radius:10px;
-        margin-top:10px;
-        cursor:pointer;
-        font-weight:bold;
-    }
-    .add-btn { background:#00ff99; color:black; }
-    .save-btn { background:#00eaff; color:black; }
-    .delete-btn { background:#ff3b3b; color:white; }
-    .product {
-        background:#0f0f0f;
-        padding:15px;
-        border:1px solid #00eaff22;
-        border-radius:10px;
-        margin-top:15px;
-    }
-    img {
-        width:100px;
-        border-radius:10px;
-        margin-top:10px;
-    }
+body{
+    background:#000;
+    font-family:"Poppins", sans-serif;
+    margin:0;
+    padding:20px;
+    color:#fff;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
 
-    .panel-box {
-        background:#111;
-        padding:20px;
-        border-radius:15px;
-        border:1px solid #00eaff55;
-        margin-bottom:25px;
-    }
-    .panel-title {
-        font-size:22px;
-        font-weight:bold;
-        color:#00eaff;
-    }
-    .panel-value {
-        font-size:26px;
-        margin-top:5px;
-        font-weight:bold;
-    }
-    .panel-small {
-        font-size:16px;
-        color:#bbb;
-        margin-top:-3px;
-    }
+/* HEADER */
+header{
+    width:100%;
+    max-width:1200px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+header h1{
+    color:#f9d71c;
+    font-size:1.8em;
+}
+header button{
+    padding:10px 20px;
+    border:none;
+    border-radius:8px;
+    background:#f9d71c;
+    color:#000;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+}
+header button:hover{
+    background:#fff700;
+}
 
-    .panel-btn {
-        background:#00eaff;
-        color:black;
-        padding:10px;
-        margin-top:10px;
-        border-radius:10px;
-        text-align:center;
-        font-weight:bold;
-        display:block;
-        text-decoration:none;
-    }
+/* FILTRE */
+.filter-container{
+    margin-bottom:20px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+.filter-container select, .filter-container input{
+    padding:8px 12px;
+    border-radius:6px;
+    border:none;
+    background:#111;
+    color:#f9d71c;
+    font-weight:bold;
+    cursor:pointer;
+}
 
-    .back-btn {
-        background:#444;
-        color:white;
-        padding:10px 15px;
-        border-radius:8px;
-        text-decoration:none;
-        font-weight:bold;
-        display:inline-block;
-        margin-bottom:20px;
-    }
+/* CARDS */
+.cards-container{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap:20px;
+    width:100%;
+    max-width:1200px;
+}
+
+.card{
+    background:#111;
+    border-radius:15px;
+    padding:20px;
+    box-shadow:0 0 25px #f9d71c;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-align:center;
+}
+.card:hover{
+    transform: translateY(-5px);
+    box-shadow:0 0 35px #f9d71c;
+}
+.card img{
+    width:100px;
+    height:100px;
+    border-radius:50%;
+    object-fit:cover;
+    border:3px solid #f9d71c;
+    display:block;
+    margin:0 auto 15px auto;
+}
+.card h3{
+    margin-bottom:10px;
+    color:#f9d71c;
+}
+.card p{
+    margin:5px 0;
+    font-size:14px;
+    color:#ccc;
+}
+.card button{
+    margin-top:10px;
+    padding:8px 12px;
+    border:none;
+    border-radius:6px;
+    background:#f9d71c;
+    color:#000;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+}
+.card button:hover{
+    background:#fff700;
+}
+
+.status{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:12px;
+    font-weight:bold;
+    margin-top:5px;
+    text-align:center;
+}
+.status.user{background:#555;color:#fff;}
+.status.employee{background:#00ff88;color:#000;}
+.status.creator{background:#ffbb00;color:#000;}
+.status.admin{background:#ff4444;color:#fff;}
+
+/* MODAL */
+.modal{
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.85);
+    justify-content:center;
+    align-items:center;
+    z-index:1000;
+}
+.modal-content{
+    background:#111;
+    padding:20px;
+    border-radius:12px;
+    width:90%;
+    max-width:700px;
+    max-height:90%;
+    overflow-y:auto;
+    position:relative;
+}
+.modal-content h2{
+    color:#f9d71c;
+    margin-bottom:15px;
+}
+.modal-content p{
+    color:#ccc;
+    margin:5px 0;
+}
+.modal-content button.close{
+    position:absolute;
+    top:15px;
+    right:15px;
+    padding:6px 12px;
+    background:#ff4444;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+/* TRANSACTIONS */
+.transaction{
+    background:#222;
+    padding:10px;
+    margin:8px 0;
+    border-radius:8px;
+    border-left:4px solid #f9d71c;
+    font-size:14px;
+}
+.transaction.in{border-color:#00ff88;}
+.transaction.out{border-color:#ff4444;}
 </style>
 </head>
-
 <body>
 
-<a class="back-btn" href="profil.html">⬅ Retour au profil</a>
+<header>
+    <h1>📊 ESPACE UTILISATEURS</h1>
+    <button onclick="location.href='profil.html'">⬅️ Retour</button>
+</header>
 
-<h1>🛠️ Gestion des Produits — DPSTORE</h1>
-
-<div class="panel-box">
-    <div class="panel-title">👤 Utilisateur</div>
-    <div class="panel-value" id="panelUser">Chargement...</div>
-    <div class="panel-small" id="panelRole"></div>
+<div class="filter-container">
+    <label for="roleFilter">Filtrer par rôle:</label>
+    <select id="roleFilter" onchange="filterUsers()">
+        <option value="all">Tous</option>
+        <option value="user">Utilisateur</option>
+        <option value="employee">Employé</option>
+        <option value="creator">Créateur</option>
+        <option value="admin">Admin</option>
+    </select>
+    <input type="text" id="searchUser" placeholder="Rechercher..." oninput="filterUsers()">
 </div>
 
-<div class="panel-box">
-    <div class="panel-title">👥 Total utilisateurs</div>
-    <div class="panel-value" id="panelUsers">Chargement...</div>
+<div class="cards-container" id="cardsContainer">
+    <p style="text-align:center;">Chargement des utilisateurs...</p>
 </div>
 
-<div class="panel-box">
-    <div class="panel-title">💰 Solde du compte</div>
-    <div class="panel-value" id="panelBalance">0 HTG</div>
-
-    <a class="panel-btn" href="arg.html">⚡ Accéder à ARG</a>
-</div>
-
-<div class="box">
-    <h3 style="color:#00eaff;">➕ Ajouter un produit</h3>
-
-    <input id="prodName" placeholder="Nom du produit">
-    <input id="prodPrice" type="number" placeholder="Prix (HTG)">
-    <textarea id="prodDesc" placeholder="Description"></textarea>
-
-    <label>Image du produit :</label>
-    <input id="prodImg" type="file" accept="image/*">
-
-    <div style="margin-top:10px;">
-        <label><input type="checkbox" id="reqEmail"> Demander Email</label><br>
-        <label><input type="checkbox" id="reqPassword"> Demander Password</label><br>
-        <label><input type="checkbox" id="reqWhatsApp"> Demander Numéro WhatsApp</label><br>
-        <label><input type="checkbox" id="reqID"> Demander ID</label>
+<!-- MODAL PROFIL -->
+<div class="modal" id="profileModal">
+    <div class="modal-content" id="modalContent">
+        <button class="close" onclick="closeModal()">X</button>
+        <div id="profileDetails"></div>
+        <button id="toggleTransactionsBtn" style="margin-top:10px; padding:8px 12px; border:none; border-radius:6px; background:#f9d71c; color:#000; font-weight:bold; cursor:pointer;">📄 Voir Transactions</button>
+        <div id="transactionsList" style="display:none; margin-top:10px;"></div>
     </div>
-
-    <button class="add-btn" onclick="addProduct()">Ajouter</button>
 </div>
 
-<div id="productList"></div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
-<button class="save-btn" onclick="saveProducts()">💾 Sauvegarder les modifications</button>
-<button class="delete-btn" onclick="resetProducts()">⚠️ Réinitialiser tous les produits</button>
+const firebaseConfig = {
+  apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
+  authDomain: "dpstore-officie.firebaseapp.com",
+  projectId: "dpstore-officie",
+  storageBucket: "dpstore-officie.appspot.com",
+  messagingSenderId: "903943973062",
+  appId: "1:903943973062:web:6501a2ec167adb31258fc7"
+};
 
-<script>
-/* ---- PANELS ---- */
-async function loadPanelData(){
-    const logged = JSON.parse(localStorage.getItem("dpstore_user") || "null");
-    if(!logged){
-        document.getElementById("panelUser").innerText = "Non connecté";
-        document.getElementById("panelRole").innerText = "";
-        document.getElementById("panelBalance").innerText = "0 HTG";
-        return;
-    }
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    document.getElementById("panelUser").innerText = logged.username || "Utilisateur";
+let allUsers = [];
 
-    let roleText = "";
-    switch(logged.role){
-        case "creator": roleText = "Créateur"; break;
-        case "employee": roleText = "Employé"; break;
-        case "admin": roleText = "Administrateur"; break;
-        default: roleText = "Utilisateur"; break;
-    }
-
-    document.getElementById("panelRole").innerText = "Rôle : " + roleText;
-
-    // 🔄 Synchronisation solde avec le profil
-    const accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-    const accGlobal = accounts.find(u => (u.email || "").toLowerCase() === (logged.email || "").toLowerCase());
-    if(accGlobal){
-        logged.balance = accGlobal.balance ?? logged.balance;
-        localStorage.setItem("dpstore_user", JSON.stringify(logged));
-    }
-
-    document.getElementById("panelBalance").innerText = (logged.balance || 0) + " HTG";
-
-    try {
-        document.getElementById("panelUsers").innerText = accounts.length;
-    } 
-    catch (e) {
-        document.getElementById("panelUsers").innerText = "0";
-    }
+async function loadUsers(){
+    const userCol = collection(db,"users");
+    const snapshot = await getDocs(userCol);
+    allUsers = snapshot.docs.map(docSnap => ({ id: docSnap.id, data: docSnap.data() || {} }));
+    renderUsers(allUsers);
 }
-loadPanelData();
 
-/* ---- PRODUITS ---- */
-let products = JSON.parse(localStorage.getItem("dp_products") || "[]");
-
-function renderProducts(){
-    const list = document.getElementById("productList");
-    list.innerHTML = "";
-
-    if(products.length === 0){
-        list.innerHTML = "<p style='color:#777;'>Aucun produit pour l’instant.</p>";
+function renderUsers(users){
+    const container = document.getElementById("cardsContainer");
+    container.innerHTML = "";
+    if(users.length === 0){
+        container.innerHTML = "<p style='text-align:center;'>Aucun utilisateur trouvé</p>";
         return;
     }
-
-    products.forEach((p,i)=>{
-        list.innerHTML += `
-            <div class="product">
-                <h3>${p.name}</h3>
-                <p>Prix : <b>${p.price} HTG</b></p>
-                <p>${p.desc}</p>
-                ${p.img ? `<img src="${p.img}">` : "<i>Pas d’image</i>"}
-                <p>Info supplémentaires demandées :</p>
-                <ul>
-                    ${p.reqEmail ? "<li>Email</li>" : ""}
-                    ${p.reqPassword ? "<li>Password</li>" : ""}
-                    ${p.reqWhatsApp ? "<li>WhatsApp</li>" : ""}
-                    ${p.reqID ? "<li>ID</li>" : ""}
-                </ul>
-                <br><br>
-                <button class="delete-btn" onclick="deleteProduct(${i})">Supprimer</button>
-            </div>
+    const fragment = document.createDocumentFragment();
+    users.forEach(user => {
+        const data = user.data;
+        const dp = data.dp || user.id;
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+            <img src="${data.photo || 'https://via.placeholder.com/100'}" alt="Photo">
+            <h3>${data.username || "Non défini"}</h3>
+            <p><b>Email:</b> ${data.email || "—"}</p>
+            <p><b>DP-ID:</b> ${dp}</p>
+            <p><b>Crédits:</b> ${data.credits ?? 0} | <b>Solde:</b> ${data.balance ?? 0}</p>
+            <p><b>Créé le:</b> ${data.createdAt || "—"}</p>
+            <span class="status ${data.role || 'user'}">${data.role || 'user'}</span>
+            <button onclick="viewProfile('${dp}')">Voir Profil</button>
         `;
+        fragment.appendChild(card);
     });
+    container.appendChild(fragment);
 }
 
-renderProducts();
+function filterUsers(){
+    const role = document.getElementById("roleFilter").value;
+    const keyword = document.getElementById("searchUser").value.toLowerCase();
+    let filtered = allUsers;
 
-function addProduct(){
-    let name = document.getElementById("prodName").value.trim();
-    let price = parseInt(document.getElementById("prodPrice").value);
-    let desc = document.getElementById("prodDesc").value.trim();
-    let file = document.getElementById("prodImg").files[0];
+    if(role !== "all") filtered = filtered.filter(u => (u.data.role || 'user') === role);
+    if(keyword) filtered = filtered.filter(u => 
+        (u.data.username || "").toLowerCase().includes(keyword) || 
+        (u.data.email || "").toLowerCase().includes(keyword)
+    );
 
-    let reqEmail = document.getElementById("reqEmail").checked;
-    let reqPassword = document.getElementById("reqPassword").checked;
-    let reqWhatsApp = document.getElementById("reqWhatsApp").checked;
-    let reqID = document.getElementById("reqID").checked;
-
-    if(!name || !price){
-        alert("Nom + prix obligatoires.");
-        return;
-    }
-
-    function pushProduct(imgData){
-        products.push({ 
-            name, price, desc, img: imgData, 
-            reqEmail, reqPassword, reqWhatsApp, reqID 
-        });
-        renderProducts();
-        saveProducts();
-        alert("✔ Produit ajouté avec succès !");
-        location.reload();
-    }
-
-    if(file){
-        let reader = new FileReader();
-        reader.onload = function(e){
-            pushProduct(e.target.result);
-        };
-        reader.readAsDataURL(file);
-    } else {
-        pushProduct(null);
-    }
+    renderUsers(filtered);
 }
 
-function saveProducts(){
-    localStorage.setItem("dp_products", JSON.stringify(products));
-    alert("✔ Produits sauvegardés !");
+function closeModal(){
+    document.getElementById("profileModal").style.display = "none";
 }
 
-function deleteProduct(i){
-    if(confirm("Supprimer ce produit ?")){
-        products.splice(i,1);
-        renderProducts();
-        saveProducts();
-    }
+async function viewProfile(dp){
+    const userDoc = allUsers.find(u => (u.data.dp || u.id) === dp);
+    if(!userDoc) return alert("Utilisateur introuvable !");
+    const data = userDoc.data;
+
+    const username = data.username || "Non défini";
+    const email = data.email || "—";
+    const role = data.role || "user";
+    const credits = data.credits ?? 0;
+    const balance = data.balance ?? 0;
+    const createdAt = data.createdAt || "—";
+    const photo = data.photo || "https://via.placeholder.com/100";
+
+    const profileDiv = document.getElementById("profileDetails");
+    profileDiv.innerHTML = `
+        <h2>${username}</h2>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>DP-ID:</b> ${dp}</p>
+        <p><b>Rôle:</b> ${role}</p>
+        <p><b>Crédits:</b> ${credits}</p>
+        <p><b>Solde:</b> ${balance}</p>
+        <p><b>Créé le:</b> ${createdAt}</p>
+        <img src="${photo}" width="100" height="100" style="border-radius:50%; margin-top:10px;">
+    `;
+
+    const transDiv = document.getElementById("transactionsList");
+    const toggleBtn = document.getElementById("toggleTransactionsBtn");
+    transDiv.style.display = "none";
+    toggleBtn.textContent = "📄 Voir Transactions";
+
+    toggleBtn.onclick = async () => {
+        if(transDiv.style.display === "none"){
+            transDiv.style.display = "block";
+            toggleBtn.textContent = "📄 Masquer Transactions";
+
+            if(transDiv.innerHTML === ""){
+                transDiv.innerHTML = "<p>Chargement des transactions...</p>";
+                try {
+                    const transCol = collection(db, "transactions");
+                    const q = query(transCol, where("dpID", "==", dp));
+                    const snapshot = await getDocs(q);
+                    if(snapshot.empty){
+                        transDiv.innerHTML = "<p>Aucune transaction.</p>";
+                    } else {
+                        transDiv.innerHTML = "";
+                        snapshot.forEach(docSnap => {
+                            const t = docSnap.data();
+                            transDiv.innerHTML += `
+                                <div class="transaction ${t.type || 'in'}">
+                                    <b>${t.type === 'in' ? '+' : '-'}</b> ${t.amount ?? 0} crédits — ${t.reason || 'N/A'} — <small>${t.date || '—'}</small>
+                                </div>
+                            `;
+                        });
+                    }
+                } catch(e){
+                    console.error(e);
+                    transDiv.innerHTML = "<p>Erreur chargement transactions.</p>";
+                }
+            }
+        } else {
+            transDiv.style.display = "none";
+            toggleBtn.textContent = "📄 Voir Transactions";
+        }
+    };
+
+    document.getElementById("profileModal").style.display = "flex";
 }
 
-function resetProducts(){
-    if(confirm("⚠️ Réinitialiser TOUS les produits ?")){
-        products = [];
-        localStorage.setItem("dp_products", JSON.stringify(products));
-        renderProducts();
-    }
-}
+loadUsers().catch(err=>console.error(err));
 </script>
 
 </body>
