@@ -1,95 +1,29 @@
+<!-- Profil — DPSTORE corrigé -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Profil — DPSTORE</title>
-
 <style>
-body{
-    background:black;
-    color:white;
-    font-family:Arial;
-    text-align:center;
-}
-
-.profile-box{
-    width:90%;
-    margin:40px auto;
-    padding:20px;
-    background:#111;
-    border-radius:15px;
-    box-shadow:0 0 25px #fdf100;
-}
-
-#profile-pic{
-    width:120px;
-    height:120px;
-    border-radius:50%;
-    border:4px solid #fdf100;
-    object-fit:cover;
-}
-
-.tiktok-badge{
-    display:inline-flex;
-    justify-content:center;
-    align-items:center;
-    width:18px;
-    height:18px;
-    background:#2aa6ff;
-    border-radius:50%;
-    font-size:12px;
-    color:white;
-    font-weight:bold;
-    margin-left:6px;
-}
-
-button{
-    padding:12px 20px;
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
-    font-weight:bold;
-    margin-top:10px;
-}
-
-#changePhotoBtn{
-    background:yellow;
-    color:black;
-}
-
-#savePhotoBtn{
-    background:#0099ff;
-    display:none;
-}
-
-.red{
-    background:red;
-    color:white;
-}
-
-.creator-btn{
-    background:#00eaff;
-    color:black;
-    width:90%;
-    margin-top:20px;
-    padding:14px;
-    border-radius:12px;
-    font-size:18px;
-    box-shadow:0 0 15px #00eaff;
-    display:none;
-}
+/* ton CSS existant */
+body{ background:black; color:white; font-family:Arial; text-align:center; }
+.profile-box{ width:90%; margin:40px auto; padding:20px; background:#111; border-radius:15px; box-shadow:0 0 25px #fdf100; }
+#profile-pic{ width:120px; height:120px; border-radius:50%; border:4px solid #fdf100; object-fit:cover; }
+.tiktok-badge{ display:inline-flex; justify-content:center; align-items:center; width:18px; height:18px; background:#2aa6ff; border-radius:50%; font-size:12px; color:white; font-weight:bold; margin-left:6px; }
+button{ padding:12px 20px; border:none; border-radius:10px; cursor:pointer; font-weight:bold; margin-top:10px; }
+#changePhotoBtn{ background:yellow; color:black; }
+#savePhotoBtn{ background:#0099ff; display:none; }
+.red{ background:red; color:white; }
+.creator-btn{ background:#00eaff; color:black; width:90%; margin-top:20px; padding:14px; border-radius:12px; font-size:18px; box-shadow:0 0 15px #00eaff; display:none; }
 </style>
 </head>
 <body>
 
 <div class="profile-box">
-
-    <img id="profile-pic" src="" alt="Photo de profil">
-    <br>
+    <img id="profile-pic" src="" alt="Photo de profil"><br>
     <button id="changePhotoBtn">📸 Modifier la photo</button>
-    <input type="file" id="photoInput" accept="image/*" style="display:none;">
-    <br>
+    <input type="file" id="photoInput" accept="image/*" style="display:none;"><br>
     <button id="savePhotoBtn">💾 Sauvegarder</button>
 
     <h2>
@@ -99,43 +33,21 @@ button{
 
     <h3 id="dp-id" style="color:#00aaff;"></h3>
     <p id="email"></p>
+    <p>Rôle : <span id="role" style="color:#00aaff; font-weight:bold;"></span></p>
+    <p style="color:yellow; font-size:18px;">💰 Solde : <span id="credits">0</span> crédits</p>
+    <p style="margin-top:10px;">Dernière connexion : <span id="lastLogin"></span></p>
 
-    <p>
-        Rôle :
-        <span id="role" style="color:#00aaff; font-weight:bold;"></span>
-    </p>
-
-    <p style="color:yellow; font-size:18px;">
-        💰 Solde : <span id="credits">0</span> crédits
-    </p>
-
-    <p style="margin-top:10px;">
-        Dernière connexion : <span id="lastLogin"></span>
-    </p>
-
-    <button id="creatorModeBtn" class="creator-btn"
-            onclick="location.href='creator-space.html'">
-        🚀 MODE CREATOR / ADMIN
-    </button>
-
-    <button id="employeeBtn" class="creator-btn"
-            onclick="location.href='employee.html'"
-            style="background:#ffae00; box-shadow:0 0 15px #ffae00; display:none;">
-        🛠️ ESPACE EMPLOYÉ
-    </button>
+    <button id="creatorModeBtn" class="creator-btn" onclick="location.href='creator-space.html'">🚀 MODE CREATOR / ADMIN</button>
+    <button id="employeeBtn" class="creator-btn" onclick="location.href='employee.html'" style="background:#ffae00; box-shadow:0 0 15px #ffae00; display:none;">🛠️ ESPACE EMPLOYÉ</button>
 
     <button onclick="location.href='produits.html'">⬅️ Retour aux produits</button>
     <button class="red" onclick="logout()">Déconnexion</button>
-
 </div>
 
-<!-- ==================== SCRIPT ==================== -->
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
-// ====== FIREBASE CONFIG ======
 const firebaseConfig = {
   apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
   authDomain: "dpstore-officie.firebaseapp.com",
@@ -148,64 +60,55 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ====== Lecture sessionStorage ======
-let sessionAccount = null;
-try{
-    sessionAccount = JSON.parse(sessionStorage.getItem("dpstore_user"));
-}catch(e){
-    sessionAccount = null;
-}
-
+let sessionAccount = JSON.parse(sessionStorage.getItem("dpstore_user") || "null");
 if(!sessionAccount || !sessionAccount.email){
     alert("Aucun compte détecté !");
     location.href = "index.html";
 }
 
-// ====== Récupération depuis Firestore ======
+// ======== Récupération Firestore correcte ========
 async function loadUser(){
     try{
-        const safeId = encodeURIComponent(sessionAccount.email.trim().toLowerCase());
-        const userRef = doc(db,"users",safeId);
-        const snap = await getDoc(userRef);
-
+        const usersSnap = await getDocs(collection(db,"users"));
         let account = sessionAccount;
-        if(snap.exists()){
-            const data = snap.data();
-            account = {
-                email: data.email ?? sessionAccount.email,
-                username: data.username ?? sessionAccount.username,
-                dp: data.dp ?? sessionAccount.dp ?? "—",
-                role: data.role ?? sessionAccount.role ?? "user",
-                credits: Number(data.credits ?? data.balance ?? sessionAccount.credits ?? 0),
-                balance: Number(data.balance ?? data.credits ?? sessionAccount.balance ?? 0),
-                photo: data.photo ?? sessionAccount.photo ?? null,
-                lastLogin: data.lastLogin ?? sessionAccount.lastLogin ?? "—",
-                createdAt: data.createdAt ?? "—",
-                employeeType: data.employeeType ?? sessionAccount.employeeType ?? null
-            };
-            // MAJ sessionStorage
-            sessionStorage.setItem("dpstore_user", JSON.stringify(account));
-        }
 
-        // ====== AFFICHAGE ======
+        // Chercher le document qui correspond à l’email
+        usersSnap.forEach(docSnap=>{
+            const data = docSnap.data();
+            if(data.email && data.email.toLowerCase() === sessionAccount.email.toLowerCase()){
+                account = {
+                    email: data.email,
+                    username: data.username ?? sessionAccount.username,
+                    dp: data.dp ?? sessionAccount.dp ?? "—",
+                    role: data.role ?? sessionAccount.role ?? "user",
+                    credits: Number(data.credits ?? data.balance ?? sessionAccount.credits ?? 0),
+                    balance: Number(data.balance ?? data.credits ?? sessionAccount.balance ?? 0),
+                    photo: data.photo ?? sessionAccount.photo ?? null,
+                    lastLogin: data.lastLogin ?? sessionAccount.lastLogin ?? "—",
+                    createdAt: data.createdAt ?? "—",
+                    employeeType: data.employeeType ?? sessionAccount.employeeType ?? null
+                };
+            }
+        });
+
+        sessionStorage.setItem("dpstore_user", JSON.stringify(account));
+
+        // AFFICHAGE
         document.getElementById("name").textContent = account.username;
         document.getElementById("email").textContent = account.email;
         document.getElementById("dp-id").textContent = account.dp;
         document.getElementById("credits").textContent = account.balance;
         document.getElementById("lastLogin").textContent = account.lastLogin;
 
-        // Badge
         if(["creator","employee","admin"].includes(account.role)){
             document.getElementById("badge").innerHTML = `<span class="tiktok-badge">✔</span>`;
         }
 
-        // Rôle
         document.getElementById("role").textContent =
             account.role === "creator" ? "Créateur" :
             account.role === "employee" ? "Employé" :
             account.role === "admin" ? "Administrateur" : "Utilisateur";
 
-        // Boutons spéciaux
         if(["creator","admin"].includes(account.role)){
             document.getElementById("creatorModeBtn").style.display = "block";
         }
@@ -213,7 +116,6 @@ async function loadUser(){
             document.getElementById("employeeBtn").style.display = "block";
         }
 
-        // Photo
         document.getElementById("profile-pic").src = account.photo || "https://via.placeholder.com/120";
 
     }catch(e){
@@ -221,7 +123,6 @@ async function loadUser(){
         alert("Erreur en récupérant les données. Recharge la page.");
     }
 }
-
 await loadUser();
 
 // ===== Modifier photo =====
@@ -237,18 +138,25 @@ document.getElementById("photoInput").onchange = e => {
     reader.readAsDataURL(file);
 };
 
-// ===== Sauvegarder photo (Firestore + sessionStorage) =====
+// ===== Sauvegarder photo =====
 document.getElementById("savePhotoBtn").onclick = async() => {
     try{
         let account = JSON.parse(sessionStorage.getItem("dpstore_user"));
-        const safeId = encodeURIComponent(account.email.trim().toLowerCase());
-        const photoData = document.getElementById("profile-pic").src;
+        const usersSnap = await getDocs(collection(db,"users"));
+        let userDocId = null;
 
-        await setDoc(doc(db,"users",safeId), { photo: photoData }, { merge:true });
+        usersSnap.forEach(docSnap=>{
+            const data = docSnap.data();
+            if(data.email && data.email.toLowerCase() === account.email.toLowerCase()){
+                userDocId = docSnap.id;
+            }
+        });
 
-        account.photo = photoData;
+        if(!userDocId){ alert("Utilisateur introuvable sur Firestore"); return; }
+
+        await setDoc(doc(db,"users",userDocId), { photo: document.getElementById("profile-pic").src }, { merge:true });
+        account.photo = document.getElementById("profile-pic").src;
         sessionStorage.setItem("dpstore_user", JSON.stringify(account));
-
         alert("Photo enregistrée !");
         document.getElementById("savePhotoBtn").style.display = "none";
     }catch(e){
@@ -263,7 +171,6 @@ function logout(){
     location.href = "index.html";
 }
 window.logout = logout;
-
 </script>
 
 </body>
