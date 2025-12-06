@@ -86,7 +86,7 @@ h2{
 .status.validated{background:#00ff88;color:black;}
 .status.refused{background:#ff4444;}
 
-/* ===== MENU STYLE SMMTRENDING ===== */
+/* ===== MENU STYLE ===== */
 .selectorBox{
     width:95%;
     background:#007bff;
@@ -133,24 +133,10 @@ h2{
 
 <h2>🚀 MODE CREATOR / ADMIN</h2>
 
-<!-- 🔵 MINI BOUTON DP -->
-<button style="
-    background:#00eaff;
-    color:black;
-    font-weight:bold;
-    padding:6px 14px;
-    border-radius:8px;
-    font-size:14px;
-    margin-bottom:10px;
-    cursor:pointer;
-    width:auto;
-" onclick="location.href='dp.html'">
+<button style="background:#00eaff;color:black;font-weight:bold;padding:6px 14px;border-radius:8px;font-size:14px;margin-bottom:10px;cursor:pointer;width:auto;" onclick="location.href='dp.html'">
     DP
 </button>
 
-<!-- =====================================================
-     🔽 SELECTEUR STYLE SMMTRENDING
-===================================================== -->
 <div class="selectorBox" onclick="toggleMenu()">
     <div style="display:flex;align-items:center;">
         <img src="https://cdn-icons-png.flaticon.com/512/833/833524.png">
@@ -164,21 +150,15 @@ h2{
     <div class="optionItem" onclick="selectAction('remove')">Retirer des fonds</div>
 </div>
 
-<!-- =====================================================
-     💰 AJOUTER / RETIRER DES FONDS
-===================================================== -->
 <div class="box">
     <h3 id="fundTitle">💰 Ajouter des fonds</h3>
 
-    <input id="dpInput" placeholder="DP ID (ex : DP000001)">
+    <input id="dpInput" placeholder="DP ID (ex : DP-123456)">
     <input id="amountInput" type="number" placeholder="Montant">
 
     <button id="fundBtn" onclick="processFunds()">Ajouter</button>
 </div>
 
-<!-- =====================================================
-     🔍 Vérifier solde
-===================================================== -->
 <div class="box">
     <h3>🔍 Vérifier un solde</h3>
     <input id="dpCheck" placeholder="DP ID">
@@ -186,25 +166,19 @@ h2{
     <p id="checkResult" style="margin-top:10px; font-size:18px;"></p>
 </div>
 
-<!-- =====================================================
-     👔 Ajouter un employé
-===================================================== -->
 <div class="box">
     <h3>👔 Ajouter un employé</h3>
 
     <input id="employeeEmail" placeholder="Email de l'employé">
 
     <select id="employeeType">
-        <option value="e1">Employé 1</option>
-        <option value="e2">Employé 2</option>
+        <option value="employee1">Employé 1</option>
+        <option value="employee2">Employé 2</option>
     </select>
 
     <button onclick="addEmployee()">Ajouter</button>
 </div>
 
-<!-- =====================================================
-     ❌ SUPPRIMER EMPLOYÉ
-============================================================ -->
 <div class="box">
     <h3 style="color:#ff4444;">❌ Supprimer un employé</h3>
 
@@ -215,21 +189,15 @@ h2{
     </button>
 </div>
 
-<!-- =====================================================
-     📨 Demandes de recharge
-============================================================ -->
 <div class="box">
     <h3>📨 Demandes de recharge</h3>
     <div id="rechargeList"></div>
 </div>
 
-<!-- 🔵 BOUTON VERIFIER LES DP -->
-<button style="background:#005eff; margin-top:20px;"
-        onclick="location.href='verifi.html'">
+<button style="background:#005eff; margin-top:20px;" onclick="location.href='verifi.html'">
 🔍 Vérifier tous les DP
 </button>
 
-<!-- BOUTONS EXISTANTS -->
 <button style="background:#00eaff; margin-top:20px;" onclick="location.href='Archi.html'">
 📁 Voir l'historique (Archive)
 </button>
@@ -238,357 +206,174 @@ h2{
 ⬅️ Retour au profil
 </button>
 
-<!-- NOUVEAU BOUTON OFFON -->
 <button style="background:orange; margin-top:20px;" onclick="location.href='offon.html'">
 ⚡ Ouvrir OFF/ON
 </button>
 
-<!-- 🎵 Sons -->
 <audio id="soundValidate" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7b8ad29dbb.mp3?filename=correct-2-46134.mp3"></audio>
 <audio id="soundRefuse" src="https://cdn.pixabay.com/download/audio/2021/09/09/audio_9d6f5bf86d.mp3?filename=error-126627.mp3"></audio>
 
 <script type="module">
-/* ============================================================
-   FIREBASE (modular v9)
-============================================================ */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import {
-  getFirestore, collection, query, where, getDocs,
-  doc, updateDoc, setDoc, getDoc, writeBatch
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+// ===== FIREBASE =====
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
   authDomain: "dpstore-officie.firebaseapp.com",
   projectId: "dpstore-officie",
-  storageBucket: "dpstore-officie.firebasestorage.app",
+  storageBucket: "dpstore-officie.appspot.com",
   messagingSenderId: "903943973062",
   appId: "1:903943973062:web:6501a2ec167adb31258fc7"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth();
 
-/* ============================================================
-   DROPDOWN UI
-============================================================ */
+// ===== DROPDOWN =====
 let currentAction = "add";
-
-function toggleMenu(){
-    const menu = document.getElementById("actionMenu");
-    menu.style.display = (menu.style.display === "block") ? "none" : "block";
+function toggleMenu(){ 
+    document.getElementById("actionMenu").style.display = (document.getElementById("actionMenu").style.display==="block")?"none":"block"; 
 }
-
 function selectAction(type){
     currentAction = type;
-
-    document.getElementById("selectedAction").innerText =
-        type === "add" ? "Ajouter des fonds" : "Retirer des fonds";
-
-    document.getElementById("fundTitle").innerText =
-        type === "add" ? "💰 Ajouter des fonds" : "💸 Retirer des fonds";
-
-    document.getElementById("fundBtn").innerText =
-        type === "add" ? "Ajouter" : "Retirer";
-
+    document.getElementById("selectedAction").innerText = type==="add"?"Ajouter des fonds":"Retirer des fonds";
+    document.getElementById("fundTitle").innerText = type==="add"?"💰 Ajouter des fonds":"💸 Retirer des fonds";
+    document.getElementById("fundBtn").innerText = type==="add"?"Ajouter":"Retirer";
     toggleMenu();
 }
 
-/* ============================================================
-   SESSION (dpstore_user) - utilisé pour vérifier que l'opérateur est connecté
-============================================================ */
-let sessionUser = null;
-try{
-    sessionUser = JSON.parse(localStorage.getItem("dpstore_user"));
-}catch(e){ sessionUser = null; }
+// ===== AUTH & SECURE ACCESS =====
+document.body.style.display = "none"; // cacher la page tant que non connecté
+let currentUserData = null;
 
-if(!sessionUser || !sessionUser.email){
-    alert("Aucune session trouvée. Connecte-toi d'abord.");
-    location.href = "index.html";
-}
+onAuthStateChanged(auth, async (user) => {
+    if(!user){ location.href="index.html"; return; }
 
-/* ============================================================
-   HELPERS FIRESTORE
-   - findUserByDP(dp) => { id, data } or null
-   - findUserByEmail(email) => { id, data } or null
-   - refreshSessionFromFirestore()
-============================================================ */
+    const emailKey = encodeURIComponent(user.email);
+    const userRef = doc(db,"users",emailKey);
+    const snap = await getDoc(userRef);
 
-async function findUserByDP(dp){
-    if(!dp) return null;
-    const q = query(collection(db, "users"), where("dp", "==", dp));
-    const snaps = await getDocs(q);
-    if(snaps.empty) return null;
-    const docSnap = snaps.docs[0];
-    return { id: docSnap.id, data: docSnap.data() };
-}
-
-async function findUserByEmail(email){
-    if(!email) return null;
-    const normalized = email.trim().toLowerCase();
-    const q = query(collection(db, "users"), where("email", "==", normalized));
-    const snaps = await getDocs(q);
-    if(snaps.empty) return null;
-    const docSnap = snaps.docs[0];
-    return { id: docSnap.id, data: docSnap.data() };
-}
-
-async function refreshSessionFromFirestore(){
-    try{
-        const r = await findUserByEmail(sessionUser.email);
-        if(!r) return;
-        // update sessionUser and localStorage
-        sessionUser = {
-            email: r.data.email,
-            username: r.data.username || r.data.email.split("@")[0],
-            dp: r.data.dp || "",
-            role: r.data.role || "user",
-            credits: Number(r.data.credits || 0),
-            photo: r.data.photo || null,
-            lastLogin: r.data.lastLogin || null
-        };
-        localStorage.setItem("dpstore_user", JSON.stringify(sessionUser));
-    }catch(e){
-        console.warn("refreshSessionFromFirestore error:", e);
-    }
-}
-
-/* ============================================================
-   ADD / REMOVE FUNDS (Firestore)
-============================================================ */
-async function processFunds(){
-    const dp = document.getElementById("dpInput").value.trim();
-    const amountRaw = document.getElementById("amountInput").value;
-    const amount = Number(amountRaw);
-
-    if(dp === "" || !amount || isNaN(amount) || amount <= 0) return alert("⚠️ Champs invalides");
-
-    // find user by DP
-    const user = await findUserByDP(dp);
-    if(!user) return alert("❌ DP introuvable");
-
-    try{
-        const userRef = doc(db, "users", user.id);
-
-        // Use updateDoc by reading previous credits to avoid race
-        const currentCredits = Number(user.data.credits || 0);
-        let newCredits;
-        if(currentAction === "add"){
-            newCredits = currentCredits + amount;
-        } else {
-            if(currentCredits < amount) return alert("❌ Solde insuffisant!");
-            newCredits = currentCredits - amount;
-        }
-
-        await updateDoc(userRef, { credits: newCredits, lastActivity: new Date().toISOString() });
-
-        // If operator changed their own account, refresh session
-        if((sessionUser.dp || "").toString() === dp) await refreshSessionFromFirestore();
-
-        alert( (currentAction === "add" ? "+" : "-") + amount + " crédits appliqués à " + dp );
-    }catch(e){
-        console.error("processFunds error:", e);
-        alert("❌ Erreur lors de la mise à jour du solde.");
-    }
-}
-
-/* ============================================================
-   Vérifier solde (affiche infos depuis Firestore)
-============================================================ */
-async function checkBalance(){
-    const dp = document.getElementById("dpCheck").value.trim();
-    if(!dp) return alert("⚠️ Entrez un DP");
-
-    const user = await findUserByDP(dp);
-    const resultEl = document.getElementById("checkResult");
-    if(!user){
-        resultEl.innerHTML = "❌ DP introuvable";
+    if(!snap.exists() || !["creator","admin"].includes(snap.data().role)){
+        alert("Accès refusé !");
+        location.href="index.html";
         return;
     }
 
-    const d = user.data;
-    resultEl.innerHTML = `
-        <b>Nom :</b> ${d.username || "Non défini"} <br>
-        <b>Email :</b> ${d.email || "Non défini"} <br>
-        <b>Rôle :</b> <span style="color:#00eaff;">${d.role || "user"}</span><br>
-        <b>Solde ${dp} :</b> <span style="color:yellow;">${Number(d.credits || 0)} crédits</span>
+    currentUserData = snap.data();
+    document.body.style.display = "block"; // afficher après vérification
+    loadRecharges();
+});
+
+// ===== FONCTIONS =====
+async function processFunds(){
+    const dpID = document.getElementById("dpInput").value.trim();
+    const amount = Number(document.getElementById("amountInput").value);
+    if(dpID===""||amount<=0) return alert("⚠️ Champs invalides");
+
+    const userRef = doc(db,"users",dpID);
+    const snap = await getDoc(userRef);
+    if(!snap.exists()) return alert("❌ DP introuvable");
+
+    const data = snap.data();
+    let newBalance = (data.balance||0) + (currentAction==="add"?amount:-amount);
+    if(currentAction==="remove" && newBalance<0) return alert("❌ Solde insuffisant !");
+    await setDoc(userRef,{balance:newBalance},{merge:true});
+    alert(`${currentAction==="add"?"+":"-"}${amount} crédits ${currentAction==="add"?"ajoutés":"retirés"} à ${dpID}`);
+}
+
+async function checkBalance(){
+    const dpID = document.getElementById("dpCheck").value.trim();
+    const userRef = doc(db,"users",dpID);
+    const snap = await getDoc(userRef);
+    if(!snap.exists()){ document.getElementById("checkResult").innerHTML="❌ DP introuvable"; return; }
+
+    const data = snap.data();
+    document.getElementById("checkResult").innerHTML=`
+        <b>Nom :</b> ${data.username||"Non défini"}<br>
+        <b>Email :</b> ${data.email||"Non défini"}<br>
+        <b>Rôle :</b> <span style="color:#00eaff;">${data.role||"user"}</span><br>
+        <b>Solde ${dpID} :</b> <span style="color:yellow;">${data.balance||0} crédits</span>
     `;
 }
 
-/* ============================================================
-   Ajouter / Retirer un employé (Firestore)
-   - addEmployee() sets role = "employee" and employeeType field
-   - removeEmployee() sets role = "user" and clears employeeType
-============================================================ */
 async function addEmployee(){
-    const emailRaw = document.getElementById("employeeEmail").value.trim();
+    const email = document.getElementById("employeeEmail").value.trim();
     const type = document.getElementById("employeeType").value;
-    if(!emailRaw) return alert("⚠️ Email vide");
+    if(email==="") return alert("⚠️ Email vide");
 
-    const found = await findUserByEmail(emailRaw.toLowerCase());
-    if(!found) return alert("❌ Aucun compte trouvé");
+    const userRef = doc(db,"users",encodeURIComponent(email));
+    const snap = await getDoc(userRef);
+    if(!snap.exists()) return alert("❌ Aucun compte trouvé");
 
-    try{
-        const userRef = doc(db, "users", found.id);
-        await updateDoc(userRef, { role: "employee", employeeType: type });
-        alert("👔 Employé ajouté !");
-
-        // refresh session if operator updated themself
-        if(found.data.email && found.data.email.toLowerCase() === sessionUser.email.toLowerCase()){
-            await refreshSessionFromFirestore();
-        }
-    }catch(e){
-        console.error("addEmployee error:", e);
-        alert("❌ Erreur lors de l'ajout d'employé.");
-    }
+    await setDoc(userRef,{role:"employee",employeeType:type},{merge:true});
+    alert("👔 Employé ajouté !");
 }
 
 async function removeEmployee(){
-    const emailRaw = document.getElementById("removeEmployeeEmail").value.trim();
-    if(!emailRaw) return alert("⚠️ Email manquant");
+    const email = document.getElementById("removeEmployeeEmail").value.trim();
+    if(email==="") return alert("⚠️ Email manquant");
 
-    const found = await findUserByEmail(emailRaw.toLowerCase());
-    if(!found) return alert("❌ Aucun compte trouvé");
+    const userRef = doc(db,"users",encodeURIComponent(email));
+    const snap = await getDoc(userRef);
+    if(!snap.exists()) return alert("❌ Aucun compte trouvé");
 
-    if((found.data.role || "").toLowerCase() !== "employee") return alert("⚠️ Cet utilisateur n'est pas un employé");
+    if(snap.data().role!=="employee") return alert("⚠️ Cet utilisateur n'est pas un employé");
 
-    try{
-        const userRef = doc(db, "users", found.id);
-        await updateDoc(userRef, { role: "user", employeeType: null });
-        alert("❌ Employé retiré !");
-        if(found.data.email && found.data.email.toLowerCase() === sessionUser.email.toLowerCase()){
-            await refreshSessionFromFirestore();
-        }
-    }catch(e){
-        console.error("removeEmployee error:", e);
-        alert("❌ Erreur lors de la suppression d'employé.");
-    }
+    await setDoc(userRef,{role:"user",employeeType:null},{merge:true});
+    alert("❌ Employé retiré !");
 }
 
-/* ============================================================
-   RECHARGES (localStorage-based as before) + Firestore integration
-   - validateRecharge: credit user in Firestore, archive request locally
-   - refuseRecharge: mark refused locally & archive
-============================================================ */
-function loadRecharges(){
-    let allKeys = Object.keys(localStorage).filter(k => k.startsWith("dp_recharges_"));
-    let globalList = [];
-
-    allKeys.forEach(key => {
-        let arr = JSON.parse(localStorage.getItem(key) || "[]" );
-        arr.forEach(r => {
-            r._storageKey = key;
-            globalList.push(r);
-        });
-    });
-
+async function loadRecharges(){
+    const rechargeCol = collection(db,"recharges");
+    const snapshot = await getDocs(rechargeCol);
     const box = document.getElementById("rechargeList");
     box.innerHTML = "";
 
-    if(globalList.length === 0){
-        box.innerHTML = "<p>Aucune demande.</p>";
-        return;
-    }
+    if(snapshot.empty){ box.innerHTML="<p>Aucune demande.</p>"; return; }
 
-    globalList.forEach((r) => {
+    snapshot.forEach(docSnap=>{
+        const r = docSnap.data();
+        const docID = docSnap.id;
 
         box.innerHTML += `
-            <div class="request">
-
-                <p><b>${r.name}</b> (${r.email})</p>
-                ${r.phone ? `<p>WhatsApp : ${r.phone}</p>` : ""}
-                <p><b>DP-ID :</b> ${r.dpID || "Non fourni"}</p>
-
-                <p><b>Montant :</b> 
-                    <span style="color:yellow;">${r.amount} HTG</span>
-                </p>
-
-                <p><b>Date :</b> ${r.created}</p>
-
-                <p>Status :
-                    <span class="status ${r.status}">
-                        ${r.status.toUpperCase()}
-                    </span>
-                </p>
-
-                ${r.receipt ? `<img src="${r.receipt}" alt="Reçu">` : ""}
-
-                <div class="btnRow">
-                    <button class="btnGreen" onclick="validateRecharge('${r._storageKey.replace(/'/g,"\\'")}', '${r.transcode.replace(/'/g,"\\'")}')">VALIDER</button>
-                    <button class="btnRed" onclick="refuseRecharge('${r._storageKey.replace(/'/g,"\\'")}', '${r.transcode.replace(/'/g,"\\'")}')">REFUSER</button>
-                </div>
+        <div class="request">
+            <p><b>${r.name}</b> (${r.email})</p>
+            ${r.phone?`<p>WhatsApp : ${r.phone}</p>`:""}
+            <p><b>DP-ID :</b> ${r.dpID||"Non fourni"}</p>
+            <p><b>Montant :</b> <span style="color:yellow;">${r.amount} HTG</span></p>
+            <p><b>Date :</b> ${r.created}</p>
+            <p>Status : <span class="status ${r.status}">${r.status.toUpperCase()}</span></p>
+            ${r.receipt?`<img src="${r.receipt}" alt="Reçu">`:""}
+            <div class="btnRow">
+                <button class="btnGreen" onclick="validateRecharge('${docID}')">VALIDER</button>
+                <button class="btnRed" onclick="refuseRecharge('${docID}')">REFUSER</button>
             </div>
+        </div>
         `;
     });
 }
 
-function addToArchive(item){
-    let arch = JSON.parse(localStorage.getItem("dp_archives") || "[]");
-    item.archivedAt = new Date().toLocaleString();
-    arch.unshift(item);
-    localStorage.setItem("dp_archives", JSON.stringify(arch));
+async function validateRecharge(id){
+    const ref = doc(db,"recharges",id);
+    const snap = await getDoc(ref);
+    if(!snap.exists()) return;
+    const r = snap.data();
+    const userRef = doc(db,"users",r.dpID);
+    const userSnap = await getDoc(userRef);
+    if(userSnap.exists()) await setDoc(userRef,{balance:(userSnap.data().balance||0)+Number(r.amount)},{merge:true});
+    await setDoc(ref,{status:"validated"},{merge:true});
+    document.getElementById("soundValidate").play();
+    loadRecharges();
 }
 
-async function validateRecharge(storageKey, id){
-    let list = JSON.parse(localStorage.getItem(storageKey) || "[]");
-    let index = list.findIndex(x => x.transcode === id);
-    if(index === -1) return;
-
-    let r = list[index];
-
-    try{
-        // credit user in Firestore by DP
-        const user = await findUserByDP(r.dpID);
-        if(user){
-            const userRef = doc(db,"users", user.id);
-            const current = Number(user.data.credits || 0);
-            const newCredits = current + Number(r.amount || 0);
-            await updateDoc(userRef, { credits: newCredits, lastActivity: new Date().toISOString() });
-
-            // If operator updated their own session DP
-            if((sessionUser.dp || "") === r.dpID) await refreshSessionFromFirestore();
-        }
-
-        r.status = "validated";
-        addToArchive(r);
-        list.splice(index, 1);
-        localStorage.setItem(storageKey, JSON.stringify(list));
-        document.getElementById("soundValidate").play();
-        loadRecharges();
-    }catch(e){
-        console.error("validateRecharge error:", e);
-        alert("❌ Erreur lors de la validation.");
-    }
-}
-
-function refuseRecharge(storageKey, id){
-    let list = JSON.parse(localStorage.getItem(storageKey) || "[]");
-    let index = list.findIndex(x => x.transcode === id);
-    if(index === -1) return;
-
-    let r = list[index];
-
-    r.status = "refused";
-    addToArchive(r);
-    list.splice(index, 1);
-    localStorage.setItem(storageKey, JSON.stringify(list));
+async function refuseRecharge(id){
+    await setDoc(doc(db,"recharges",id),{status:"refused"},{merge:true});
     document.getElementById("soundRefuse").play();
     loadRecharges();
 }
-
-/* ============================================================
-   INIT
-============================================================ */
-(async function init(){
-    try{
-        // refresh session info
-        await refreshSessionFromFirestore();
-    }catch(e){
-        console.warn("init warning:", e);
-    }
-    loadRecharges();
-})();
-
 </script>
 
 </body>
