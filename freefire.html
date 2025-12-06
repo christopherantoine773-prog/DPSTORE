@@ -7,7 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
-/* ---- STYLE (identique à avant) ---- */
 :root{
   --bg:#040506; --panel:#0a0b0d; --muted:#9aa; --neon:#00ccff; --gold:#ffb300;
   font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
@@ -114,9 +113,9 @@ h1{font-size:22px;font-weight:800;color:var(--neon)}
 </div>
 
 <script>
-/* ======================================================================
+/* ============================
    🔥 1. CHARGEMENT DU COMPTE CONNECTÉ
-====================================================================== */
+============================ */
 let user = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
 
 if (!user.email){
@@ -124,9 +123,9 @@ if (!user.email){
     location.href = "index.html";
 }
 
-/* ======================================================================
+/* ============================
    🔥 2. SYNCHRO AVEC dpstore_accounts
-====================================================================== */
+============================ */
 let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
 let accGlobal = accounts.find(u => u.email === user.email);
 
@@ -135,25 +134,25 @@ if(accGlobal){
     localStorage.setItem("dpstore_user", JSON.stringify(user));
 }
 
-/* ======================================================================
+/* ============================
    🔥 3. AFFICHAGE DU SOLDE
-====================================================================== */
+============================ */
 function updateBalance(){
     document.getElementById("balanceValue").textContent =
         `DP4$ • ${Number(user.balance).toFixed(2)} G`;
 }
 updateBalance();
 
-/* ======================================================================
+/* ============================
    🔥 4. BADGE
-====================================================================== */
-if(user.role === "creator" || user.role === "employe"){
+============================ */
+if(user.role === "creator" || user.role === "employee" || user.role === "admin"){
     document.getElementById("badge").classList.remove("hidden");
 }
 
-/* ======================================================================
+/* ============================
    🔥 5. LISTE DES PRODUITS
-====================================================================== */
+============================ */
 const PRODUCTS = [
   {id:"ff1", qty:"100 + 10", price:204},
   {id:"ff2", qty:"200 + 20", price:408},
@@ -181,9 +180,9 @@ function renderProducts(){
     });
 }
 
-/* ======================================================================
+/* ============================
    🔥 6. MODAL
-====================================================================== */
+============================ */
 let selectedProduct = null;
 
 function showModal(id){
@@ -205,10 +204,9 @@ document.getElementById("confirm").onclick = () => {
     document.getElementById("modal").style.display = "none";
 };
 
-/* ======================================================================
+/* ============================
    🔥 7. PANIER COMPATIBLE AVEC cart.html
-====================================================================== */
-
+============================ */
 function normalizeId(str){
     if(!str) return "guest";
     return String(str).toLowerCase().trim()
@@ -244,10 +242,11 @@ function addToCart(product, ffId){
     alert("Produit ajouté au panier ✔");
 }
 
-/* ======================================================================
+/* ============================
    🔥 8. INIT
-====================================================================== */
+============================ */
 renderProducts();
+updateBalance();
 </script>
 
 </body>
