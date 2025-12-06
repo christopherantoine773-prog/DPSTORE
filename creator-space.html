@@ -193,6 +193,9 @@ h2{
 ⬅️ Retour au profil
 </button>
 
+<audio id="soundValidate" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7b8ad29dbb.mp3?filename=correct-2-46134.mp3"></audio>
+<audio id="soundRefuse" src="https://cdn.pixabay.com/download/audio/2021/09/09/audio_9d6f5bf86d.mp3?filename=error-126627.mp3"></audio>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
@@ -220,18 +223,15 @@ function selectAction(type){
     toggleMenu();
 }
 
-// ===== SESSION STORAGE =====
+// ===== SESSION STORAGE (AUTH SAFE) =====
 let currentUserData = null;
-try{
-    currentUserData = JSON.parse(sessionStorage.getItem("dpstore_user"));
-}catch(e){ currentUserData=null; }
+try{ currentUserData = JSON.parse(sessionStorage.getItem("dpstore_user")); }catch(e){ currentUserData=null; }
 
 if(!currentUserData || !["creator","admin"].includes(currentUserData.role)){
     alert("Aucun compte connecté ou accès refusé !");
     location.href="index.html";
 }else{
     document.body.style.display = "block"; // afficher page
-    // afficher infos
     document.getElementById("name").textContent = currentUserData.username || "Non défini";
     document.getElementById("email").textContent = currentUserData.email || "Non défini";
     document.getElementById("role").textContent = currentUserData.role || "user";
@@ -240,7 +240,7 @@ if(!currentUserData || !["creator","admin"].includes(currentUserData.role)){
     document.getElementById("profile-pic").src = currentUserData.photo || "https://via.placeholder.com/120";
 }
 
-// ===== FIRESTORE ACTIONS =====
+// ===== FIRESTORE FUNCTIONS =====
 async function processFunds(){
     const dpID=document.getElementById("dpInput").value.trim();
     const amount=Number(document.getElementById("amountInput").value);
@@ -337,11 +337,13 @@ async function validateRecharge(id){
     const userSnap=await getDoc(userRef);
     if(userSnap.exists()) await setDoc(userRef,{balance:(userSnap.data().balance||0)+Number(r.amount)},{merge:true});
     await setDoc(ref,{status:"validated"},{merge:true});
+    document.getElementById("soundValidate").play();
     loadRecharges();
 }
 
 async function refuseRecharge(id){
     await setDoc(doc(db,"recharges",id),{status:"refused"},{merge:true});
+    document.getElementById("soundRefuse").play();
     loadRecharges();
 }
 
