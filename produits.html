@@ -424,6 +424,16 @@ function openContact() { window.location.href = "contact.html"; }
 function openUserChat() {
     window.location.href = "user.html";
 }
+
+/* ===============================
+      🔵 BADGE VERIFIED
+   =============================== */
+
+if (["creator", "admin", "employee"].includes(user.role)) {
+    document.getElementById("badge").classList.remove("hidden");
+} else {
+    document.getElementById("badge").classList.add("hidden");
+}
 </script>
 
 </body>
