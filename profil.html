@@ -9,7 +9,7 @@
 body{
     background:black;
     color:white;
-    font-family:Arial;
+    font-family:Arial, sans-serif;
     text-align:center;
 }
 
@@ -135,6 +135,7 @@ button{
 // ====== FIREBASE ======
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
@@ -147,103 +148,89 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth();
 
-// ====== CHARGEMENT DU COMPTE ======
-let account = JSON.parse(localStorage.getItem("dpstore_user"));
-if(!account){
-    alert("Aucun compte détecté !");
-    location.href = "index.html";
-}
-
-// ====== RÉCUPÉRATION DES DONNÉES FIRESTORE ======
-async function loadUserFromFirestore(){
-    try{
-        const safeId = encodeURIComponent(account.email);
-        const userRef = doc(db,"users",safeId);
-        const snap = await getDoc(userRef);
-
-        if(snap.exists()){
-            const data = snap.data();
-
-            account.username = data.username;
-            account.dp       = data.dp;
-            account.role     = data.role;
-            account.credits  = data.credits ?? 0;
-            account.photo    = data.photo;
-            account.lastLogin = data.lastLogin;
-
-            localStorage.setItem("dpstore_user",JSON.stringify(account));
-        }
-    }catch(e){
-        console.warn("Erreur Firestore:", e);
+// ====== AUTHENTIFICATION ======
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        alert("Aucun compte détecté !");
+        location.href = "index.html";
+        return;
     }
-}
 
-await loadUserFromFirestore();
+    const email = encodeURIComponent(user.email);
+    const userRef = doc(db, "users", email);
+    const snap = await getDoc(userRef);
 
-// ====== AFFICHAGE ======
-document.getElementById("name").textContent = account.username;
-document.getElementById("email").textContent = account.email;
-document.getElementById("dp-id").textContent = account.dp;
-document.getElementById("credits").textContent = account.credits;
-document.getElementById("lastLogin").textContent = account.lastLogin ?? "—";
+    if (!snap.exists()) {
+        alert("Erreur : compte introuvable dans Firestore !");
+        location.href = "index.html";
+        return;
+    }
 
-// ===== Badge =====
-if(account.role === "creator" || account.role === "employee" || account.role === "admin"){
-    document.getElementById("badge").innerHTML = `<span class="tiktok-badge">✔</span>`;
-}
+    const account = snap.data();
 
-// ===== Rôle =====
-document.getElementById("role").textContent = 
-    account.role === "creator" ? "Créateur" :
-    account.role === "employee" ? "Employé" :
-    account.role === "admin" ? "Administrateur" : "Utilisateur";
+    // ====== AFFICHAGE ======
+    document.getElementById("name").textContent = account.username;
+    document.getElementById("email").textContent = user.email;
+    document.getElementById("dp-id").textContent = account.dp;
+    document.getElementById("credits").textContent = account.credits ?? 0;
+    document.getElementById("lastLogin").textContent = account.lastLogin ?? "—";
 
-// ===== Boutons spéciaux =====
-if(account.role === "creator" || account.role === "admin"){
-    document.getElementById("creatorModeBtn").style.display = "block";
-}
-if(account.role === "employee"){
-    document.getElementById("employeeBtn").style.display = "block";
-}
+    // Badge
+    if (["creator","admin","employee"].includes(account.role)) {
+        document.getElementById("badge").innerHTML = `<span class="tiktok-badge">✔</span>`;
+    }
 
-// ===== Photo =====
-document.getElementById("profile-pic").src = account.photo || "https://via.placeholder.com/120";
+    // Rôle
+    document.getElementById("role").textContent =
+        account.role === "creator" ? "Créateur" :
+        account.role === "employee" ? "Employé" :
+        account.role === "admin" ? "Administrateur" : "Utilisateur";
 
-// Modifier photo
-document.getElementById("changePhotoBtn").onclick = () =>{
-    document.getElementById("photoInput").click();
-};
+    // Accès spéciaux
+    if (["creator","admin"].includes(account.role)) {
+        document.getElementById("creatorModeBtn").style.display = "block";
+    }
+    if (account.role === "employee") {
+        document.getElementById("employeeBtn").style.display = "block";
+    }
 
-document.getElementById("photoInput").onchange = e =>{
-    let file = e.target.files[0];
-    let reader = new FileReader();
-    reader.onload = x =>{
-        document.getElementById("profile-pic").src = x.target.result;
-        document.getElementById("savePhotoBtn").style.display = "inline-block";
+    // Photo
+    document.getElementById("profile-pic").src = account.photo || "https://via.placeholder.com/120";
+
+    // ===== MODIFIER PHOTO =====
+    document.getElementById("changePhotoBtn").onclick = () => {
+        document.getElementById("photoInput").click();
     };
-    reader.readAsDataURL(file);
-};
 
-// Sauvegarder photo
-document.getElementById("savePhotoBtn").onclick = async()=>{
-    account.photo = document.getElementById("profile-pic").src;
+    document.getElementById("photoInput").onchange = (e) => {
+        let file = e.target.files[0];
+        let reader = new FileReader();
+        reader.onload = x => {
+            document.getElementById("profile-pic").src = x.target.result;
+            document.getElementById("savePhotoBtn").style.display = "inline-block";
+        };
+        reader.readAsDataURL(file);
+    };
 
-    localStorage.setItem("dpstore_user",JSON.stringify(account));
+    // ===== SAUVEGARDER PHOTO =====
+    document.getElementById("savePhotoBtn").onclick = async () => {
+        await setDoc(userRef, {
+            photo: document.getElementById("profile-pic").src
+        }, { merge: true });
 
-    const safeId = encodeURIComponent(account.email);
-    await setDoc(doc(db,"users",safeId),{
-        photo: account.photo
-    },{merge:true});
+        alert("Photo enregistrée !");
+        document.getElementById("savePhotoBtn").style.display = "none";
+    };
 
-    alert("Photo enregistrée !");
-    document.getElementById("savePhotoBtn").style.display = "none";
-};
+});
 
-// Déconnexion
-function logout(){
-    localStorage.removeItem("dpstore_user");
-    location.href = "index.html";
+// ====== DÉCONNEXION ======
+function logout() {
+    signOut(auth).then(() => {
+        location.href = "index.html";
+    });
 }
 window.logout = logout;
 
