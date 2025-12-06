@@ -155,8 +155,6 @@
 
   <button class="btn-clear" onclick="clearCart()">🗑️ Vider le panier</button>
   <button class="btn-support" onclick="window.location.href='contact.html'">📞 Support / Aide</button>
-
-  <!-- 🔥 BOUTON AJOUTÉ ICI -->
   <button class="btn-clear" onclick="window.location.href='reçus.html'">🧾 Voir les reçus</button>
 </div>
 
@@ -164,35 +162,31 @@
 
 <script>
 /* ============================
-   🔥 PANIER PAR COMPTE (SAFE)
+   🔥 SOLDE LIÉ AU PROFIL
    ============================ */
-
-function loadUser() {
-  let u = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
-  if (u.balance === undefined) u.balance = 0;
-  let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-  let acc = accounts.find(x => (x.email || "").toLowerCase() === (u.email || "").toLowerCase());
-  if (acc) {
-    u.balance = acc.balance ?? u.balance;
-    localStorage.setItem("dpstore_user", JSON.stringify(u));
-  }
+function loadUser(){
+  let u = JSON.parse(sessionStorage.getItem("dpstore_user") || "{}");
+  if(!u.email){ alert("Aucun compte connecté !"); window.location.href="index.html"; }
   return u;
 }
 
 let user = loadUser();
-if (!user.email && !user.dp) {
-  alert("Aucun compte connecté !");
-  window.location.href = "index.html";
+
+function updateBalanceUI(){
+  user = loadUser();
+  document.getElementById("balanceBox").textContent = (user.balance ?? 0) + " G";
 }
 
+/* ============================
+   🔥 PANIER PAR COMPTE
+   ============================ */
 function normalizeId(str){
   if(!str) return "guest";
   return String(str).toLowerCase().trim().replace(/[^a-z0-9@.-]/g, "_").replace(/@/g,"_at_");
 }
 
 function getCartKey(){
-  const id = user.email || user.dp || ("guest");
-  return "cart_" + normalizeId(id);
+  return "cart_" + (user.email ? normalizeId(user.email) : "guest");
 }
 
 function migrateGlobalCartIfNeeded(){
@@ -201,12 +195,8 @@ function migrateGlobalCartIfNeeded(){
   const global = localStorage.getItem(globalKey);
   const perUser = localStorage.getItem(perUserKey);
   if(global && !perUser){
-    try {
-      localStorage.setItem(perUserKey, global);
-      localStorage.removeItem(globalKey);
-    } catch(e){
-      console.warn("Migration cart failed:", e);
-    }
+    localStorage.setItem(perUserKey, global);
+    localStorage.removeItem(globalKey);
   }
 }
 
@@ -221,11 +211,9 @@ function saveCart(arr){
   localStorage.setItem(key, JSON.stringify(arr));
 }
 
-function updateBalanceUI(){
-  user = loadUser();
-  document.getElementById("balanceBox").textContent = (user.balance ?? 0) + " G";
-}
-
+/* ============================
+   🔥 AFFICHAGE DU PANIER
+   ============================ */
 const container = document.getElementById("cart-items");
 const totalEl = document.getElementById("total");
 
@@ -234,7 +222,7 @@ function renderCart(){
   const cart = loadCart();
   container.innerHTML = "";
 
-  if (!cart || cart.length === 0){
+  if(!cart || cart.length===0){
     container.innerHTML = "<p style='text-align:center; opacity:0.7;'>🛍️ Aucun produit dans le panier.</p>";
     totalEl.textContent = "";
     updateBalanceUI();
@@ -242,10 +230,10 @@ function renderCart(){
   }
 
   let total = 0;
-  cart.forEach((item, index) => {
+  cart.forEach((item,index)=>{
     total += item.price || 0;
     const div = document.createElement("div");
-    div.className = "item";
+    div.className="item";
     div.innerHTML = `
       <span>${item.name} — <strong>${item.price} G</strong></span>
       <button class="btn-confirm" onclick="confirmSingle(${index})">✔</button>
@@ -253,7 +241,7 @@ function renderCart(){
     container.appendChild(div);
   });
 
-  totalEl.textContent = "Total : " + total + " G";
+  totalEl.textContent = "Total : "+total+" G";
   updateBalanceUI();
 }
 
@@ -263,32 +251,28 @@ function confirmSingle(index){
   const item = cart[index];
   if(!item) return alert("Article introuvable");
 
-  if((user.balance || 0) < (item.price || 0)){
+  if((user.balance ?? 0) < (item.price ?? 0)){
     return alert("❌ Solde insuffisant !");
   }
 
-  user.balance = (user.balance || 0) - (item.price || 0);
-  localStorage.setItem("dpstore_user", JSON.stringify(user));
+  user.balance -= item.price;
+  sessionStorage.setItem("dpstore_user", JSON.stringify(user));
 
   let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-  let acc = accounts.find(x => (x.email || "").toLowerCase() === (user.email || "").toLowerCase());
-  if(acc){
-    acc.balance = user.balance;
-    localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
-  }
+  let acc = accounts.find(a => a.email.toLowerCase() === user.email.toLowerCase());
+  if(acc){ acc.balance = user.balance; localStorage.setItem("dpstore_accounts", JSON.stringify(accounts)); }
 
   let orders = JSON.parse(localStorage.getItem("orders") || "[]");
   orders.push({
-    name: item.name,
-    price: item.price,
-    buyer: user.email || user.dp || null,
-    date: new Date().toLocaleString()
+    name:item.name,
+    price:item.price,
+    buyer:user.email,
+    date:new Date().toLocaleString()
   });
   localStorage.setItem("orders", JSON.stringify(orders));
 
-  cart.splice(index, 1);
+  cart.splice(index,1);
   saveCart(cart);
-
   renderCart();
   alert("✅ Commande confirmée !");
 }
@@ -299,9 +283,7 @@ function clearCart(){
   renderCart();
 }
 
-function goBack(){
-  window.location.href = localStorage.getItem("lastPage") || "produits.html";
-}
+function goBack(){ window.location.href = localStorage.getItem("lastPage") || "produits.html"; }
 
 renderCart();
 updateBalanceUI();
