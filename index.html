@@ -275,7 +275,7 @@
         // save
         await saveUserToFirestore(userObj);
 
-        // create session payload (sessionStorage + localStorage for compatibility)
+        // create session payload (sessionStorage only for profile)
         const userPayload = {
           email: userObj.email,
           username: userObj.username,
@@ -288,11 +288,6 @@
         try {
           sessionStorage.setItem("dpstore_user", JSON.stringify(userPayload));
         } catch (e) { console.warn("sessionStorage indisponible :", e); }
-
-        try {
-          // keep localStorage for older pages compatibility (OPTION 2)
-          localStorage.setItem("dpstore_user", JSON.stringify(userPayload));
-        } catch (e) { console.warn("localStorage indisponible :", e); }
 
         alert("🎉 Compte créé !");
         window.location.href = "profil.html";
@@ -330,7 +325,7 @@
           await setDoc(doc(db, "users", found.id), { balance: Number(userData.credits || 0) }, { merge: true });
         }
 
-        // create session payload and store in both storages (compat)
+        // create session payload and store in sessionStorage (profil lira depuis Firestore + sessionStorage)
         const userPayload = {
           email: userData.email,
           username: userData.username || userData.email.split("@")[0],
@@ -341,7 +336,6 @@
         };
 
         try { sessionStorage.setItem("dpstore_user", JSON.stringify(userPayload)); } catch (e) { console.warn("sessionStorage indisponible :", e); }
-        try { localStorage.setItem("dpstore_user", JSON.stringify(userPayload)); } catch (e) { console.warn("localStorage indisponible :", e); }
 
         alert("✅ Connexion !");
         // redirect according to role
