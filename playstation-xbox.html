@@ -6,233 +6,121 @@
 <title>DPSTORE | PlayStation & Xbox</title>
 
 <style>
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: #0b0f1c;
-    margin: 0;
-    padding: 0;
-    color: #fff;
-  }
-
-  /* HEADER */
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(8px);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    color: #00ffb3;
-    font-weight: 700;
-    font-size: 1.2rem;
-  }
-
-  .logo svg { width: 28px; margin-right: 6px; }
-
-  .right-box {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .balance {
-    color: #00ffb3;
-    font-weight: 600;
-    background: rgba(0,255,179,0.1);
-    padding: 6px 12px;
-    border-radius: 10px;
-    border: 1px solid #00ffb3;
-  }
-
-  .cart-btn {
-    font-size: 1.4rem;
-    cursor: pointer;
-  }
-
-  .back-btn {
-    background: none;
-    border: 2px solid #00ffb3;
-    color: #00ffb3;
-    padding: 6px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-
-  /* TITRES */
-  .section-title {
-    font-size: 1.6rem;
-    font-weight: bold;
-    margin: 25px 15px 10px;
-    color: #00ffb3;
-  }
-
-  /* PRODUITS */
-  .product {
-    background: #111726;
-    padding: 15px;
-    margin: 12px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 0 10px rgba(0,255,179,0.1);
-    justify-content: space-between;
-  }
-
-  .product img {
-    width: 65px;
-    border-radius: 6px;
-  }
-
-  .product-info {
-    flex: 1;
-    margin-left: 10px;
-  }
-
-  .product-name {
-    font-size: 1rem;
-    font-weight: 600;
-  }
-
-  .product-price {
-    margin-top: 4px;
-    color: #00ffb3;
-    font-weight: 600;
-  }
-
-  .btn-add {
-    background: #00ffb3;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    color: #000;
-  }
+body { font-family: 'Poppins', sans-serif; background: #0b0f1c; margin: 0; padding: 0; color: #fff; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 10; }
+.logo { display: flex; align-items: center; color: #00ffb3; font-weight: 700; font-size: 1.2rem; }
+.logo svg { width: 28px; margin-right: 6px; }
+.right-box { display: flex; align-items: center; gap: 12px; }
+.balance { color: #00ffb3; font-weight: 600; background: rgba(0,255,179,0.1); padding: 6px 12px; border-radius: 10px; border: 1px solid #00ffb3; }
+.cart-btn { font-size: 1.4rem; cursor: pointer; }
+.back-btn { background: none; border: 2px solid #00ffb3; color: #00ffb3; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+.section-title { font-size: 1.6rem; font-weight: bold; margin: 25px 15px 10px; color: #00ffb3; }
+.product { background: #111726; padding: 15px; margin: 12px; border-radius: 12px; display: flex; align-items: center; box-shadow: 0 0 10px rgba(0,255,179,0.1); justify-content: space-between; }
+.product img { width: 65px; border-radius: 6px; }
+.product-info { flex: 1; margin-left: 10px; }
+.product-name { font-size: 1rem; font-weight: 600; }
+.product-price { margin-top: 4px; color: #00ffb3; font-weight: 600; }
+.btn-add { background: #00ffb3; border: none; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-weight: bold; color: #000; }
+.toast { position:fixed; bottom:25px; left:50%; transform:translateX(-50%); background:#00aaff; color:#000; padding:10px 20px; border-radius:10px; font-weight:bold; opacity:0; transition:opacity 0.4s; }
+.toast.show { opacity:1; }
 </style>
 </head>
 <body>
 
 <header>
-  <button class="back-btn" onclick="window.location.href='produits.html'">← Retour</button>
-
-  <!-- LOGO COD-STYLE -->
+  <button class="back-btn" onclick="goBack()">← Retour</button>
   <div class="logo">
-    <svg viewBox="0 0 24 24" fill="#00ffb3">
-      <path d="M3 3h2v18H3V3zm16 0h2v18h-2V3zM7 11h10v2H7v-2z"/>
-    </svg>
+    <svg viewBox="0 0 24 24" fill="#00ffb3"><path d="M3 3h2v18H3V3zm16 0h2v18h-2V3zM7 11h10v2H7v-2z"/></svg>
     DPSTORE
   </div>
-
-  <!-- Solde + Panier -->
   <div class="right-box">
     <div class="balance" id="balanceBox">0 G</div>
-    <div class="cart-btn" onclick="window.location.href='cart.html'">🛒(<span id="cartCount">0</span>)</div>
+    <div class="cart-btn" onclick="openCart()">🛒(<span id="cartCount">0</span>)</div>
   </div>
 </header>
 
-<!-- PLAYSTATION -->
 <h2 class="section-title">PLAYSTATION 🇺🇸</h2>
 <div id="playstation-list"></div>
 
-<!-- XBOX US -->
 <h2 class="section-title">XBOX 🇺🇸</h2>
 <div id="xbox-list-us"></div>
 
-<!-- XBOX FR -->
 <h2 class="section-title">XBOX 🇫🇷</h2>
 <div id="xbox-list-fr"></div>
 
+<div id="toast" class="toast">✅ Produit ajouté au panier</div>
+
 <script>
 /* ============================
-   🔥 PANIER PAR COMPTE (SAFE)
-   ============================ */
-
-function loadUser() {
-  let u = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
-  if (u.balance === undefined) u.balance = 0;
-  let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-  let acc = accounts.find(x => (x.email || "").toLowerCase() === (u.email || "").toLowerCase());
-  if (acc) {
-    u.balance = acc.balance ?? u.balance;
-    localStorage.setItem("dpstore_user", JSON.stringify(u));
-  }
+   🔥 UTILISATEUR & PANIER
+============================ */
+function loadUser(){
+  let u = JSON.parse(sessionStorage.getItem("dpstore_user")||"{}");
+  if(!u.email && !u.dp){ alert("Vous devez être connecté !"); window.location.href="index.html"; }
+  if(u.balance===undefined) u.balance=0;
   return u;
 }
 
 let user = loadUser();
-if (!user.email && !user.dp) {
-  alert("Aucun compte connecté !");
-  window.location.href = "index.html";
-}
 
-function normalizeId(str){
-  if(!str) return "guest";
-  return String(str).toLowerCase().trim().replace(/[^a-z0-9@.-]/g, "_").replace(/@/g,"_at_");
-}
-
-function getCartKey(){
-  const id = user.email || user.dp || ("guest");
-  return "cart_" + normalizeId(id);
-}
-
-function migrateGlobalCartIfNeeded(){
-  const globalKey = "cart";
-  const perUserKey = getCartKey();
-  const global = localStorage.getItem(globalKey);
-  const perUser = localStorage.getItem(perUserKey);
-  if(global && !perUser){
-    try {
-      localStorage.setItem(perUserKey, global);
-      localStorage.removeItem(globalKey);
-    } catch(e){
-      console.warn("Migration cart failed:", e);
-    }
-  }
-}
+function normalizeId(str){ return (str||"guest").toLowerCase().replace(/[^a-z0-9@.-]/g,"_").replace(/@/g,"_at_"); }
+function getCartKey(){ return "cart_"+normalizeId(user.email||user.dp||"guest"); }
 
 function loadCart(){
-  migrateGlobalCartIfNeeded();
-  const key = getCartKey();
-  return JSON.parse(localStorage.getItem(key) || "[]");
+  try{
+    migrateGlobalCartIfNeeded();
+    let c = JSON.parse(localStorage.getItem(getCartKey())||"[]");
+    return Array.isArray(c)?c:[];
+  }catch(e){ return []; }
 }
 
-function saveCart(arr){
+function saveCart(cart){ localStorage.setItem(getCartKey(), JSON.stringify(cart)); }
+
+function migrateGlobalCartIfNeeded(){
+  const global = localStorage.getItem("cart");
   const key = getCartKey();
-  localStorage.setItem(key, JSON.stringify(arr));
+  if(global && !localStorage.getItem(key)){
+    localStorage.setItem(key, global); localStorage.removeItem("cart");
+  }
 }
 
 function updateBalanceUI(){
   user = loadUser();
-  document.getElementById("balanceBox").textContent = (user.balance ?? 0) + " G";
+  document.getElementById("balanceBox").textContent=(user.balance??0)+" G";
   updateCartCount();
 }
 
-/* 🔥 AJOUT PANIER */
-function addToCart(name, price){
+function showToast(msg){ 
+  const t=document.getElementById("toast"); 
+  t.textContent=msg||"✅ Produit ajouté au panier"; 
+  t.classList.add("show"); 
+  setTimeout(()=>t.classList.remove("show"),1500); 
+}
+
+function addToCart(name,price){
   user = loadUser();
   let cart = loadCart();
-  cart.push({ name, price });
+  const item = {
+    name,
+    price,
+    buyer: user.email||user.dp||"guest",
+    date: new Date().toISOString(),
+    status: "pending",
+    meta: user.name||user.dp||user.email||""
+  };
+  cart.push(item);
   saveCart(cart);
-  alert(`✅ ${name} ajouté au panier !`);
+  showToast(`✅ ${name} ajouté au panier !`);
   updateBalanceUI();
 }
 
-/* 🔥 COMPTEUR PANIER */
-function updateCartCount(){
-  const cart = loadCart();
-  document.getElementById("cartCount").textContent = cart.length;
-}
+function updateCartCount(){ document.getElementById("cartCount").textContent=loadCart().length; }
+function openCart(){ window.location.href="cart.html"; }
+function goBack(){ window.location.href="produits.html"; }
 
-/* 🔥 PRODUITS ORIGINAUX */
+/* ============================
+   🔥 PRODUITS
+============================ */
 const products = {
   playstation: [
     { name: "PLAYSTATION 5 USD", price: 850, img: "https://i.imgur.com/EPp1yV2.png" },
@@ -256,39 +144,28 @@ const products = {
   ]
 };
 
-/* 🔥 +15% D’AUGMENTATION */
-function applyIncrease(price) {
-    return Math.round(price * 1.15);
-}
+function applyIncrease(price){ return Math.round(price*1.15); }
 
-/* 🔥 AFFICHAGE PRODUITS */
-function displayProducts(listId, items) {
-  const container = document.getElementById(listId);
-  items.forEach(p => {
-    const newPrice = applyIncrease(p.price);
-
-    const div = document.createElement("div");
-    div.className = "product";
-
-    div.innerHTML = `
-      <img src="${p.img}">
-      <div class="product-info">
-        <div class="product-name">${p.name}</div>
-        <div class="product-price">${newPrice} HTG</div>
-      </div>
-      <button class="btn-add" onclick="addToCart('${p.name}', ${newPrice})">Ajouter</button>
-    `;
+function displayProducts(listId,items){
+  const container=document.getElementById(listId);
+  items.forEach(p=>{
+    const newPrice=applyIncrease(p.price);
+    const div=document.createElement("div"); div.className="product";
+    div.innerHTML=`<img src="${p.img}"><div class="product-info"><div class="product-name">${p.name}</div><div class="product-price">${newPrice} HTG</div></div><button class="btn-add">Ajouter</button>`;
+    div.querySelector("button").addEventListener("click",()=>addToCart(p.name,newPrice));
     container.appendChild(div);
   });
 }
 
-displayProducts("playstation-list", products.playstation);
-displayProducts("xbox-list-us", products.xboxUS);
-displayProducts("xbox-list-fr", products.xboxFR);
+displayProducts("playstation-list",products.playstation);
+displayProducts("xbox-list-us",products.xboxUS);
+displayProducts("xbox-list-fr",products.xboxFR);
 
-/* 🔥 MISE À JOUR INITIALE */
+/* ============================
+   🔥 INIT
+============================ */
 updateBalanceUI();
-setInterval(updateBalanceUI, 1500);
+setInterval(updateBalanceUI,1500);
 </script>
 
 </body>
