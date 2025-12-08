@@ -101,9 +101,7 @@ header h1 {
 .btn-confirm { background: #00ffb3; }
 .btn-refund { background: #ff5555; }
 
-.btn-await:hover { opacity: 0.8; }
-.btn-confirm:hover { opacity: 0.8; }
-.btn-refund:hover { opacity: 0.8; }
+.btn-await:hover, .btn-confirm:hover, .btn-refund:hover { opacity: 0.8; }
 
 footer {
   text-align: center;
@@ -123,7 +121,6 @@ footer {
 
 <div class="container">
   <h2 style="color:#00ffb3; text-align:center;">Commandes par DP</h2>
-
   <div class="dp-list" id="dpList"></div>
   <div class="order-list" id="orderList"></div>
 </div>
@@ -131,19 +128,22 @@ footer {
 <footer>© 2025 DPSTORE — Tous droits réservés</footer>
 
 <script>
-/* Vérification rôle */
-let user = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
+/* ============================
+   🔥 AUTHENTIFICATION ET RÔLE
+============================ */
+let user = JSON.parse(sessionStorage.getItem("dpstore_user") || "{}");
 if(!user.role || !["creator","admin","employee"].includes(user.role.toLowerCase())){
   alert("🚫 Accès refusé ! Creator/Admin/Employé seulement.");
   window.location.href = "index.html";
 }
 
-/* Chargement commandes */
+/* ============================
+   🔥 CHARGEMENT DES COMMANDES
+============================ */
 let orders = JSON.parse(localStorage.getItem("orders") || "[]");
 let dpList = document.getElementById("dpList");
 let orderList = document.getElementById("orderList");
 
-/* Obtenir DP uniques */
 let dpUnique = [...new Set(orders.map(o => o.dp || o.buyer))];
 
 function renderDPs(){
@@ -168,23 +168,25 @@ function renderOrders(dp){
   }
 
   userOrders.forEach((r,index)=>{
-    let extraInfo = "";
-    let hasExtra = false;
+    let extraInfo="";
+    let hasExtra=false;
     Object.keys(r).forEach(key=>{
-      if(["name","price","date","status","buyer","id","dp"].includes(key)) return;
-      hasExtra = true;
-      extraInfo += `<p><strong>${key} :</strong> ${r[key]}</p>`;
+      if(["name","price","date","status","buyer","id","dp","meta"].includes(key)) return;
+      hasExtra=true;
+      extraInfo+=`<p><strong>${key} :</strong> ${r[key]}</p>`;
     });
-    if(!hasExtra) extraInfo = `<p style="color:#ff5555; font-style:italic;">Aucune info supplémentaire enregistrée.</p>`;
+    if(!hasExtra) extraInfo=`<p style="color:#ff5555; font-style:italic;">Aucune info supplémentaire enregistrée.</p>`;
 
     let div = document.createElement("div");
     div.className = "receipt";
-    div.innerHTML = `
+    div.innerHTML=`
       <p><strong>Produit :</strong> ${r.name}</p>
       <p><strong>Prix :</strong> ${r.price} G</p>
       ${extraInfo}
       <p><strong>Date :</strong> ${r.date}</p>
       <p><strong>Status :</strong> ${r.status}</p>
+      <p><strong>Buyer :</strong> ${r.buyer}</p>
+      <p><strong>Meta :</strong> ${r.meta || "Aucune"}</p>
       <button class="btn-status btn-await" onclick="updateStatus(${orders.indexOf(r)},'En attente')">⏳ En attente</button>
       <button class="btn-status btn-confirm" onclick="updateStatus(${orders.indexOf(r)},'Validé')">✔ Confirmer</button>
       <button class="btn-status btn-refund" onclick="updateStatus(${orders.indexOf(r)},'Remboursé')">💸 Rembourser</button>
@@ -194,7 +196,7 @@ function renderOrders(dp){
 }
 
 function updateStatus(index, status){
-  orders[index].status = status;
+  orders[index].status=status;
   localStorage.setItem("orders", JSON.stringify(orders));
   renderOrders(orders[index].dp || orders[index].buyer);
   alert(`✅ Statut mis à jour : ${status}`);
