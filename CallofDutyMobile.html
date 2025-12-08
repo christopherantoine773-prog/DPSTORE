@@ -233,10 +233,19 @@
 /* ==========================
    🔥 CHARGEMENT UTILISATEUR
 ========================== */
-let user = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
-if (!user.email) { alert("Aucun compte connecté !"); window.location.href = "index.html"; }
+
+// ❗ CORRECTION : sessionStorage au lieu de localStorage
+let user = JSON.parse(sessionStorage.getItem("dpstore_user") || "{}");
+
+if (!user.email) { 
+    alert("Aucun compte connecté !");
+    window.location.href = "index.html";
+}
+
 if (!user.balance) user.balance = 0;
+
 document.getElementById("soldeBox").textContent = "Solde : " + user.balance + " G";
+
 
 /* ==========================
    🔥 LISTE PAYS
@@ -265,6 +274,7 @@ countries.forEach(c => {
     opt.textContent = `${c.name} (${c.code})`;
     countrySelect.appendChild(opt);
 });
+
 
 /* ==========================
    🔥 PRODUITS
@@ -299,6 +309,7 @@ function afficherProduits() {
 }
 afficherProduits();
 
+
 /* ==========================
    🔥 FORMULAIRE
 ========================== */
@@ -308,6 +319,7 @@ function openForm(titre, prix){
     document.getElementById("overlay").style.display = "flex";
 }
 function closeForm(){ document.getElementById("overlay").style.display = "none"; }
+
 
 /* ==========================
    🔥 PANIER PAR UTILISATEUR
