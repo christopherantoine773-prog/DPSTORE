@@ -1,106 +1,155 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8"/>
+<meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Messagerie — DPSTORE</title>
 <style>
 body{
-    background:black;
-    color:white;
-    font-family:Arial;
+    background:#0a0f14;
+    color:#e0f7fa;
+    font-family:'Inter',Arial,sans-serif;
+    margin:0;
 }
 
 .container{
     width:90%;
     max-width:600px;
     margin:40px auto;
-    background:#111;
-    border-radius:15px;
-    box-shadow:0 0 25px #fdf100;
+    background:rgba(0,30,30,0.5);
+    border-radius:20px;
+    box-shadow:0 0 25px rgba(0,255,200,0.3);
     display:flex;
     flex-direction:column;
     height:80vh;
+    overflow:hidden;
+    border:2px solid #00ffe0;
 }
 
 .header{
-    padding:15px;
+    padding:20px;
     border-bottom:1px solid #333;
     text-align:center;
     font-weight:bold;
-    font-size:18px;
-    background:#222;
-    border-top-left-radius:15px;
-    border-top-right-radius:15px;
+    font-size:22px;
+    background:linear-gradient(90deg,#001a1f,#004d4d);
+    border-top-left-radius:20px;
+    border-top-right-radius:20px;
+    text-shadow:0 0 8px #00ffe0;
 }
 
 #messages{
     flex:1;
-    padding:15px;
+    padding:20px;
     overflow-y:auto;
     display:flex;
     flex-direction:column;
+    gap:10px;
+    scrollbar-width: thin;
+    scrollbar-color: #00ffe0 #111;
+}
+#messages::-webkit-scrollbar{
+    width:8px;
+}
+#messages::-webkit-scrollbar-track{
+    background:#111;
+    border-radius:8px;
+}
+#messages::-webkit-scrollbar-thumb{
+    background:#00ffe0;
+    border-radius:8px;
 }
 
 .message{
     max-width:70%;
-    margin:5px 0;
-    padding:10px;
-    border-radius:10px;
+    padding:12px 16px;
+    border-radius:20px;
     word-wrap:break-word;
+    position:relative;
+    transition:0.2s;
 }
 
 .message.user{
     align-self:flex-end;
-    background:#00bfff;
-    color:#000;
+    background:linear-gradient(135deg,#00bfff,#0080ff);
+    color:black;
     border-bottom-right-radius:0;
+    box-shadow:0 0 15px #00bfff;
 }
 
 .message.admin{
     align-self:flex-start;
-    background:#444;
+    background:linear-gradient(135deg,#444,#222);
+    color:white;
+    border-bottom-left-radius:0;
+    box-shadow:0 0 15px #00ff99;
 }
 
-.message .sender{
+.sender{
     font-size:12px;
-    color:#fdf100;
     font-weight:bold;
-    margin-bottom:3px;
+    margin-bottom:4px;
+    display:block;
+    color:#fdf100;
+    text-shadow:0 0 4px #fdf100;
+}
+
+.timestamp{
+    font-size:10px;
+    color:#aaa;
+    margin-top:4px;
+    text-align:right;
 }
 
 #inputArea{
     display:flex;
     border-top:1px solid #333;
+    background:#111;
+    padding:10px;
+    gap:10px;
 }
 
 #messageInput{
     flex:1;
-    padding:10px;
+    padding:14px;
     border:none;
-    border-radius:0;
+    border-radius:20px;
     background:#222;
     color:white;
+    font-size:16px;
+    outline:none;
+    box-shadow:inset 0 0 10px #00ffe0;
+    transition:0.2s;
+}
+#messageInput:focus{
+    box-shadow:inset 0 0 15px #00ffe0;
 }
 
 #sendBtn{
-    padding:10px 20px;
+    padding:14px 24px;
     border:none;
-    background:#fdf100;
+    background:linear-gradient(135deg,#00ffe0,#00aa88);
     color:black;
     font-weight:bold;
+    border-radius:20px;
     cursor:pointer;
+    transition:0.2s;
+    box-shadow:0 0 10px #00ffe0;
+}
+#sendBtn:hover:not(:disabled){
+    box-shadow:0 0 25px #00ffe0, 0 0 50px #00ffe0 inset;
 }
 #sendBtn:disabled{
     background:grey;
     cursor:not-allowed;
+    box-shadow:none;
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">Support DPSTORE</div>
+    <div class="header">💬 Support DPSTORE</div>
     <div id="messages"></div>
     <div id="inputArea">
         <input type="text" id="messageInput" placeholder="Écrire un message..." />
@@ -109,24 +158,38 @@ body{
 </div>
 
 <script>
-let account = JSON.parse(localStorage.getItem("dpstore_user"));
-if(!account){ alert("Aucun compte détecté !"); location.href="index.html"; }
+// Vérification sessionStorage
+let account = JSON.parse(sessionStorage.getItem("dpstore_user"));
+if(!account || !account.email){
+    alert("⚠ Vous devez être connecté !");
+    location.href="index.html";
+}
 
-// Vérifier si le ticket existe, sinon le créer
+// Charger tickets
 let tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
+
+// Chaque utilisateur a un ticket unique
 let ticket = tickets.find(t => t.userEmail === account.email);
 if(!ticket){
-    ticket = { userEmail: account.email, username: account.username, dp: account.dp || "—", messages: [], status:"open" };
+    ticket = { 
+        userEmail: account.email, 
+        username: account.username, 
+        dp: account.dp || "—", 
+        messages: [], 
+        status:"open",
+        unread: false
+    };
     tickets.push(ticket);
     localStorage.setItem("dpstore_tickets", JSON.stringify(tickets));
 }
 
+// Affichage messages
 function loadMessages(){
     const container = document.getElementById("messages");
-    container.innerHTML = "";
+    container.innerHTML="";
 
-    let tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
-    let ticket = tickets.find(t => t.userEmail === account.email);
+    tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
+    ticket = tickets.find(t => t.userEmail === account.email);
     if(!ticket) return;
 
     ticket.messages.forEach(msg=>{
@@ -134,25 +197,23 @@ function loadMessages(){
         div.classList.add("message");
         div.classList.add(msg.senderType === "user" ? "user" : "admin");
 
-        // Afficher qui a envoyé le message
-        let senderText = msg.senderType === "user" ? "Vous" : (msg.role || "Admin");
-        div.innerHTML = `<div class="sender">${senderText}</div>${msg.text} <div style="font-size:10px;color:#ccc;">(${msg.date})</div>`;
+        div.innerHTML = `
+            <span class="sender">${msg.senderType === "user" ? "Vous" : msg.role || "Admin"}</span>
+            ${msg.text}
+            <div class="timestamp">${msg.date}</div>
+        `;
         container.appendChild(div);
     });
 
     container.scrollTop = container.scrollHeight;
-
-    // Vérifier si le ticket est fermé
     document.getElementById("sendBtn").disabled = ticket.status === "closed";
 }
 
+// Envoyer un message utilisateur
 function sendMessage(){
     const input = document.getElementById("messageInput");
     const text = input.value.trim();
     if(!text) return;
-
-    let tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
-    let ticket = tickets.find(t => t.userEmail === account.email);
 
     ticket.messages.push({
         senderType: "user",
@@ -161,12 +222,13 @@ function sendMessage(){
         role: "Utilisateur"
     });
 
+    ticket.unread = true; // Nouveau message non lu pour admin
     localStorage.setItem("dpstore_tickets", JSON.stringify(tickets));
     input.value="";
     loadMessages();
 }
 
-// Rafraîchissement automatique toutes les 2 secondes
+// Rafraîchissement automatique toutes les 2s pour recevoir les réponses admin
 setInterval(()=>{
     tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
     loadMessages();
