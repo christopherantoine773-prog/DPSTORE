@@ -23,6 +23,7 @@ button[disabled]{opacity:.5;cursor:not-allowed}
 .popup.active{opacity:1;visibility:visible}
 .popup h2{color:#00ff99;margin-bottom:6px}
 .small-note{opacity:0.8;margin-top:8px;font-size:0.95rem;color:#cfeed0}
+#balanceDisplay{color:#00ffb3;font-weight:bold;margin-top:8px;font-size:1.1rem;}
 </style>
 </head>
 <body>
@@ -37,6 +38,9 @@ button[disabled]{opacity:.5;cursor:not-allowed}
   <div class="card">
     <h2>💳 Faire une recharge sur DPSTORE</h2>
     <p class="small-note">Recharge via <b>Natcash</b> — Compte : <b>Christopher Antoine — 42758154</b></p>
+    
+    <!-- SOLDE -->
+    <p id="balanceDisplay">💰 Solde : ... crédits</p>
 
     <form id="payForm" novalidate>
 
@@ -46,7 +50,7 @@ button[disabled]{opacity:.5;cursor:not-allowed}
       <label class="small">Email *</label>
       <input id="emailInput" type="email" required>
 
-      <!-- 🔥 AJOUT DU DP-ID VISIBLE / NON MODIFIABLE -->
+      <!-- 🔥 DP Synchronisé automatique -->
       <label class="small">DP-ID *</label>
       <input id="dpInput" readonly>
 
@@ -64,6 +68,7 @@ button[disabled]{opacity:.5;cursor:not-allowed}
       <button id="sendBtn">🚀 Envoyer la demande</button>
 
       <button type="button" onclick="location.href='trx.html'">📄 Voir mes recharges</button>
+
     </form>
   </div>
 </div>
@@ -73,24 +78,65 @@ button[disabled]{opacity:.5;cursor:not-allowed}
   <p style="color:#dfffe1">Ta demande a été ajoutée à tes transactions.</p>
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
+  authDomain: "dpstore-officie.firebaseapp.com",
+  projectId: "dpstore-officie",
+  storageBucket: "dpstore-officie.appspot.com",
+  messagingSenderId: "903943973062",
+  appId: "1:903943973062:web:6501a2ec167adb31258fc7"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* 🔐 PROFIL CONNECTÉ */
+let user = JSON.parse(sessionStorage.getItem("dpstore_user") || "null");
+if(!user || !user.email || !user.dp){
+    alert("⚠ Accès refusé : vous devez être connecté.");
+    location.href = "index.html";
+}
+
+/* Injection DP et Nom */
+document.getElementById("nameInput").value  = user.username || "";
+document.getElementById("emailInput").value = user.email;
+document.getElementById("dpInput").value    = user.dp;
+
+/* 🔥 Récupération solde Firestore */
+async function loadBalance(){
+    try{
+        const usersSnap = await getDocs(collection(db,"users"));
+        let account = user;
+        usersSnap.forEach(docSnap=>{
+            const data = docSnap.data();
+            if(data.email && data.email.toLowerCase() === user.email.toLowerCase()){
+                account = {...account, balance: Number(data.balance ?? data.credits ?? 0)};
+            }
+        });
+        user.balance = account.balance;
+        sessionStorage.setItem("dpstore_user", JSON.stringify(user));
+        document.getElementById("balanceDisplay").textContent = `💰 Solde : ${user.balance} crédits`;
+    }catch(e){
+        console.warn("Erreur Firestore:", e);
+        document.getElementById("balanceDisplay").textContent = "💰 Solde : —";
+    }
+}
+await loadBalance();
+
+/* Clé unique transactions */
+function normalizeId(str){
+  return str.toLowerCase().replace(/[^a-z0-9@.-]/g,"_").replace(/@/g,"_at_");
+}
+const key = "dp_recharges_" + normalizeId(user.email);
+
+/* ENVOI DU FORMULAIRE */
 const sendBtn = document.getElementById("sendBtn");
 const popup = document.getElementById("popup");
 const errorBox = document.getElementById("errorBox");
 const soundOK = document.getElementById("soundOK");
-
-// 🔥 récupérer l'utilisateur connecté
-const account = JSON.parse(localStorage.getItem("dpstore_user"));
-if(!account){
-    alert("Aucun compte détecté !");
-    location.href = "index.html";
-}
-
-// 🔥 injecter le DP-ID automatiquement
-document.getElementById("dpInput").value = account.dp;
-
-const key = "dp_recharges_" + account.dp;
 
 function showError(t){
   errorBox.textContent = t;
@@ -114,21 +160,25 @@ document.getElementById("payForm").addEventListener("submit", e => {
   sendBtn.disabled = true;
   sendBtn.textContent = "Envoi...";
 
-  const list = JSON.parse(localStorage.getItem(key) || "[]");
+  let list = JSON.parse(localStorage.getItem(key) || "[]");
 
-  list.unshift({
+  const newEntry = {
     name,
     email,
     phone: phoneInput.value.trim(),
     amount,
     transcode,
-    dpID: account.dp,         // 🔥 DP synchronisé
-    emailReal: account.email, 
+    dpID: user.dp, 
+    emailAccount: user.email,
     status: "en attente",
     created: new Date().toLocaleString()
-  });
+  };
 
+  list.unshift(newEntry);
   localStorage.setItem(key, JSON.stringify(list));
+
+  // 🔥 Déclencher l'événement storage pour mise à jour trx.html
+  window.dispatchEvent(new StorageEvent('storage', { key, newValue: JSON.stringify(list) }));
 
   soundOK.play();
   popup.classList.add("active");
