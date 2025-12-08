@@ -155,147 +155,108 @@
 
 <header>
   <button class="btn-retour" onclick="window.location.href='produits.html'">← Retour</button>
-
   <h1>DPSTORE — NordVPN</h1>
-
   <div style="display:flex; align-items:center;">
     <div class="balance-box" id="balanceBox">0 G</div>
     <button class="btn-cart" onclick="window.location.href='cart.html'">🛒 Panier</button>
   </div>
 </header>
 
-<div class="container">
-
-  <!-- PRODUIT 1 -->
-  <div class="product-card">
-    <div class="product-info">
-      <div class="product-logo">NV</div>
-      <div class="product-text">
-        <h3>NORDVPN 1 MOIS</h3>
-        <div class="badges">
-          <span class="badge green">Disponible</span>
-          <span class="badge gray">NordVPN</span>
-        </div>
-        <div class="price">420 HTG</div>
-        <p>Livraison 0 à 3h ❄️</p>
-      </div>
-    </div>
-    <button class="buy-btn" onclick="ajouterAuPanier('NORDVPN 1 MOIS', 420)">Acheter</button>
-  </div>
-
-  <!-- PRODUIT 2 -->
-  <div class="product-card">
-    <div class="product-info">
-      <div class="product-logo">NV</div>
-      <div class="product-text">
-        <h3>NORDVPN 2 MOIS</h3>
-        <div class="badges">
-          <span class="badge green">Disponible</span>
-          <span class="badge gray">NordVPN</span>
-        </div>
-        <div class="price">720 HTG</div>
-        <p>Livraison 0 à 3h ❄️</p>
-      </div>
-    </div>
-    <button class="buy-btn" onclick="ajouterAuPanier('NORDVPN 2 MOIS', 720)">Acheter</button>
-  </div>
-
-  <!-- PRODUIT 3 -->
-  <div class="product-card">
-    <div class="product-info">
-      <div class="product-logo">NV</div>
-      <div class="product-text">
-        <h3>NORDVPN 3 MOIS</h3>
-        <div class="badges">
-          <span class="badge green">Disponible</span>
-          <span class="badge gray">NordVPN</span>
-        </div>
-        <div class="price">1200 HTG</div>
-        <p>Livraison 0 à 3h ❄️</p>
-      </div>
-    </div>
-    <button class="buy-btn" onclick="ajouterAuPanier('NORDVPN 3 MOIS', 1200)">Acheter</button>
-  </div>
-
+<div class="container" id="productContainer">
 </div>
 
 <footer>© 2025 DPSTORE — Tous droits réservés</footer>
 
 <script>
-/* ============================
-   🔥 PANIER PAR COMPTE (SAFE)
-   ============================ */
+/* ===================================================
+   🔐 PROFIL SÉCURISÉ + PANIER PAR COMPTE
+=================================================== */
+function safeParse(str){ try{ return JSON.parse(str); }catch(e){ return null; } }
 
-function loadUser() {
-  let u = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
-  if (u.balance === undefined) u.balance = 0;
-  let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-  let acc = accounts.find(x => (x.email || "").toLowerCase() === (u.email || "").toLowerCase());
-  if (acc) {
-    u.balance = acc.balance ?? u.balance;
-    localStorage.setItem("dpstore_user", JSON.stringify(u));
-  }
-  return u;
-}
+let user = safeParse(sessionStorage.getItem("dpstore_user")) || null;
 
-let user = loadUser();
-if (!user.email && !user.dp) {
-  alert("Aucun compte connecté !");
+if(!user || !user.email || !user.dp || !user.username){
+  alert("⚠ Vous devez être connecté !");
   window.location.href = "index.html";
 }
 
 function normalizeId(str){
-  if(!str) return "guest";
-  return String(str).toLowerCase().trim().replace(/[^a-z0-9@.-]/g, "_").replace(/@/g,"_at_");
+  return (str || "guest").toLowerCase().replace(/[^a-z0-9@.-]/g,"_").replace(/@/g,"_at_");
 }
 
-function getCartKey(){
-  const id = user.email || user.dp || ("guest");
-  return "cart_" + normalizeId(id);
-}
+function getCartKey(){ return "cart_" + normalizeId(user.email); }
 
-function migrateGlobalCartIfNeeded(){
-  const globalKey = "cart";
-  const perUserKey = getCartKey();
-  const global = localStorage.getItem(globalKey);
-  const perUser = localStorage.getItem(perUserKey);
-  if(global && !perUser){
-    try {
-      localStorage.setItem(perUserKey, global);
-      localStorage.removeItem(globalKey);
-    } catch(e){
-      console.warn("Migration cart failed:", e);
-    }
-  }
-}
-
-function loadCart(){
-  migrateGlobalCartIfNeeded();
-  const key = getCartKey();
-  return JSON.parse(localStorage.getItem(key) || "[]");
-}
-
-function saveCart(arr){
-  const key = getCartKey();
-  localStorage.setItem(key, JSON.stringify(arr));
-}
+function loadCart(){ return safeParse(localStorage.getItem(getCartKey())) || []; }
+function saveCart(arr){ localStorage.setItem(getCartKey(), JSON.stringify(arr)); }
 
 function updateBalanceUI(){
-  user = loadUser();
-  document.getElementById("balanceBox").textContent = (user.balance ?? 0) + " G";
+  user = safeParse(sessionStorage.getItem("dpstore_user")) || user;
+  document.getElementById("balanceBox").textContent = (user.balance ?? user.credits ?? 0) + " G";
 }
 
+/* ===================================================
+   🔥 PRODUITS
+=================================================== */
+const products = [
+  { name: "NORDVPN 1 MOIS", price: 420 },
+  { name: "NORDVPN 2 MOIS", price: 720 },
+  { name: "NORDVPN 3 MOIS", price: 1200 }
+];
+
+const container = document.getElementById("productContainer");
+
+products.forEach(p=>{
+  const card = document.createElement("div");
+  card.className = "product-card";
+  card.innerHTML = `
+    <div class="product-info">
+      <div class="product-logo">NV</div>
+      <div class="product-text">
+        <h3>${p.name}</h3>
+        <div class="badges">
+          <span class="badge green">Disponible</span>
+          <span class="badge gray">NordVPN</span>
+        </div>
+        <div class="price">${p.price} HTG</div>
+        <p>Livraison 0 à 3h ❄️</p>
+      </div>
+    </div>
+    <button class="buy-btn">Acheter</button>
+  `;
+  card.querySelector("button").addEventListener("click", ()=>{
+    ajouterAuPanier(p.name, p.price);
+  });
+  container.appendChild(card);
+});
+
+/* ===================================================
+   🔥 AJOUT AU PANIER (Option B)
+   - Débit seulement lors du paiement
+   - Stocke buyer, date, status, meta (accountName)
+=================================================== */
 function ajouterAuPanier(name, price){
-  user = loadUser();
+  user = safeParse(sessionStorage.getItem("dpstore_user")) || user;
   const cart = loadCart();
-  cart.push({ name, price });
+  const item = {
+    name,
+    price,
+    buyer: user.email,
+    date: new Date().toLocaleString(),
+    status: "En attente",
+    meta: { accountName: user.username }
+  };
+  cart.push(item);
   saveCart(cart);
   alert(`✅ ${name} ajouté au panier !`);
   updateBalanceUI();
 }
 
+/* ===================================================
+   🔥 UI INIT
+=================================================== */
 updateBalanceUI();
 setInterval(updateBalanceUI, 1500);
+
 </script>
 
 </body>
