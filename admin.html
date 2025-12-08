@@ -6,32 +6,45 @@
 <title>Messagerie Admin — DPSTORE</title>
 <style>
 body{
-    background:black;
-    color:white;
-    font-family:Arial;
+    background:#0a0f14;
+    color:#e0f7fa;
+    font-family:'Inter',Arial,sans-serif;
+    margin:0;
 }
-
-.container{
-    width:95%;
-    max-width:1000px;
-    margin:40px auto;
+.header{
     display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 20px;
+    background:linear-gradient(90deg,#001a1f,#004d4d);
+    box-shadow:0 4px 12px rgba(0,255,200,0.3);
+}
+.header h1{
+    font-size:1.6rem;
+    color:#00ffe0;
+}
+.header .balance{
+    font-weight:bold;
+    color:#ffd24a;
+}
+.container{
+    display:flex;
+    max-width:1200px;
+    margin:20px auto;
     gap:20px;
 }
-
 /* Liste des tickets */
 .ticket-list{
     flex:1;
-    background:#111;
+    background:rgba(0,30,30,0.5);
     border-radius:15px;
     padding:15px;
-    box-shadow:0 0 25px #fdf100;
+    box-shadow:0 0 25px rgba(0,255,200,0.3);
     max-height:80vh;
     overflow-y:auto;
 }
-
 .ticket-item{
-    background:#222;
+    background:#111;
     padding:12px;
     border-radius:10px;
     margin-bottom:10px;
@@ -39,44 +52,49 @@ body{
     display:flex;
     justify-content:space-between;
     align-items:center;
+    transition:0.2s;
 }
-
 .ticket-item:hover{
-    background:#333;
+    background:#222;
 }
-
 .ticket-info{
     display:flex;
     flex-direction:column;
     text-align:left;
 }
-
 .ticket-info span{
     font-weight:bold;
     font-size:14px;
 }
-
+.ticket-info .new-msg{
+    display:inline-block;
+    background:yellow;
+    color:black;
+    font-size:10px;
+    padding:1px 5px;
+    margin-left:5px;
+    border-radius:5px;
+    font-weight:bold;
+}
 .ticket-status{
     font-size:12px;
-    padding:2px 6px;
-    border-radius:5px;
+    padding:3px 8px;
+    border-radius:8px;
+    font-weight:700;
 }
-
 .status-open{ background:green; color:white; }
 .status-closed{ background:red; color:white; }
-
 /* Conversation */
 .ticket-chat{
     flex:2;
-    background:#111;
+    background:rgba(0,30,30,0.5);
     border-radius:15px;
     padding:15px;
-    box-shadow:0 0 25px #fdf100;
+    box-shadow:0 0 25px rgba(0,255,200,0.3);
     display:flex;
     flex-direction:column;
     height:80vh;
 }
-
 .chat-header{
     font-weight:bold;
     font-size:18px;
@@ -85,13 +103,14 @@ body{
     justify-content:space-between;
     flex-wrap:wrap;
 }
-
 .chat-user-info{
     display:flex;
     flex-direction:column;
     text-align:left;
 }
-
+.chat-user-info span{
+    margin:2px 0;
+}
 .messages{
     flex:1;
     overflow-y:auto;
@@ -102,7 +121,6 @@ body{
     border-bottom:1px solid #333;
     margin-bottom:10px;
 }
-
 .message{
     max-width:70%;
     margin:5px 0;
@@ -110,19 +128,18 @@ body{
     border-radius:10px;
     word-wrap:break-word;
 }
-
 .message.user{
     align-self:flex-start;
     background:#00bfff;
     color:black;
     border-bottom-left-radius:0;
 }
-
 .message.admin{
     align-self:flex-end;
     background:#444;
+    color:#fff;
+    border-bottom-right-radius:0;
 }
-
 input{
     padding:10px;
     flex:1;
@@ -131,24 +148,33 @@ input{
     background:#222;
     color:white;
 }
-
 button{
     padding:8px 12px;
     border:none;
     border-radius:8px;
-    background:red;
-    color:white;
+    background:#00ffe0;
+    color:black;
     cursor:pointer;
     margin-left:5px;
+    font-weight:700;
+    transition:0.2s;
 }
-
 button:disabled{
     background:grey;
     cursor:not-allowed;
 }
+button:hover:not(:disabled){
+    transform:scale(1.05);
+    box-shadow:0 0 10px #00ffe0;
+}
 </style>
 </head>
 <body>
+
+<header class="header">
+    <h1>💬 Messagerie Admin</h1>
+    <div class="balance">💰 Solde : <span id="userBalance">0</span> crédits</div>
+</header>
 
 <div class="container">
     <div class="ticket-list">
@@ -160,8 +186,8 @@ button:disabled{
         <div class="chat-header" id="chatHeader">
             <div class="chat-user-info">
                 <span id="chatUser"></span>
-                <span id="chatDP" style="font-size:14px;color:#fdf100;"></span>
-                <span id="chatEmail" style="font-size:12px;color:#aaa;"></span>
+                <span id="chatDP" style="color:#ffd24a;font-size:14px;"></span>
+                <span id="chatEmail" style="color:#aaa;font-size:12px;"></span>
             </div>
             <div>
                 <button id="toggleTicketBtn">Close / Open</button>
@@ -176,16 +202,24 @@ button:disabled{
 </div>
 
 <script>
-let account = JSON.parse(localStorage.getItem("dpstore_user"));
+// 🔒 Page sécurisée
+let account = JSON.parse(sessionStorage.getItem("dpstore_user"));
 if(!account || !["admin","creator","employee"].includes(account.role)){
-    alert("Accès refusé !");
+    alert("⚠ Accès refusé !");
     location.href="profil.html";
 }
+// Affichage solde
+document.getElementById("userBalance").textContent = account.balance || 0;
 
 let tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
 let currentTicketIndex = null;
 
-// Afficher la liste des tickets avec DP
+// Initialiser unread si inexistant
+tickets.forEach(t=>{
+    if(t.unread===undefined) t.unread=false;
+});
+
+// Liste des tickets
 function loadTicketList(){
     const container = document.getElementById("ticketItems");
     container.innerHTML="";
@@ -195,7 +229,9 @@ function loadTicketList(){
 
         div.innerHTML = `
             <div class="ticket-info">
-                <span>${ticket.username} | DP: ${ticket.dp || "—"}</span>
+                <span>${ticket.username} | DP: ${ticket.dp || "—"}
+                    ${ticket.unread ? '<span class="new-msg">NEW</span>' : ''}
+                </span>
                 <span>${ticket.userEmail}</span>
             </div>
             <span class="ticket-status ${ticket.status==='open'?'status-open':'status-closed'}">
@@ -207,7 +243,7 @@ function loadTicketList(){
     });
 }
 
-// Ouvrir un ticket
+// Ouvrir ticket
 function openTicket(index){
     currentTicketIndex = index;
     const ticket = tickets[index];
@@ -216,6 +252,10 @@ function openTicket(index){
     document.getElementById("chatDP").textContent = "DP: " + (ticket.dp || "—");
     document.getElementById("chatEmail").textContent = ticket.userEmail;
 
+    // Marquer messages comme lus
+    ticket.unread = false;
+    localStorage.setItem("dpstore_tickets", JSON.stringify(tickets));
+
     document.getElementById("messageInput").disabled = ticket.status==="closed";
     document.getElementById("sendBtn").disabled = ticket.status==="closed";
     document.getElementById("toggleTicketBtn").textContent = ticket.status==="open" ? "Close" : "Open";
@@ -223,7 +263,7 @@ function openTicket(index){
     loadMessages();
 }
 
-// Charger les messages
+// Charger messages
 function loadMessages(){
     if(currentTicketIndex===null) return;
     const ticket = tickets[currentTicketIndex];
@@ -250,7 +290,7 @@ document.getElementById("sendBtn").onclick = ()=>{
     loadMessages();
 }
 
-// Fermer ou ré-ouvrir le ticket
+// Close / Open ticket
 document.getElementById("toggleTicketBtn").onclick = ()=>{
     if(currentTicketIndex===null) return;
     tickets[currentTicketIndex].status = tickets[currentTicketIndex].status==='open' ? 'closed' : 'open';
@@ -258,7 +298,7 @@ document.getElementById("toggleTicketBtn").onclick = ()=>{
     openTicket(currentTicketIndex);
 }
 
-// Rafraîchissement automatique
+// Auto refresh tickets
 setInterval(()=>{
     tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
     loadTicketList();
