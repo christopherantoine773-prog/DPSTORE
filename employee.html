@@ -1,339 +1,238 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Espace Employé — DPSTORE</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Creator Space — DPSTORE</title>
+
 <style>
-    body {
-        background: #050505;
-        color: white;
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        text-align: center;
-    }
-    h1 {
-        text-align: center;
-        color: #00eaff;
-        margin-bottom: 20px;
-    }
-    .box {
-        background: #111;
-        padding: 20px;
-        border-radius: 15px;
-        margin-bottom: 25px;
-        border: 1px solid #00eaff55;
-        width: 90%;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    input, select {
-        width: 90%;
-        padding: 12px;
-        border-radius: 10px;
-        border: none;
-        background: #1c1c1c;
-        color: white;
-        margin-top: 10px;
-    }
-    button {
-        width: 90%;
-        padding: 14px;
-        border: none;
-        border-radius: 12px;
-        font-size: 18px;
-        font-weight: bold;
-        cursor: pointer;
-        margin-top: 12px;
-    }
-    .apply-btn { background:#00eaff; color:black; }
-    .archive-btn { background:#ffb300; color:black; box-shadow:0 0 15px #ffb300; }
-    .back-btn { background:#ff3b3b; color:white; }
-    .request-item {
-        background: #1a1a1a;
-        border: 1px solid #00eaff33;
-        padding: 15px;
-        border-radius: 10px;
-        margin-top: 12px;
-        text-align:left;
-    }
-    .btn-small {
-        width:45%;
-        padding:10px;
-        border-radius:8px;
-        font-weight:bold;
-        cursor:pointer;
-        margin-top:10px;
-    }
-    .approve { background:#00ff88; color:black; }
-    .refuse { background:#ff3b3b; color:white; }
-    .copy-btn {
-        background:#0084ff;
-        color:white;
-        margin-top:10px;
-        padding:10px;
-        border-radius:10px;
-    }
+body{
+    background:black;
+    color:white;
+    font-family:Arial;
+    padding:20px;
+    display:block;
+    text-align:center;
+}
+
+/* ====== BOX ====== */
+.box{
+    background:#111;
+    padding:20px;
+    border-radius:15px;
+    width:95%;
+    margin:auto;
+    margin-bottom:20px;
+    box-shadow:0 0 20px #00eaff;
+}
+
+/* ====== INPUTS / BUTTONS ====== */
+input, button, select{
+    width:95%;
+    margin-top:10px;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    font-size:16px;
+    background:#1c1c1c;
+    color:white;
+}
+button{
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* ===== BUTTON STYLES ===== */
+.btnBlue{ background:#00eaff; color:black; }
+.btnOrange{ background:#ffaa00; color:black; }
+.btnRed{ background:#ff3b3b; color:white; }
+.btnGreen{ background:#00ff88; color:black; }
+.btnYellow{ background:#ffb300; color:black; }
+
+/* ===== TITRES ====== */
+h2, h3{
+    color:#00eaff;
+    text-align:center;
+}
+
+/* ====== REQUEST (recharges) ====== */
+.request{
+    background:#1a1a1a;
+    padding:15px;
+    border-radius:10px;
+    margin-top:12px;
+    text-align:left;
+    border:1px solid #00eaff33;
+}
+.btnRow{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+.status{
+    font-weight:bold;
+    padding:3px 8px;
+    border-radius:5px;
+}
+.status.pending{background:#555;}
+.status.validated{background:#00ff88;color:black;}
+.status.refused{background:#ff4444;}
+
+/* ===== MENU STYLE ===== */
+.selectorBox{
+    width:95%;
+    background:#007bff;
+    padding:15px;
+    border-radius:14px;
+    margin:auto;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:18px;
+    cursor:pointer;
+    margin-bottom:10px;
+    box-shadow:0 0 12px #007bff;
+}
+.selectorBox img{ width:30px; margin-right:10px; }
+.optionList{
+    width:95%;
+    background:#004ea3;
+    border-radius:12px;
+    margin:auto;
+    margin-bottom:15px;
+    display:none;
+    overflow:hidden;
+    box-shadow:0 0 12px #004ea3;
+}
+.optionItem{
+    padding:12px 15px;
+    border-bottom:1px solid rgba(255,255,255,0.15);
+    cursor:pointer;
+}
+.optionItem:hover{ background:#0060cc; }
+.infoNote{
+    background:#0b2b2b;
+    padding:10px;
+    border-radius:8px;
+    margin-top:8px;
+    color:#9fe7ff;
+}
 </style>
 </head>
 <body>
 
-<h1>👨‍💼 Espace Employé</h1>
+<h2>🚀 MODE CREATOR / ADMIN</h2>
+<p class="infoNote" id="infoNote">ℹ️ Données en cours de chargement...</p>
 
-<!-- 🔵 Ajouter / Retirer des fonds -->
+<!-- AJOUTER / RETIRER FONDS -->
 <div class="box">
-    <h3 style="color:#00eaff;">Ajouter / Retirer des fonds</h3>
-
-    <label>DP-ID utilisateur :</label>
-    <input id="dpInput" placeholder="ex: DP-5521">
-
-    <label>Montant :</label>
-    <input id="amountInput" placeholder="ex: 600">
-
-    <label>Action :</label>
+    <h3 id="fundTitle">💰 Ajouter des fonds</h3>
+    <input id="dpInput" placeholder="DP ID (ex : DP-123456)">
+    <input id="amountInput" type="number" placeholder="Montant">
     <select id="actionType">
-        <option value="add">Ajouter des crédits</option>
-        <option value="remove">Retirer des crédits</option>
+        <option value="add">Ajouter</option>
+        <option value="remove">Retirer</option>
     </select>
-
-    <button class="apply-btn" onclick="applyFunds()">✔️ Appliquer</button>
+    <button id="fundBtn" class="btnBlue" onclick="processFunds()">✔️ Appliquer</button>
 </div>
 
-<!-- 🔵 Vérifier le solde -->
+<!-- VERIFIER SOLDE -->
 <div class="box">
-    <h3 style="color:#00eaff;">🔍 Vérifier le solde d’un utilisateur</h3>
-
-    <label>Rechercher par Email, DP-ID ou Nom :</label>
-    <input id="searchUser" placeholder="ex: mike@gmail.com / DP-5521 / Mike">
-
-    <button class="apply-btn" onclick="checkBalance()">🔎 Vérifier le solde</button>
-
-    <p id="balanceResult" style="margin-top:15px; font-size:16px; color:#ffaa00;"></p>
-
-    <button id="copyBtn" class="copy-btn" style="display:none;" onclick="copyInfo()">
-        📋 Copier les infos utilisateur
-    </button>
+    <h3>🔍 Vérifier le solde</h3>
+    <input id="dpCheck" placeholder="DP ID, Email ou Nom">
+    <button class="btnBlue" onclick="checkBalance()">🔎 Vérifier</button>
+    <p id="checkResult" style="margin-top:10px; font-size:18px;"></p>
 </div>
 
-<!-- 🔵 Demandes de recharges -->
+<!-- DEMANDES DE RECHARGE -->
 <div class="box">
-    <h3 style="color:#00eaff;">📩 Demandes de recharges</h3>
-    <div id="requests"></div>
+    <h3>📨 Demandes de recharge</h3>
+    <div id="rechargeList"></div>
 </div>
 
-<!-- Boutons -->
-<button class="archive-btn" onclick="location.href='Archi.html'">📁 Voir les archives</button>
+<!-- BOUTONS NAVIGATION -->
+<button class="btnOrange" onclick="location.href='dp.html'">DP</button>
+<button class="btnRed" onclick="location.href='profil.html'">⬅️ Retour au profil</button>
+<button class="btnBlue" onclick="location.href='Archi.html'">📁 Archives</button>
+<button class="btnGreen" onclick="location.href='tmm.html'">📦 TMM</button>
 
-<!-- ⭐️ BOUTON DP -->
-<button class="archive-btn" onclick="location.href='dp.html'">🔗 Aller vers DP</button>
+<button class="btnYellow" onclick="location.href='admin.html'">⚡ Panneau Admin</button>
 
-<!-- ⭐️ NOUVEAU BOUTON TMM (AJOUTÉ) -->
-<button class="archive-btn" onclick="location.href='tmm.html'">📦 Aller vers TMM</button>
+<!-- AUDIO -->
+<audio id="soundValidate" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7b8ad29dbb.mp3?filename=correct-2-46134.mp3"></audio>
+<audio id="soundRefuse" src="https://cdn.pixabay.com/download/audio/2021/09/09/audio_9d6f5bf86d.mp3?filename=error-126627.mp3"></audio>
 
-<button class="back-btn" onclick="location.href='profil.html'">⬅️ Retour</button>
+<script type="module">
 
-
-<script>
-/* ============================================
-   Chargement des comptes
-============================================ */
-let accounts = JSON.parse(localStorage.getItem("dpstore_accounts")) || [];
-
-/* ============================================
-   Récupérer toutes les demandes dp_recharges_XXXX
-============================================ */
-function getAllRechargeRequests() {
-    let allKeys = Object.keys(localStorage);
-    let rechargeKeys = allKeys.filter(k => k.startsWith("dp_recharges_"));
-
-    let all = [];
-
-    rechargeKeys.forEach(key => {
-        let items = JSON.parse(localStorage.getItem(key) || "[]");
-        items.forEach(i => all.push(i));
-    });
-
-    return all;
+/* ======= PROTECTION SESSION ======= */
+const account = JSON.parse(sessionStorage.getItem("dpstore_user"));
+if(!account || !["employee","creator"].includes(account.role)){
+    alert("⚠ Accès refusé ! Seuls les employés et créateurs peuvent accéder à cet espace.");
+    location.href="profil.html";
 }
 
-let requests = getAllRechargeRequests();
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
-/* ============================================
-   🔥 Appliquer crédits
-============================================ */
-function applyFunds() {
-    let dp = document.getElementById("dpInput").value.trim();
-    let amount = parseInt(document.getElementById("amountInput").value);
-    let type = document.getElementById("actionType").value;
+const firebaseConfig = {
+  apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
+  authDomain: "dpstore-officie.firebaseapp.com",
+  projectId: "dpstore-officie",
+  storageBucket: "dpstore-officie.appspot.com",
+  messagingSenderId: "903943973062",
+  appId: "1:903943973062:web:6501a2ec167adb31258fc7"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    if(!dp || isNaN(amount)) {
-        alert("Remplis correctement les champs.");
-        return;
-    }
+let allUsers = [];
+let allRecharges = [];
+let currentAction="add";
 
-    let user = accounts.find(u => (u.dp || "").toLowerCase() === dp.toLowerCase());
-    if(!user){
-        alert("Utilisateur introuvable !");
-        return;
-    }
+async function loadUsersFromFirestore(){
+    const snapshot = await getDocs(collection(db, "users"));
+    allUsers = snapshot.docs.map(d=>({id:d.id, data:d.data()}));
+    showInfoNote(`✔ ${allUsers.length} utilisateurs chargés depuis Firestore`);
+}
+function findUserByDP(dpID){ return allUsers.find(u => (u.data.dp||"").toLowerCase()===dpID.toLowerCase() || (u.data.email||"").toLowerCase()===dpID.toLowerCase() )||null; }
 
-    if(type === "add") user.balance = (user.balance || 0) + amount;
-    else user.balance = Math.max(0, (user.balance || 0) - amount);
-
-    localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
-    alert("✔ Opération réussie !");
+async function processFunds(){
+    const dp = document.getElementById("dpInput").value.trim();
+    const amount = parseFloat(document.getElementById("amountInput").value);
+    if(!dp || isNaN(amount) || amount<=0){ alert("DP ou montant invalide"); return; }
+    const user = findUserByDP(dp);
+    if(!user){ alert("DP introuvable"); return; }
+    const newBalance = currentAction==="add" ? (parseFloat(user.data.balance)||0)+amount : Math.max(0,(parseFloat(user.data.balance)||0)-amount);
+    await updateDoc(doc(db,"users",user.id), { balance:newBalance });
+    alert(`✅ Solde mis à jour : ${newBalance}`);
+    loadUsersFromFirestore();
+    document.getElementById("checkResult").innerText = `Solde actuel : ${newBalance}`;
+    playValidateSound();
+}
+async function checkBalance(){
+    const dp = document.getElementById("dpCheck").value.trim();
+    const user = findUserByDP(dp);
+    if(!user){ document.getElementById("checkResult").innerText="❌ DP introuvable"; playRefuseSound(); return; }
+    document.getElementById("checkResult").innerText = `💰 Solde : ${user.data.balance ?? 0}`;
+    playValidateSound();
 }
 
-/* ============================================
-   🔍 Vérifier le solde
-============================================ */
-let lastFoundUser = null;
+function toggleMenu(){ document.getElementById("actionMenu").style.display = document.getElementById("actionMenu").style.display==="block"?"none":"block"; }
+function selectAction(type){ currentAction=type; document.getElementById("fundTitle").innerText=type==="add"?"💰 Ajouter des fonds":"💸 Retirer des fonds"; document.getElementById("fundBtn").innerText=type==="add"?"Ajouter":"Retirer"; }
 
-function checkBalance() {
-    let q = document.getElementById("searchUser").value.trim().toLowerCase();
-    let result = document.getElementById("balanceResult");
-    let copyBtn = document.getElementById("copyBtn");
+function showInfoNote(txt,error=false){ const n=document.getElementById("infoNote"); n.innerText=txt; n.style.background=error?"#3a0b0b":"#0b2b2b"; }
+function playValidateSound(){ try{document.getElementById("soundValidate").play()}catch(e){} }
+function playRefuseSound(){ try{document.getElementById("soundRefuse").play()}catch(e){} }
 
-    if(!q){
-        result.textContent = "❌ Entre un email, un DP-ID ou un nom.";
-        copyBtn.style.display = "none";
-        return;
-    }
+await loadUsersFromFirestore();
 
-    let user = accounts.find(u =>
-        (u.email && u.email.toLowerCase() === q) ||
-        (u.dp && u.dp.toLowerCase() === q) ||
-        (u.username && u.username.toLowerCase() === q)
-    );
+// rendre fonctions globales pour boutons inline
+window.processFunds=processFunds;
+window.checkBalance=checkBalance;
+window.toggleMenu=toggleMenu;
+window.selectAction=selectAction;
 
-    if(!user){
-        result.textContent = "❌ Aucun utilisateur trouvé.";
-        copyBtn.style.display = "none";
-        return;
-    }
-
-    lastFoundUser = user;
-
-    result.innerHTML = `
-        👤 <b>${user.username}</b><br>
-        📧 ${user.email}<br>
-        🆔 ${user.dp}<br><br>
-        💰 Solde : <span style="color:yellow;font-size:20px;">${user.balance || 0} crédits</span>
-    `;
-
-    copyBtn.style.display = "block";
-}
-
-/* ============================================
-   📋 Copier les infos
-============================================ */
-function copyInfo(){
-    if(!lastFoundUser) return;
-
-    let text =
-`👤 Nom : ${lastFoundUser.username}
-📧 Email : ${lastFoundUser.email}
-🆔 DP-ID : ${lastFoundUser.dp}
-💰 Solde : ${lastFoundUser.balance || 0} crédits`;
-
-    navigator.clipboard.writeText(text);
-    alert("✔ Infos copiées !");
-}
-
-/* ============================================
-   📩 Afficher toutes les demandes
-============================================ */
-function loadRequests(){
-    const container = document.getElementById("requests");
-    container.innerHTML = "";
-
-    if(requests.length === 0){
-        container.innerHTML = "<p style='color:#777;'>Aucune demande</p>";
-        return;
-    }
-
-    requests.forEach((r,i)=>{
-        let html = "<div class='request-item'>";
-
-        for (let key in r) {
-            if (key === "receipt" && r[key]) {
-                html += `<p><b>${key}</b> :</p><img src="${r[key]}" width="180"><br>`;
-            } else {
-                html += `<p><b>${key}</b> : ${r[key]}</p>`;
-            }
-        }
-
-        html += `
-            <button class="btn-small approve" onclick="approve(${i})">Valider</button>
-            <button class="btn-small refuse" onclick="refuse(${i})">Refuser</button>
-        </div>`;
-
-        container.innerHTML += html;
-    });
-}
-loadRequests();
-
-/* ============================================
-   ✔ Validation / refus
-============================================ */
-function approve(i){
-    let r = requests[i];
-
-    let user = accounts.find(u => u.dp === r.dpID);
-    if(user){
-        user.balance = (user.balance || 0) + parseInt(r.amount);
-    }
-
-    addArchive(r, "approved");
-
-    localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
-
-    removeRechargeRequest(r);
-
-    alert("✔ Demande confirmée !");
-}
-
-function refuse(i){
-    let r = requests[i];
-
-    addArchive(r, "refused");
-
-    removeRechargeRequest(r);
-
-    alert("❌ Demande refusée");
-}
-
-/* ============================================
-   🔥 Supprimer la demande dans dp_recharges_DP-ID
-============================================ */
-function removeRechargeRequest(item){
-    let key = "dp_recharges_" + item.dpID;
-    let list = JSON.parse(localStorage.getItem(key) || "[]");
-
-    list = list.filter(x => x.created !== item.created);
-
-    localStorage.setItem(key, JSON.stringify(list));
-
-    requests = getAllRechargeRequests();
-    loadRequests();
-}
-
-/* ============================================
-   🗂 Envoi vers archive
-============================================ */
-function addArchive(req, status){
-    let arch = JSON.parse(localStorage.getItem("dp_archives") || "[]");
-
-    arch.push({
-        ...req,
-        status,
-        archiveDate: new Date().toISOString()
-    });
-
-    localStorage.setItem("dp_archives", JSON.stringify(arch));
-}
 </script>
-
 </body>
 </html>
