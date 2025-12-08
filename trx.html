@@ -124,21 +124,25 @@ body{
   const listEl = document.getElementById('list');
   const empty = document.getElementById('empty');
 
-  const account = JSON.parse(localStorage.getItem("dpstore_user"));
-  if(!account){
+  const user = JSON.parse(sessionStorage.getItem("dpstore_user") || "null");
+  if(!user) {
     alert("Aucun compte détecté !");
     location.href = "index.html";
   }
 
-  const USER_DP = account.dp || "—";
-  const USER_SOLDE = account.balance || 0;
-
+  const USER_DP = user.dp || "—";
+  const USER_SOLDE = user.balance || 0;
   document.getElementById("userBalance").textContent = `Solde : ${USER_SOLDE} crédits`;
 
-  function render() {
+  const storageKey = "dp_recharges_" + user.email.toLowerCase().replace(/[^a-z0-9@.-]/g,"_").replace(/@/g,"_at_");
 
-    const arr = JSON.parse(localStorage.getItem("dp_recharges_" + USER_DP) || "[]");
+  function escapeHtml(str){
+    if(!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
 
+  function render(){
+    const arr = JSON.parse(localStorage.getItem(storageKey) || "[]");
     listEl.innerHTML = '';
 
     if (!arr.length) { 
@@ -148,38 +152,29 @@ body{
 
     empty.style.display = 'none';
 
-    arr.forEach((r) => {
-
+    arr.forEach(r=>{
       let statusClass = "status-attente";
       let statusText = "⏳ EN ATTENTE";
 
       if(r.status === "validé" || r.status === "valide"){
         statusClass = "status-valide";
         statusText = "✔ VALIDÉ";
-      }
-      else if(r.status === "refusé"){
+      } else if(r.status === "refusé"){
         statusClass = "status-refuse";
         statusText = "❌ REFUSÉ";
       }
 
       const div = document.createElement('div');
       div.className = 'item';
-
       div.innerHTML = `
         <div class="meta">
-
-          <h4>${escapeHtml(r.name)} — 
-          <span class="small">${r.created}</span></h4>
-
+          <h4>${escapeHtml(r.name)} — <span class="small">${r.created}</span></h4>
           <p><b>DP-ID :</b> ${escapeHtml(r.dpID || USER_DP)}</p>
-
           <p><b>Solde actuel :</b> ${USER_SOLDE} crédits</p>
-
           <p><b>Montant :</b> ${r.amount} G</p>
           <p><b>Transcode :</b> ${escapeHtml(r.transcode)}</p>
           <p><b>Email :</b> ${escapeHtml(r.email)}</p>
           ${r.phone ? `<p><b>WhatsApp :</b> ${escapeHtml(r.phone)}</p>` : ''}
-
           <p><b>Statut :</b> 
             <span class="status-badge ${statusClass}">
               ${statusText}
@@ -187,19 +182,20 @@ body{
           </p>
         </div>
       `;
-
       listEl.appendChild(div);
     });
   }
 
-  function escapeHtml(str){
-    if(!str) return '';
-    return String(str).replace(/[&<>"']/g, m => (
-      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
-    ));
-  }
-
+  // 🔥 Initial render
   render();
+
+  // 🔥 Mise à jour automatique si storage change
+  window.addEventListener('storage', e=>{
+    if(e.key === storageKey){
+      render();
+    }
+  });
+
 })();
 </script>
 
