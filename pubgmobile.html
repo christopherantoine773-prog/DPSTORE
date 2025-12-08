@@ -53,14 +53,6 @@
     gap: 14px;
   }
 
-  .balance {
-    padding: 6px 12px;
-    background: rgba(0,255,179,0.1);
-    border: 1px solid #00ffb3;
-    border-radius: 10px;
-    font-weight: bold;
-  }
-
   .cart-btn {
     cursor: pointer;
     font-size: 1.4rem;
@@ -184,6 +176,16 @@
     font-weight: bold;
     cursor: pointer;
   }
+
+  .balance-bubble {
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: rgba(0,255,179,0.08);
+    color: #00ffb3;
+    font-weight: 700;
+    border: 1px solid rgba(0,255,179,0.15);
+  }
+
 </style>
 </head>
 
@@ -195,7 +197,7 @@
   <div class="logo">DP-PUBG</div>
 
   <div class="right-box">
-    <div class="balance" id="balanceBox">0 G</div>
+    <div class="balance-bubble" id="balanceBox">0 G</div>
     <div class="cart-btn" onclick="gotoCart()">🛒(<span id="cartCount">0</span>)</div>
   </div>
 </header>
@@ -219,40 +221,50 @@
 
 <script>
 /* ===================================================
-   🔥 USER CONNECTÉ + PANIER PAR EMAIL
+   🔐 SÉCURITÉ + PROFIL CONNECTÉ (sessionStorage)
+   - utilise sessionStorage.dpstore_user (comme ton profil.html)
+   - redirige vers index.html si non connecté
+   - affiche le solde depuis sessionStorage (mis à jour par profil.html)
 =================================================== */
-let user = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
-
-if(!user.email){
-  alert("Aucun compte détecté !");
-  window.location.href = "index.html";
+function safeParse(str){
+  try{ return JSON.parse(str); }catch(e){ return null; }
 }
 
-if(user.balance === undefined) user.balance = 0;
+let user = safeParse(sessionStorage.getItem("dpstore_user") || "null");
 
+if(!user || !user.email || !user.dp || !user.username){
+    alert("⚠ Accès refusé : vous devez être connecté.");
+    window.location.href = "index.html";
+}
+
+/* PANIER LIÉ AU PROFIL (localStorage) */
 function normalizeId(str){
-  return (str||"guest").toLowerCase().replace(/[^a-z0-9@.-]/g,"_").replace(/@/g,"_at_");
+  return String(str || "guest").toLowerCase()
+    .replace(/[^a-z0-9@.-]/g,"_")
+    .replace(/@/g,"_at_");
 }
-
 function getCartKey(){ return "cart_" + normalizeId(user.email); }
-
 function loadCart(){ return JSON.parse(localStorage.getItem(getCartKey())||"[]"); }
-
 function saveCart(cart){ localStorage.setItem(getCartKey(), JSON.stringify(cart)); }
 
-function updateBalanceUI(){
-  document.getElementById("balanceBox").textContent = user.balance + " G";
-  updateCartCount();
-}
-
+/* UTIL */
 function updateCartCount(){
   document.getElementById("cartCount").textContent = loadCart().length;
 }
+function updateBalanceUI(){
+  // solde = priorité sessionStorage (profil.html met à jour sessionStorage)
+  user = safeParse(sessionStorage.getItem("dpstore_user") || "null") || user;
+  const bal = (user && (user.balance ?? user.credits ?? user.balance === 0 ? (user.balance ?? user.credits) : null));
+  document.getElementById("balanceBox").textContent = (bal !== null && bal !== undefined) ? (bal + " G") : "0 G";
+}
 
+/* NAV */
 function gotoCart(){ window.location.href = "cart.html"; }
 
 /* ===================================================
-   🔥 PRODUITS (+20%)
+   🔥 PRODUITS (PRIX +20%)
+   - Ajout au panier : NE retire PAS le solde (Option B)
+   - L'objet ajouté contient : name, price, buyer, date, status, meta (uid/accountName)
 =================================================== */
 const products = [
   { uc: "60 UC",  price: 180, img: "https://i.imgur.com/jeQF1aN.jpeg" },
@@ -263,70 +275,88 @@ const products = [
 ];
 products.forEach(p => p.price = Math.round(p.price * 1.20));
 
-/* ===================================================
-   🔥 POPUP FORMULAIRE
-=================================================== */
+/* POPUP / FORM */
 let selectedProduct = null;
 
-function openForm(product) {
+function openForm(product){
   selectedProduct = product;
   document.getElementById("popupTitle").textContent = `${product.uc} - ${product.price} HTG`;
+  // pré-remplir le nom du compte depuis le profil si disponible
+  const nameField = document.getElementById("popupName");
+  nameField.value = (user && user.username) ? user.username : "";
+  document.getElementById("popupUID").value = "";
   document.getElementById("popup").style.display = "flex";
 }
-
-function closePopup() {
+function closePopup(){
   document.getElementById("popup").style.display = "none";
 }
 
-function validateForm() {
-  let name = document.getElementById("popupName").value.trim();
-  let uid  = document.getElementById("popupUID").value.trim();
+/* AJOUT AU PANIER (Option B : débit au paiement dans cart.html) */
+function validateForm(){
+  const name = document.getElementById("popupName").value.trim();
+  const uid  = document.getElementById("popupUID").value.trim();
 
-  if (!name || !uid) {
+  if(!name || !uid){
     alert("⚠ Merci de remplir le nom du compte et UID.");
     return;
   }
 
-  let cart = loadCart();
-  cart.push({
-    uc: selectedProduct.uc,
+  // construire l'objet de panier compatible avec cart.html et reçus.html
+  const item = {
+    name: selectedProduct.uc,
     price: selectedProduct.price,
-    name,
-    uid
-  });
+    buyer: user.email,
+    date: new Date().toLocaleString(),
+    status: "En attente",
+    meta: {
+      uid: uid,
+      accountName: name
+    }
+  };
 
+  const cart = loadCart();
+  cart.push(item);
   saveCart(cart);
+
   updateCartCount();
   closePopup();
-  alert("✔ Produit ajouté au panier !");
+  alert("✔ Produit ajouté au panier ! (le solde sera débité lors du paiement)");
 }
 
-/* ===================================================
-   🔥 AFFICHAGE PRODUITS
-=================================================== */
+/* AFFICHAGE PRODUITS */
 const list = document.getElementById("product-list");
-
-products.forEach((p) => {
-  list.innerHTML += `
-    <div class="product-box">
-      <div class="product-header">
-        <img src="${p.img}" class="product-img">
-        <div class="product-info">
-          <div class="product-name">${p.uc}</div>
-          <span class="status-tag">Disponible</span>
-          <span class="category-tag">PUBG MOBILE</span>
-          <div class="price">${p.price} HTG</div>
-        </div>
+products.forEach(p => {
+  const div = document.createElement("div");
+  div.className = "product-box";
+  div.innerHTML = `
+    <div class="product-header">
+      <img src="${p.img}" class="product-img">
+      <div class="product-info">
+        <div class="product-name">${p.uc}</div>
+        <span class="status-tag">Disponible</span>
+        <span class="category-tag">PUBG MOBILE</span>
+        <div class="price">${p.price} HTG</div>
       </div>
-
-      <button class="add-btn" onclick='openForm(${JSON.stringify(p)})'>
-        AJOUTER AU PANIER
-      </button>
     </div>
+    <button class="add-btn">AJOUTER AU PANIER</button>
   `;
+  div.querySelector("button").addEventListener("click", ()=> openForm(p));
+  list.appendChild(div);
 });
 
+/* INITIAL UI SYNC */
 updateBalanceUI();
+updateCartCount();
+
+/* Rafraîchir la balance si profil change (profil.html met à jour sessionStorage) */
+window.addEventListener("storage", (ev) => {
+  if(ev.key === "dpstore_user"){
+    updateBalanceUI();
+    updateCartCount();
+  }
+});
+// aussi vérifier périodiquement (utile si profil.html met sessionStorage sans firing storage)
+setInterval(updateBalanceUI, 1500);
 </script>
 
 </body>
