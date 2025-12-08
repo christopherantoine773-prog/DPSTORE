@@ -133,35 +133,11 @@
 
 <h2 class="title">PRIMEVIDEO</h2>
 
-<section class="products">
-
-  <div class="card">
-    <h3>PRIMEVIDEO 1 MOIS</h3>
-    <span class="status">Disponible</span>
-    <p class="price">600 G</p>
-    <button class="btn-commander" onclick="addToCart('Prime Video 1 Mois', 600)">Commander</button>
-  </div>
-
-  <div class="card">
-    <h3>PRIMEVIDEO 3 MOIS</h3>
-    <span class="status">Disponible</span>
-    <p class="price">1620 G</p>
-    <button class="btn-commander" onclick="addToCart('Prime Video 3 Mois', 1620)">Commander</button>
-  </div>
-
-  <div class="card">
-    <h3>PRIMEVIDEO 6 MOIS</h3>
-    <span class="status">Disponible</span>
-    <p class="price">3240 G</p>
-    <button class="btn-commander" onclick="addToCart('Prime Video 6 Mois', 3240)">Commander</button>
-  </div>
-
-</section>
+<section class="products" id="productGrid"></section>
 
 <script>
-/* 🔥 USER CONNECTÉ + PANIER PAR EMAIL 🔥 */
-let user = JSON.parse(localStorage.getItem("dpstore_user") || "{}");
-
+/* 🔹 Vérification utilisateur */
+let user = JSON.parse(sessionStorage.getItem("dpstore_user") || "{}");
 if(!user.email){
   alert("Aucun compte connecté !");
   window.location.href = "index.html";
@@ -169,33 +145,74 @@ if(!user.email){
 
 if(user.balance === undefined) user.balance = 0;
 
-function normalizeId(str){
-  return (str||"guest").toLowerCase().replace(/[^a-z0-9@.-]/g,"_").replace(/@/g,"_at_");
+/* 🔹 Produits Prime Video dynamiques */
+const PRODUCTS = [
+  {name:"Prime Video 1 Mois", price:600},
+  {name:"Prime Video 3 Mois", price:1620},
+  {name:"Prime Video 6 Mois", price:3240}
+];
+
+/* 🔹 Générer les cartes produits */
+const grid = document.getElementById("productGrid");
+function renderProducts(){
+  grid.innerHTML = "";
+  PRODUCTS.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <h3>${p.name}</h3>
+      <span class="status">Disponible</span>
+      <p class="price">${p.price} G</p>
+      <button class="btn-commander" onclick="addToCart('${p.name}', ${p.price})">Commander</button>
+    `;
+    grid.appendChild(card);
+  });
 }
+renderProducts();
 
+/* 🔹 Fonctions panier & solde */
+function normalizeId(str){ return (str||"guest").toLowerCase().replace(/[^a-z0-9@.-]/g,"_").replace(/@/g,"_at_"); }
 function getCartKey(){ return "cart_" + normalizeId(user.email); }
-
 function loadCart(){ return JSON.parse(localStorage.getItem(getCartKey())||"[]"); }
-
 function saveCart(cart){ localStorage.setItem(getCartKey(), JSON.stringify(cart)); }
 
-function updateBalanceUI(){
+function updateBalanceUI(){ 
   document.getElementById("balanceBox").textContent = user.balance + " G";
-  updateCartCount();
 }
 
-function updateCartCount(){
-  document.getElementById("cartCount")?.textContent = loadCart().length;
-}
-
+/* 🔹 Aller au panier */
 function gotoCart(){ window.location.href = "cart.html"; }
 
+/* 🔹 Ajouter au panier & créer reçu */
 function addToCart(name, price){
+  if(user.balance < price){
+    alert("⚠ Solde insuffisant !");
+    return;
+  }
+
   let cart = loadCart();
   cart.push({name, price});
   saveCart(cart);
-  alert("✅ " + name + " ajouté au panier !");
-  updateCartCount();
+
+  // Déduire du solde
+  user.balance -= price;
+  if(user.balance < 0) user.balance = 0;
+  sessionStorage.setItem("dpstore_user", JSON.stringify(user));
+  updateBalanceUI();
+
+  // Créer reçu pour receipts.html
+  const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+  orders.push({
+    id: "order_" + Date.now(),
+    buyer: user.email || "guest",
+    name,
+    price,
+    date: new Date().toLocaleString(),
+    status: "Validé"
+  });
+  localStorage.setItem("orders", JSON.stringify(orders));
+
+  alert("✅ " + name + " ajouté au panier et reçu créé !");
 }
 
 updateBalanceUI();
