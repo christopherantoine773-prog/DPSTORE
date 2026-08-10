@@ -4,24 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DPSTORE | Produits</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
+  /* --- BASE --- */
   body {
     margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #000428, #004e92);
-    color: #fff;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); 
+    color: #f8fafc;
+    min-height: 100vh;
   }
 
+  /* --- HEADER (Desktop) --- */
   header {
     backdrop-filter: blur(10px);
-    background: rgba(0, 0, 0, 0.45);
-    padding: 14px 22px;
+    background: rgba(30, 41, 59, 0.8);
+    padding: 15px 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid rgba(0, 174, 239, 0.4);
-    box-shadow: 0 0 12px rgba(0, 174, 239, 0.35);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -29,141 +33,184 @@
 
   header h1 {
     font-size: 1.4rem;
-    background: linear-gradient(90deg, #FFD700, #00ADEF);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #38bdf8;
     margin: 0;
     font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  /* --- CONTENEUR SOLDE & BOUTONS --- */
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
   .balance-container {
     display: flex;
     align-items: center;
-    gap: 12px;
-    background: rgba(255,255,255,0.07);
-    padding: 8px 14px;
-    border-radius: 14px;
-    border: 1px solid rgba(0,174,239,0.35);
-    box-shadow: 0 0 10px rgba(0,174,239,0.25);
+    gap: 10px;
+    background: rgba(15, 23, 42, 0.6);
+    padding: 8px 15px;
+    border-radius: 12px;
+    border: 1px solid #334155;
   }
 
   #user-name {
     font-weight: 600;
-    font-size: 0.9rem;
-    color: #FFD700;
+    font-size: 0.95rem;
+    color: #f8fafc;
   }
 
   #user-balance {
     font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 10px;
-    background: rgba(0,0,0,0.35);
-    border: 1px solid rgba(0,174,239,0.4);
-    box-shadow: 0 0 10px rgba(0,174,239,0.35);
+    color: #fcd34d; /* Jaune or */
   }
 
-  select, button {
-    border: 1px solid #00aaff;
-    padding: 7px 12px;
-    border-radius: 10px;
-    background: rgba(0,0,0,0.35);
+  select {
+    border: 1px solid #334155;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: #0f172a;
     color: white;
     cursor: pointer;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  
+  select:focus {
+    border-color: #38bdf8;
+  }
+
+  /* --- BOUTONS DU MENU (Desktop) --- */
+  .nav-buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  .nav-btn {
+    border: 1px solid rgba(56, 189, 248, 0.5);
+    color: #38bdf8;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: rgba(56, 189, 248, 0.1);
     font-weight: 600;
-    transition: 0.25s;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
   }
 
-  select:hover, button:hover {
-    background: #00aaff;
-    color: #000;
-    box-shadow: 0 0 12px #00aaff;
+  .nav-btn:hover {
+    background: #38bdf8;
+    color: #0f172a;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
   }
 
-  .profile-btn {
-    border: 1px solid #FFD700;
-    color: #FFD700;
-    padding: 7px 14px;
-    border-radius: 50px;
-    background: rgba(0,0,0,0.4);
-    font-weight: 600;
-    transition: 0.25s;
+  .nav-btn.recharge {
+    background: linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%);
+    color: white;
+    border: none;
+  }
+  .nav-btn.recharge:hover {
+    background: linear-gradient(90deg, #0369a1 0%, #0284c7 100%);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
   }
 
-  .profile-btn:hover {
-    background: #FFD700;
-    color: #000;
-    box-shadow: 0 0 15px #FFD700;
+  /* --- MENU BURGER (Mobile) --- */
+  .burger-menu {
+    display: none;
+    font-size: 28px;
+    color: #38bdf8;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
   }
 
+  /* --- GRILLE PRODUITS --- */
   .container {
     padding: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
   }
 
   .section-title {
     font-size: 1.5rem;
-    margin: 20px 0 10px;
-    text-shadow: 0 0 10px #FFD700;
+    margin: 30px 0 15px;
+    color: #e2e8f0;
+    font-weight: 600;
+    border-bottom: 2px solid rgba(56, 189, 248, 0.3);
+    padding-bottom: 5px;
+    display: inline-block;
   }
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 25px;
   }
 
   .card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 15px;
-    padding: 20px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 25px 20px;
     text-align: center;
-    box-shadow: 0 0 10px #00aaff44;
-    transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    backdrop-filter: blur(5px);
   }
 
   .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 0 15px #00aaffaa;
+    box-shadow: 0 8px 25px rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.4);
   }
 
   .card h3 {
     margin-bottom: 10px;
-    color: #FFD700;
+    color: #38bdf8;
+    font-size: 1.3rem;
   }
 
   .card p {
     font-size: 0.9rem;
-    color: #ccc;
+    color: #94a3b8;
+    margin-bottom: 20px;
+    height: 40px; /* Aligne les boutons */
   }
 
   .btn-primary {
-    background: #FFD700;
-    color: #000;
+    background: linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%);
+    color: white;
     border: none;
-    padding: 8px 16px;
+    padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
-    margin-top: 10px;
-    font-weight: bold;
+    font-weight: 600;
+    width: 100%;
+    transition: all 0.2s;
   }
 
   .btn-primary:hover {
-    background: #00aaff;
-    color: #fff;
+    background: linear-gradient(90deg, #0369a1 0%, #0284c7 100%);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
   }
 
+  /* --- AUTRES --- */
   footer {
     text-align: center;
     padding: 20px;
-    background: rgba(0,0,0,0.6);
+    color: #64748b;
     font-size: 0.9rem;
+    margin-top: 40px;
   }
 
-  .hidden { display: none; }
+  .hidden { display: none !important; }
 
   .verified-badge {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     vertical-align: middle;
   }
 
@@ -175,43 +222,84 @@
     height: 60px;
     border-radius: 50%;
     border: none;
-    background: #00aaff;
+    background: linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%);
     color: white;
-    font-size: 28px;
+    font-size: 24px;
     cursor: pointer;
-    box-shadow: 0 0 15px #00aaff88;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
     transition: 0.3s;
     z-index: 100;
   }
+  
+  #chatBtn:hover { transform: scale(1.1); }
 
-  #chatBtn:hover {
-    background: #FFD700;
-    color: black;
-    box-shadow: 0 0 20px #FFD700aa;
+  /* ==========================================
+     MEDIA QUERIES (Pour les téléphones - Le Fix du Burger) 
+     ========================================== */
+  @media (max-width: 900px) {
+    header {
+      flex-wrap: wrap; /* Permet aux éléments de passer à la ligne si besoin */
+    }
+
+    .burger-menu {
+      display: block; /* Affiche les 3 barres */
+    }
+
+    /* Le conteneur des boutons passe en mode menu déroulant */
+    .nav-buttons {
+      display: none; /* Caché par défaut sur mobile */
+      width: 100%;
+      flex-direction: column;
+      margin-top: 15px;
+      gap: 8px;
+    }
+
+    /* Classe ajoutée en JS pour afficher le menu */
+    .nav-buttons.show {
+      display: flex;
+    }
+
+    .nav-btn {
+      width: 100%;
+      text-align: center;
+      padding: 12px;
+    }
+
+    /* Ajuste la taille du nom et du solde sur petit écran */
+    .balance-container {
+      font-size: 0.85rem;
+      padding: 6px 10px;
+    }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>DPSTORE — Produits</h1>
+  <h1>DPSTORE</h1>
 
-  <div class="balance-container">
-    <span id="user-name"></span>
-    <img id="badge" class="verified-badge hidden" src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg">
+  <div class="header-actions">
+    <div class="balance-container">
+      <span id="user-name"></span>
+      <img id="badge" class="verified-badge hidden" src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg">
+      <span id="user-balance">Solde : 0 G</span>
+      <select id="currency-select">
+        <option value="HTG">HTG</option>
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+      </select>
+    </div>
+    
+    <!-- Bouton Burger ☰ visible uniquement sur mobile -->
+    <button class="burger-menu" onclick="toggleMenu()">☰</button>
+  </div>
 
-    <span id="user-balance">Solde : 0 G</span>
-
-    <select id="currency-select">
-      <option value="HTG">HTG</option>
-      <option value="USD">USD</option>
-      <option value="EUR">EUR</option>
-    </select>
-
-    <button onclick="openRecharge()">💳 Recharger</button>
-    <button class="profile-btn" onclick="openProfile()">👤 Profil</button>
-    <button class="profile-btn" onclick="openCart()">🛒 Panier</button>
-    <button class="profile-btn" onclick="openContact()">📞 Contact</button>
+  <!-- Boutons qui deviennent un menu déroulant sur mobile -->
+  <div class="nav-buttons" id="mobileMenu">
+    <button class="nav-btn recharge" onclick="openRecharge()">💳 Recharger</button>
+    <button class="nav-btn" onclick="openProfile()">👤 Profil</button>
+    <button class="nav-btn" onclick="openCart()">🛒 Panier</button>
+    <button class="nav-btn" onclick="openContact()">📞 Contact</button>
   </div>
 </header>
 
@@ -220,25 +308,21 @@
   <div class="section">
     <h2 class="section-title">🎮 Jeux</h2>
     <div class="grid">
-
       <div class="card">
         <h3>Free Fire</h3>
         <p>Diamants, Pass et Offres</p>
-        <button class="btn-primary" onclick="openPage('freefire.html')">Voir plus</button>
+        <button class="btn-primary" onclick="openPage('freefire.html')">Voir les offres</button>
       </div>
-
       <div class="card">
         <h3>PUBG Mobile</h3>
         <p>UC & Offres Spéciales</p>
-        <button class="btn-primary" onclick="openPage('pubgmobile.html')">Voir plus</button>
+        <button class="btn-primary" onclick="openPage('pubgmobile.html')">Voir les offres</button>
       </div>
-
       <div class="card">
         <h3>Call of Duty Mobile</h3>
         <p>Points CP</p>
-        <button class="btn-primary" onclick="openPage('CallofDutyMobile.html')">Voir plus</button>
+        <button class="btn-primary" onclick="openPage('CallofDutyMobile.html')">Voir les offres</button>
       </div>
-
     </div>
   </div>
 
@@ -246,31 +330,26 @@
   <div class="section">
     <h2 class="section-title">📺 Abonnements</h2>
     <div class="grid">
-
       <div class="card">
         <h3>Netflix</h3>
         <p>1 à 3 mois — Premium inclus</p>
-        <button class="btn-primary" onclick="openPage('abonnement_pro.html')">Voir plus</button>
+        <button class="btn-primary" onclick="openPage('abonnement_pro.html')">S'abonner</button>
       </div>
-
       <div class="card">
-        <h3>Amazon Prime Video</h3>
+        <h3>Prime Video</h3>
         <p>Abonnement mensuel</p>
-        <button class="btn-primary" onclick="openPage('primevideo.html')">Voir plus</button>
+        <button class="btn-primary" onclick="openPage('primevideo.html')">S'abonner</button>
       </div>
-
       <div class="card">
         <h3>Crunchyroll</h3>
         <p>Abonnement Premium 1 mois</p>
-        <button class="btn-primary" onclick="openPage('crunchyroll.html')">Voir plus</button>
+        <button class="btn-primary" onclick="openPage('crunchyroll.html')">S'abonner</button>
       </div>
-
       <div class="card">
         <h3>NordVPN</h3>
-        <p>Sécurité & confidentialité — 1 à 6 mois</p>
-        <button class="btn-primary" onclick="openPage('nordvpn.html')">Voir plus</button>
+        <p>Sécurité & confidentialité</p>
+        <button class="btn-primary" onclick="openPage('nordvpn.html')">Sécuriser</button>
       </div>
-
     </div>
   </div>
 
@@ -278,45 +357,38 @@
   <div class="section">
     <h2 class="section-title">🎁 Gift Cards</h2>
     <div class="grid">
-
       <div class="card">
         <h3>Google Play</h3>
         <p>10$ — 25$ — 50$</p>
-        <button class="btn-primary" onclick="openPage('googleplay.html')">Voir plus</button>
+        <button class="btn-primary" onclick="openPage('googleplay.html')">Acheter</button>
       </div>
-
       <div class="card">
         <h3>Apple Gift Card</h3>
         <p>Recharge iTunes & App Store</p>
-        <button class="btn-primary" onclick="openPage('apple.html')">Voir plus</button>
+        <button class="btn-primary" onclick="openPage('apple.html')">Acheter</button>
       </div>
-
       <div class="card">
         <h3>PlayStation / Xbox</h3>
         <p>PSN, Xbox Codes & Recharges</p>
-        <button class="btn-primary" onclick="openPage('playstation-xbox.html')">Voir plus</button>
+        <button class="btn-primary" onclick="openPage('playstation-xbox.html')">Acheter</button>
       </div>
-
     </div>
   </div>
 
   <!-- ➕ PRODUITS + -->
   <div class="section">
-    <h2 class="section-title">➕ Produits +</h2>
+    <h2 class="section-title">➕ Options Avancées</h2>
     <div class="grid">
-
       <div class="card">
         <h3>Produits personnalisés</h3>
-        <p>Modifier, ajouter et gérer vos produits.</p>
-        <button class="btn-primary" onclick="openPage('prodp.html')">Ouvrir</button>
+        <p>Modifier et gérer vos produits.</p>
+        <button class="btn-primary" onclick="openPage('prodp.html')">Gérer</button>
       </div>
-
       <div class="card">
         <h3>New Prod +</h3>
-        <p>Créer un nouveau produit instantanément.</p>
-        <button class="btn-primary" onclick="openPage('dpr.html')">Ouvrir</button>
+        <p>Créer un produit instantanément.</p>
+        <button class="btn-primary" onclick="openPage('dpr.html')">Créer</button>
       </div>
-
     </div>
   </div>
 </div>
@@ -327,8 +399,14 @@
 
 <script>
 /* ===============================
-      🔥 SYNCHRONISATION DU SOLDE AVEC PROFIL
+      🔥 LOGIQUE JAVASCRIPT
    =============================== */
+
+// Fonction pour le Menu Burger
+function toggleMenu() {
+  const menu = document.getElementById("mobileMenu");
+  menu.classList.toggle("show");
+}
 
 let user = JSON.parse(sessionStorage.getItem("dpstore_user") || "{}");
 if(!user.email){
