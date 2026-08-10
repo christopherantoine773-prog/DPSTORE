@@ -1,362 +1,351 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DPSTORE | PUBG MOBILE</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPSTORE | PUBG Mobile UC</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: #0b0f1c;
+  * {
     margin: 0;
     padding: 0;
-    color: #fff;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
   }
 
-  /* HEADER */
+  body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #f8fafc;
+    min-height: 100vh;
+  }
+
+  /* --- HEADER --- */
   header {
+    backdrop-filter: blur(10px);
+    background: rgba(30, 41, 59, 0.8);
+    padding: 15px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
-    background: rgba(0,0,0,0.5);
-    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     position: sticky;
     top: 0;
-    z-index: 20;
-    border-bottom: 1px solid #00ffae25;
+    z-index: 50;
   }
 
-  .back-btn {
-    background: none;
-    border: 2px solid #00ffb3;
+  .nav-btn-back {
+    border: 1px solid #38bdf8;
+    color: #38bdf8;
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: rgba(56, 189, 248, 0.1);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: 0.2s;
+  }
+  .nav-btn-back:hover {
+    background: #38bdf8;
+    color: #0f172a;
+  }
+
+  header h1 {
+    font-size: 1.2rem;
+    color: #38bdf8;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .balance-badge {
+    background: rgba(15, 23, 42, 0.6);
     padding: 6px 12px;
     border-radius: 8px;
-    cursor: pointer;
-    color: #00ffb3;
-    font-weight: bold;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    color: #00ffb3;
+    border: 1px solid #334155;
     font-weight: 700;
-    font-size: 1.4rem;
-    letter-spacing: 2px;
+    color: #fcd34d;
+    font-size: 0.85rem;
   }
 
-  .right-box {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
+  /* Panier étiré et stylisé aux mêmes couleurs */
   .cart-btn {
-    cursor: pointer;
-    font-size: 1.4rem;
-  }
-
-  /* PRODUITS */
-  .product-box {
-    background: #111726;
-    margin: 15px;
-    padding: 18px;
-    border-radius: 14px;
-    box-shadow: 0 0 12px rgba(0,255,179,0.08);
-  }
-  .product-header {
     display: flex;
     align-items: center;
-  }
-  .product-img {
-    width: 75px;
-    border-radius: 8px;
-  }
-  .product-info {
-    margin-left: 12px;
-    flex: 1;
-  }
-  .product-name {
-    font-size: 1.2rem;
-    font-weight: bold;
-  }
-  .status-tag {
-    display: inline-block;
-    background: #00ff80;
-    color: #000;
-    padding: 3px 10px;
-    border-radius: 10px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    margin-top: 6px;
-  }
-  .category-tag {
-    display: inline-block;
-    background: #50545b;
-    color: #fff;
-    padding: 3px 10px;
-    border-radius: 10px;
-    font-size: 0.8rem;
-    margin-left: 6px;
-  }
-  .price {
-    margin-top: 6px;
-    color: #00ffb3;
-    font-size: 1.1rem;
-    font-weight: bold;
-  }
-
-  .add-btn {
-    width: 100%;
-    margin-top: 14px;
-    padding: 12px;
+    gap: 6px;
+    background: linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%);
+    color: white;
     border: none;
-    border-radius: 10px;
-    font-weight: bold;
-    background: #00ffb3;
-    color: #000;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
     cursor: pointer;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    transition: 0.2s;
+  }
+  .cart-btn:hover {
+    background: linear-gradient(90deg, #0369a1 0%, #0284c7 100%);
   }
 
-  /* POPUP FORMULAIRE */
-  #popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: none;
+  /* --- CONTENU --- */
+  .container {
+    padding: 25px 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+    color: #38bdf8;
+    margin-bottom: 25px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .products-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  /* --- CARTE PRODUIT CORRIGÉE (Avec vrai logo PUBG & sans bug d'image) --- */
+  .product-card {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    backdrop-filter: blur(5px);
+    transition: 0.2s;
+  }
+  .product-card:hover {
+    border-color: rgba(56, 189, 248, 0.5);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  }
+
+  .product-info-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  /* Logo PUBG propre intégré en SVG (plus de lien Imgur cassé) */
+  .pubg-logo-box {
+    width: 55px;
+    height: 55px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 12px;
+    display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(0,0,0,0.65);
-    backdrop-filter: blur(4px);
-    z-index: 9999;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+    flex-shrink: 0;
   }
-  .popup-content {
-    width: 90%;
-    max-width: 380px;
-    background: #111726;
-    padding: 20px;
-    border-radius: 14px;
-    box-shadow: 0 0 18px #00ffb344;
+  .pubg-logo-box svg {
+    width: 32px;
+    height: 32px;
+    fill: #fff;
   }
 
-  .form-input {
-    width: 100%;
-    margin-top: 12px;
-    padding: 10px;
-    background: #0e1320;
-    border-radius: 8px;
-    border: 1px solid #00ffb320;
-    color: white;
+  .product-details h3 {
+    font-size: 1.1rem;
+    color: #ffffff;
+    margin-bottom: 4px;
+  }
+
+  .badges-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .badge-status {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .badge-game {
+    background: rgba(100, 116, 139, 0.3);
+    color: #94a3b8;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+  }
+
+  .product-price {
     font-size: 1rem;
-  }
-
-  .submit-btn {
-    width: 100%;
-    margin-top: 16px;
-    padding: 12px;
-    background: #00ffb3;
-    color: #000;
-    border: none;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-
-  .close-btn {
-    margin-top: 10px;
-    width: 100%;
-    padding: 10px;
-    background: #ff3b3b;
-    border: none;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-
-  .balance-bubble {
-    padding: 6px 12px;
-    border-radius: 8px;
-    background: rgba(0,255,179,0.08);
-    color: #00ffb3;
     font-weight: 700;
-    border: 1px solid rgba(0,255,179,0.15);
+    color: #38bdf8;
   }
 
+  /* Bouton d'achat vert moderne */
+  .btn-buy {
+    background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+    color: #0f172a;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: 0.2s;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
+  .btn-buy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
+  }
+
+  /* Responsive mobile */
+  @media (max-width: 600px) {
+    .product-card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .btn-buy {
+      width: 100%;
+      text-align: center;
+    }
+  }
 </style>
 </head>
-
 <body>
 
 <header>
-  <button class="back-btn" onclick="window.location.href='produits.html'">← Retour</button>
-
-  <div class="logo">DP-PUBG</div>
-
-  <div class="right-box">
-    <div class="balance-bubble" id="balanceBox">0 G</div>
-    <div class="cart-btn" onclick="gotoCart()">🛒(<span id="cartCount">0</span>)</div>
+  <button class="nav-btn-back" onclick="history.back()">⬅ Retour</button>
+  <h1>DP-PUBG</h1>
+  <div class="header-right">
+    <div class="balance-badge" id="header-balance">10505 G</div>
+    <button class="cart-btn" onclick="openCart()">
+      🛒 Panier <span id="cart-count">(0)</span>
+    </button>
   </div>
 </header>
 
-<h2 style="margin-left:15px;color:#00ffb3;font-size:1.6rem;">PUBG MOBILE UC</h2>
+<div class="container">
+  <h2 class="page-title">PUBG MOBILE UC</h2>
 
-<div id="product-list"></div>
+  <div class="products-grid">
+    
+    <!-- 60 UC -->
+    <div class="product-card">
+      <div class="product-info-left">
+        <div class="pubg-logo-box">
+          <!-- Icône casque/tactique PUBG -->
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        </div>
+        <div class="product-details">
+          <h3>60 UC</h3>
+          <div class="badges-row">
+            <span class="badge-status">Disponible</span>
+            <span class="badge-game">PUBG MOBILE</span>
+          </div>
+          <div class="product-price">216 HTG</div>
+        </div>
+      </div>
+      <button class="btn-buy" onclick="addToCart('60 UC', 216)">AJOUTER AU PANIER</button>
+    </div>
 
-<!-- POPUP -->
-<div id="popup">
-  <div class="popup-content">
-    <h3 id="popupTitle" style="margin:0 0 10px 0;color:#00ffb3;"></h3>
+    <!-- 120 UC -->
+    <div class="product-card">
+      <div class="product-info-left">
+        <div class="pubg-logo-box">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        </div>
+        <div class="product-details">
+          <h3>120 UC</h3>
+          <div class="badges-row">
+            <span class="badge-status">Disponible</span>
+            <span class="badge-game">PUBG MOBILE</span>
+          </div>
+          <div class="product-price">420 HTG</div>
+        </div>
+      </div>
+      <button class="btn-buy" onclick="addToCart('120 UC', 420)">AJOUTER AU PANIER</button>
+    </div>
 
-    <input id="popupName" class="form-input" placeholder="Nom du compte">
-    <input id="popupUID" class="form-input" placeholder="UID du compte">
+    <!-- 325 UC -->
+    <div class="product-card">
+      <div class="product-info-left">
+        <div class="pubg-logo-box">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        </div>
+        <div class="product-details">
+          <h3>325 UC</h3>
+          <div class="badges-row">
+            <span class="badge-status">Disponible</span>
+            <span class="badge-game">PUBG MOBILE</span>
+          </div>
+          <div class="product-price">1020 HTG</div>
+        </div>
+      </div>
+      <button class="btn-buy" onclick="addToCart('325 UC', 1020)">AJOUTER AU PANIER</button>
+    </div>
 
-    <button class="submit-btn" onclick="validateForm()">CONFIRMER</button>
-    <button class="close-btn" onclick="closePopup()">Annuler</button>
+    <!-- 660 UC -->
+    <div class="product-card">
+      <div class="product-info-left">
+        <div class="pubg-logo-box">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        </div>
+        <div class="product-details">
+          <h3>660 UC</h3>
+          <div class="badges-row">
+            <span class="badge-status">Disponible</span>
+            <span class="badge-game">PUBG MOBILE</span>
+          </div>
+          <div class="product-price">1980 HTG</div>
+        </div>
+      </div>
+      <button class="btn-buy" onclick="addToCart('660 UC', 1980)">AJOUTER AU PANIER</button>
+    </div>
+
   </div>
 </div>
 
 <script>
-/* ===================================================
-   🔐 SÉCURITÉ + PROFIL CONNECTÉ (sessionStorage)
-   - utilise sessionStorage.dpstore_user (comme ton profil.html)
-   - redirige vers index.html si non connecté
-   - affiche le solde depuis sessionStorage (mis à jour par profil.html)
-=================================================== */
-function safeParse(str){
-  try{ return JSON.parse(str); }catch(e){ return null; }
-}
-
-let user = safeParse(sessionStorage.getItem("dpstore_user") || "null");
-
-if(!user || !user.email || !user.dp || !user.username){
-    alert("⚠ Accès refusé : vous devez être connecté.");
-    window.location.href = "index.html";
-}
-
-/* PANIER LIÉ AU PROFIL (localStorage) */
-function normalizeId(str){
-  return String(str || "guest").toLowerCase()
-    .replace(/[^a-z0-9@.-]/g,"_")
-    .replace(/@/g,"_at_");
-}
-function getCartKey(){ return "cart_" + normalizeId(user.email); }
-function loadCart(){ return JSON.parse(localStorage.getItem(getCartKey())||"[]"); }
-function saveCart(cart){ localStorage.setItem(getCartKey(), JSON.stringify(cart)); }
-
-/* UTIL */
-function updateCartCount(){
-  document.getElementById("cartCount").textContent = loadCart().length;
-}
-function updateBalanceUI(){
-  // solde = priorité sessionStorage (profil.html met à jour sessionStorage)
-  user = safeParse(sessionStorage.getItem("dpstore_user") || "null") || user;
-  const bal = (user && (user.balance ?? user.credits ?? user.balance === 0 ? (user.balance ?? user.credits) : null));
-  document.getElementById("balanceBox").textContent = (bal !== null && bal !== undefined) ? (bal + " G") : "0 G";
-}
-
-/* NAV */
-function gotoCart(){ window.location.href = "cart.html"; }
-
-/* ===================================================
-   🔥 PRODUITS (PRIX +20%)
-   - Ajout au panier : NE retire PAS le solde (Option B)
-   - L'objet ajouté contient : name, price, buyer, date, status, meta (uid/accountName)
-=================================================== */
-const products = [
-  { uc: "60 UC",  price: 180, img: "https://i.imgur.com/jeQF1aN.jpeg" },
-  { uc: "120 UC", price: 350, img: "https://i.imgur.com/jeQF1aN.jpeg" },
-  { uc: "325 UC", price: 850, img: "https://i.imgur.com/jeQF1aN.jpeg" },
-  { uc: "660 UC", price: 1650, img: "https://i.imgur.com/jeQF1aN.jpeg" },
-  { uc: "1800 UC", price: 3500, img: "https://i.imgur.com/jeQF1aN.jpeg" }
-];
-products.forEach(p => p.price = Math.round(p.price * 1.20));
-
-/* POPUP / FORM */
-let selectedProduct = null;
-
-function openForm(product){
-  selectedProduct = product;
-  document.getElementById("popupTitle").textContent = `${product.uc} - ${product.price} HTG`;
-  // pré-remplir le nom du compte depuis le profil si disponible
-  const nameField = document.getElementById("popupName");
-  nameField.value = (user && user.username) ? user.username : "";
-  document.getElementById("popupUID").value = "";
-  document.getElementById("popup").style.display = "flex";
-}
-function closePopup(){
-  document.getElementById("popup").style.display = "none";
-}
-
-/* AJOUT AU PANIER (Option B : débit au paiement dans cart.html) */
-function validateForm(){
-  const name = document.getElementById("popupName").value.trim();
-  const uid  = document.getElementById("popupUID").value.trim();
-
-  if(!name || !uid){
-    alert("⚠ Merci de remplir le nom du compte et UID.");
-    return;
+  // Synchronisation session & panier
+  let user = JSON.parse(sessionStorage.getItem("dpstore_user") || "{}");
+  if(user.balance !== undefined) {
+    document.getElementById("header-balance").textContent = user.balance + " G";
   }
 
-  // construire l'objet de panier compatible avec cart.html et reçus.html
-  const item = {
-    name: selectedProduct.uc,
-    price: selectedProduct.price,
-    buyer: user.email,
-    date: new Date().toLocaleString(),
-    status: "En attente",
-    meta: {
-      uid: uid,
-      accountName: name
-    }
-  };
-
-  const cart = loadCart();
-  cart.push(item);
-  saveCart(cart);
-
-  updateCartCount();
-  closePopup();
-  alert("✔ Produit ajouté au panier ! (le solde sera débité lors du paiement)");
-}
-
-/* AFFICHAGE PRODUITS */
-const list = document.getElementById("product-list");
-products.forEach(p => {
-  const div = document.createElement("div");
-  div.className = "product-box";
-  div.innerHTML = `
-    <div class="product-header">
-      <img src="${p.img}" class="product-img">
-      <div class="product-info">
-        <div class="product-name">${p.uc}</div>
-        <span class="status-tag">Disponible</span>
-        <span class="category-tag">PUBG MOBILE</span>
-        <div class="price">${p.price} HTG</div>
-      </div>
-    </div>
-    <button class="add-btn">AJOUTER AU PANIER</button>
-  `;
-  div.querySelector("button").addEventListener("click", ()=> openForm(p));
-  list.appendChild(div);
-});
-
-/* INITIAL UI SYNC */
-updateBalanceUI();
-updateCartCount();
-
-/* Rafraîchir la balance si profil change (profil.html met à jour sessionStorage) */
-window.addEventListener("storage", (ev) => {
-  if(ev.key === "dpstore_user"){
-    updateBalanceUI();
-    updateCartCount();
+  function openCart() {
+    window.location.href = "cart.html";
   }
-});
-// aussi vérifier périodiquement (utile si profil.html met sessionStorage sans firing storage)
-setInterval(updateBalanceUI, 1500);
+
+  function addToCart(productName, price) {
+    let cart = JSON.parse(localStorage.getItem("dpstore_cart") || "[]");
+    cart.push({ name: productName, price: price });
+    localStorage.setItem("dpstore_cart", JSON.stringify(cart));
+    
+    // Mettre à jour le compteur du panier instantanément
+    document.getElementById("cart-count").textContent = `(${cart.length})`;
+    alert(`✅ ${productName} a été ajouté au panier !`);
+  }
+
+  // Initialiser le compteur au chargement
+  let currentCart = JSON.parse(localStorage.getItem("dpstore_cart") || "[]");
+  document.getElementById("cart-count").textContent = `(${currentCart.length})`;
 </script>
 
 </body>
