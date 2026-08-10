@@ -219,7 +219,7 @@
 </div>
 
 <!-- ==============================================
-     NE PAS TOUCHER : LOGIQUE JS EXACTEMENT IDENTIQUE 
+     LOGIQUE JS CORRIGÉE AVEC SYNCHRONISATION DU SOLDE
      ============================================== -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
@@ -243,7 +243,7 @@ if(!sessionAccount || !sessionAccount.email){
     location.href = "index.html";
 }
 
-// ======== Récupération Firestore correcte ========
+// ======== Récupération Firestore correcte et synchro du solde ========
 async function loadUser(){
     try{
         const usersSnap = await getDocs(collection(db,"users"));
@@ -253,13 +253,23 @@ async function loadUser(){
         usersSnap.forEach(docSnap=>{
             const data = docSnap.data();
             if(data.email && data.email.toLowerCase() === sessionAccount.email.toLowerCase()){
+                let firestoreBalance = Number(data.balance ?? data.credits ?? 0);
+                let sessionBalance = Number(sessionAccount.balance ?? firestoreBalance);
+                
+                let finalBalance = firestoreBalance;
+                // Si un achat local a baissé le solde dans la session, on le synchronise vers Firestore
+                if(sessionAccount.balance !== undefined && sessionAccount.balance < firestoreBalance){
+                    finalBalance = sessionAccount.balance;
+                    setDoc(doc(db,"users",docSnap.id), { balance: finalBalance }, { merge:true });
+                }
+
                 account = {
                     email: data.email,
                     username: data.username ?? sessionAccount.username,
                     dp: data.dp ?? sessionAccount.dp ?? "—",
                     role: data.role ?? sessionAccount.role ?? "user",
-                    credits: Number(data.credits ?? data.balance ?? sessionAccount.credits ?? 0),
-                    balance: Number(data.balance ?? data.credits ?? sessionAccount.balance ?? 0),
+                    credits: finalBalance,
+                    balance: finalBalance,
                     photo: data.photo ?? sessionAccount.photo ?? null,
                     lastLogin: data.lastLogin ?? sessionAccount.lastLogin ?? "—",
                     createdAt: data.createdAt ?? "—",
