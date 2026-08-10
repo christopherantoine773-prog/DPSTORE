@@ -4,48 +4,167 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DPSTORE — Connexion / Inscription</title>
+  
+  <!-- Ajout de Google Fonts pour une typographie moderne -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
-    body { background: #000; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; }
-    .container { width: 90%; max-width: 400px; background: rgba(20,20,20,0.95); padding: 30px; border-radius: 12px; box-shadow: 0 0 25px #f9d71c; text-align:center; border:1px solid #f9d71c; }
-    h1 { color: #f9d71c; font-size: 1.8em; margin-bottom: 20px; }
-    input { width:100%; padding:12px; margin:10px 0; border:none; outline:none; border-radius:6px; background:#111; color:#f9d71c; font-size:14px; border:1px solid #f9d71c; }
-    button { width:100%; padding:12px; border:none; border-radius:6px; background:#f9d71c; color:#000; font-weight:bold; cursor:pointer; transition:0.3s; }
-    button:hover { background:#fff700; }
-    .switch { color:#ccc; font-size:14px; margin-top:15px; cursor:pointer; }
-    .footer { margin-top:25px; font-size:12px; color:#777; }
+    /* RESET & BASE */
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      font-family: "Inter", sans-serif; 
+    }
+    
+    body { 
+      /* Un fond bleu très foncé et élégant */
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); 
+      color: #f8fafc; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 100vh; 
+      flex-direction: column; 
+    }
+
+    /* CONTENEUR PRINCIPAL (Effet Glassmorphism) */
+    .container { 
+      width: 90%; 
+      max-width: 420px; 
+      background: rgba(30, 41, 59, 0.7); 
+      backdrop-filter: blur(10px);
+      padding: 40px 30px; 
+      border-radius: 16px; 
+      /* Ombre bleue et bordure subtile pour le côté "Pro" */
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 15px rgba(56, 189, 248, 0.2); 
+      text-align: center; 
+      border: 1px solid rgba(56, 189, 248, 0.3); 
+    }
+
+    /* TITRE */
+    h1 { 
+      /* Bleu clair très visible */
+      color: #38bdf8; 
+      font-size: 2em; 
+      font-weight: 700;
+      margin-bottom: 5px; 
+      letter-spacing: 1px;
+    }
+
+    p.subtitle {
+      color: #94a3b8;
+      font-size: 0.9em;
+      margin-bottom: 25px;
+    }
+
+    /* INPUTS */
+    input { 
+      width: 100%; 
+      padding: 14px 16px; 
+      margin: 8px 0; 
+      outline: none; 
+      border-radius: 8px; 
+      background: rgba(15, 23, 42, 0.8); 
+      color: #e2e8f0; 
+      font-size: 14px; 
+      border: 1px solid #334155; 
+      transition: all 0.3s ease;
+    }
+    
+    input::placeholder {
+      color: #64748b;
+    }
+
+    /* Effet quand on clique sur l'input */
+    input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    }
+
+    /* BOUTONS */
+    button { 
+      width: 100%; 
+      padding: 14px; 
+      margin-top: 10px;
+      border: none; 
+      border-radius: 8px; 
+      /* Dégradé bleu dynamique */
+      background: linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%); 
+      color: #ffffff; 
+      font-size: 15px;
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: transform 0.2s, box-shadow 0.2s, background 0.3s; 
+    }
+
+    button:hover { 
+      background: linear-gradient(90deg, #0369a1 0%, #0284c7 100%); 
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+
+    /* TEXTE SWITCH (Déjà un compte ?) */
+    .switch { 
+      color: #94a3b8; 
+      font-size: 13px; 
+      margin-top: 20px; 
+      cursor: pointer; 
+      transition: color 0.3s ease;
+    }
+    
+    .switch:hover {
+      color: #38bdf8;
+      text-decoration: underline;
+    }
+
+    /* FOOTER */
+    .footer { 
+      margin-top: 30px; 
+      font-size: 12px; 
+      color: #64748b; 
+    }
   </style>
 </head>
 
 <body>
   <div class="container">
     <h1>DPSTORE</h1>
-
+    
     <!-- FORMULAIRE INSCRIPTION -->
     <div id="signup">
-      <p>Créer ton compte</p>
+      <p class="subtitle">Créer ton compte</p>
       <input type="text" id="username" placeholder="Nom d'utilisateur" required />
       <input type="email" id="email" placeholder="Adresse email" required />
       <input type="password" id="password" placeholder="Mot de passe" required />
-      <button onclick="sendVerificationCode()">📧 Recevoir le code</button>
+      <button onclick="sendVerificationCode()">Recevoir le code</button>
 
-      <input type="text" id="code" placeholder="Entre le code reçu" style="margin-top:15px;" />
-      <button onclick="verifyCode()">✅ Vérifier le code</button>
+      <input type="text" id="code" placeholder="Entre le code reçu" style="margin-top:20px;" />
+      <button onclick="verifyCode()" style="background: linear-gradient(90deg, #10b981 0%, #34d399 100%);">Valider le compte</button>
+      
       <p class="switch" onclick="toggleForms()">Déjà un compte ? Se connecter</p>
     </div>
 
     <!-- FORMULAIRE CONNEXION -->
     <div id="login" style="display: none;">
-      <p>Connexion à ton compte</p>
+      <p class="subtitle">Connexion à ton espace</p>
       <input type="email" id="loginEmail" placeholder="Adresse email" required />
       <input type="password" id="loginPassword" placeholder="Mot de passe" required />
-      <button onclick="loginUser()">🚀 Se connecter</button>
+      <button onclick="loginUser()">Se connecter</button>
+      
       <p class="switch" onclick="toggleForms()">Pas encore inscrit ? Créer un compte</p>
     </div>
   </div>
 
   <p class="footer">© 2025 DPSTORE — Technologie avancée</p>
 
+  <!-- ==============================================
+       NE PAS TOUCHER : LOGIQUE JS EXACTEMENT IDENTIQUE 
+       ============================================== -->
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
