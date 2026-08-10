@@ -4,289 +4,123 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>DPSTORE | Panier</title>
-
 <style>
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(160deg, #000, #021220, #001a13);
-    margin: 0;
-    color: #e0ffe9;
-    overflow-x: hidden;
-  }
-
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 25px;
-    background: rgba(0, 20, 10, 0.55);
-    backdrop-filter: blur(14px);
-    border-bottom: 1px solid rgba(0,255,150,0.15);
-    box-shadow: 0 0 25px rgba(0,255,150,0.15);
-    position: sticky;
-    top: 0;
-    z-index: 20;
-  }
-
-  header h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #00ffb3;
-    letter-spacing: 1px;
-  }
-
-  .balance {
-    background: rgba(0,255,150,0.12);
-    border: 1px solid rgba(0,255,150,0.4);
-    padding: 8px 15px;
-    border-radius: 25px;
-    font-weight: 600;
-    color: #00ffb3;
-    font-size: 1rem;
-    box-shadow: 0 0 10px rgba(0,255,150,0.3);
-  }
-
-  .back-btn {
-    background: transparent;
-    border: 2px solid #00ffb3;
-    color: #00ffb3;
-    padding: 6px 16px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.25s;
-  }
-
-  .back-btn:hover {
-    background: #00ffb3;
-    color: #000;
-    transform: scale(1.05);
-  }
-
-  .container {
-    padding: 35px 20px;
-    max-width: 800px;
-    margin: auto;
-  }
-
-  .item {
-    background: rgba(0,255,179,0.06);
-    border: 1px solid rgba(0,255,179,0.25);
-    border-radius: 16px;
-    margin-bottom: 18px;
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 0 20px rgba(0,255,179,0.12);
-    backdrop-filter: blur(10px);
-    animation: fadeInUp 0.4s ease both;
-  }
-
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .btn-confirm {
-    background: linear-gradient(90deg, #00ffb3, #00e676);
-    border: none;
-    padding: 8px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 700;
-    color: #000;
-    transition: 0.2s;
-    box-shadow: 0 0 10px rgba(0,255,179,0.4);
-  }
-
-  .btn-confirm:hover {
-    transform: scale(1.1);
-    background: #00ffb3;
-  }
-
-  .total {
-    text-align: right;
-    font-weight: bold;
-    font-size: 1.3rem;
-    color: #00ffb3;
-    margin-top: 25px;
-    padding: 10px;
-    border-top: 1px solid rgba(0,255,150,0.3);
-  }
-
-  .btn-clear, .btn-support {
-    width: 100%;
-    padding: 14px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    font-weight: 700;
-    border: none;
-    transition: 0.25s;
-    margin-top: 18px;
-  }
-
-  .btn-clear {
-    background: linear-gradient(90deg, #00ffb3, #00695c);
-    color: #000;
-    box-shadow: 0 0 12px rgba(0,255,150,0.25);
-  }
-
-  .btn-support {
-    background: linear-gradient(90deg, #00b4ff, #0060ff);
-    color: #000;
-    box-shadow: 0 0 12px rgba(0, 170, 255, 0.25);
-  }
+  body { font-family: 'Poppins', sans-serif; background: linear-gradient(160deg, #000, #021220, #001a13); margin: 0; color: #e0ffe9; overflow-x: hidden; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; background: rgba(0, 20, 10, 0.55); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(0,255,150,0.15); position: sticky; top: 0; z-index: 20; }
+  header h1 { font-size: 1.5rem; font-weight: 700; color: #00ffb3; }
+  .balance { background: rgba(0,255,150,0.12); border: 1px solid rgba(0,255,150,0.4); padding: 8px 15px; border-radius: 25px; font-weight: 600; color: #00ffb3; }
+  .container { padding: 35px 20px; max-width: 800px; margin: auto; }
+  .item { background: rgba(0,255,179,0.06); border: 1px solid rgba(0,255,179,0.25); border-radius: 16px; margin-bottom: 18px; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+  .btn-confirm { background: linear-gradient(90deg, #00ffb3, #00e676); border: none; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-weight: 700; color: #000; }
+  .total { text-align: right; font-weight: bold; font-size: 1.3rem; color: #00ffb3; margin-top: 25px; }
+  .btn-clear { width: 100%; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: 700; border: none; margin-top: 18px; background: linear-gradient(90deg, #00ffb3, #00695c); color: #000; }
 </style>
 </head>
 
 <body>
 
 <header>
-  <button class="back-btn" onclick="goBack()">← Retour</button>
+  <button onclick="window.location.href='produits.html'" style="background:transparent; border:1px solid #00ffb3; color:#00ffb3; padding:5px 10px; border-radius:10px; cursor:pointer;">← Retour</button>
   <h1>DPSTORE 🛒</h1>
-  <div class="balance" id="balanceBox">0 G</div>
+  <div class="balance" id="balanceBox">Chargement...</div>
 </header>
 
 <div class="container">
   <div id="cart-items"></div>
   <div id="total" class="total"></div>
-
   <button class="btn-clear" onclick="clearCart()">🗑️ Vider le panier</button>
-  <button class="btn-support" onclick="window.location.href='contact.html'">📞 Support / Aide</button>
-  <button class="btn-clear" onclick="window.location.href='reçus.html'">🧾 Voir les reçus</button>
 </div>
 
-<footer>© 2025 DPSTORE — Tous droits réservés</footer>
-
 <script>
-/* ============================
-   🔥 SOLDE LIÉ AU PROFIL
-   ============================ */
-function loadUser(){
-  let u = JSON.parse(sessionStorage.getItem("dpstore_user") || "{}");
-  if(!u.email){ alert("Aucun compte connecté !"); window.location.href="index.html"; }
-  return u;
+// 1. Chargement utilisateur
+function getUser(){
+  return JSON.parse(sessionStorage.getItem("dpstore_user") || "{}");
 }
 
-let user = loadUser();
-
-function updateBalanceUI(){
-  user = loadUser();
+function updateUI(){
+  const user = getUser();
   document.getElementById("balanceBox").textContent = (user.balance ?? 0) + " G";
+  renderCart();
 }
 
-/* ============================
-   🔥 PANIER PAR COMPTE
-   ============================ */
-function normalizeId(str){
-  if(!str) return "guest";
-  return String(str).toLowerCase().trim().replace(/[^a-z0-9@.-]/g, "_").replace(/@/g,"_at_");
-}
-
+// 2. Gestion Panier
 function getCartKey(){
-  return "cart_" + (user.email ? normalizeId(user.email) : "guest");
-}
-
-function migrateGlobalCartIfNeeded(){
-  const globalKey = "cart";
-  const perUserKey = getCartKey();
-  const global = localStorage.getItem(globalKey);
-  const perUser = localStorage.getItem(perUserKey);
-  if(global && !perUser){
-    localStorage.setItem(perUserKey, global);
-    localStorage.removeItem(globalKey);
-  }
+  const user = getUser();
+  return "cart_" + (user.email ? user.email.toLowerCase().replace(/[^a-z0-9]/g, "_") : "guest");
 }
 
 function loadCart(){
-  migrateGlobalCartIfNeeded();
-  const key = getCartKey();
-  return JSON.parse(localStorage.getItem(key) || "[]");
+  return JSON.parse(localStorage.getItem(getCartKey()) || "[]");
 }
-
-function saveCart(arr){
-  const key = getCartKey();
-  localStorage.setItem(key, JSON.stringify(arr));
-}
-
-/* ============================
-   🔥 AFFICHAGE DU PANIER
-   ============================ */
-const container = document.getElementById("cart-items");
-const totalEl = document.getElementById("total");
 
 function renderCart(){
-  user = loadUser();
   const cart = loadCart();
+  const container = document.getElementById("cart-items");
+  const totalEl = document.getElementById("total");
   container.innerHTML = "";
-
-  if(!cart || cart.length===0){
-    container.innerHTML = "<p style='text-align:center; opacity:0.7;'>🛍️ Aucun produit dans le panier.</p>";
+  
+  if(cart.length === 0){
+    container.innerHTML = "<p style='text-align:center;'>🛍️ Panier vide.</p>";
     totalEl.textContent = "";
-    updateBalanceUI();
     return;
   }
 
   let total = 0;
-  cart.forEach((item,index)=>{
-    total += item.price || 0;
-    const div = document.createElement("div");
-    div.className="item";
-    div.innerHTML = `
-      <span>${item.name} — <strong>${item.price} G</strong></span>
-      <button class="btn-confirm" onclick="confirmSingle(${index})">✔</button>
-    `;
-    container.appendChild(div);
+  cart.forEach((item, index) => {
+    total += item.price;
+    container.innerHTML += `
+      <div class="item">
+        <span>${item.name} — <b>${item.price} G</b></span>
+        <button class="btn-confirm" onclick="confirmPurchase(${index})">Payer</button>
+      </div>`;
   });
-
-  totalEl.textContent = "Total : "+total+" G";
-  updateBalanceUI();
+  totalEl.textContent = "Total : " + total + " G";
 }
 
-function confirmSingle(index){
-  user = loadUser();
+// 3. Confirmation corrigée
+function confirmPurchase(index){
+  let user = getUser();
   let cart = loadCart();
   const item = cart[index];
-  if(!item) return alert("Article introuvable");
 
-  if((user.balance ?? 0) < (item.price ?? 0)){
+  if((user.balance ?? 0) < item.price){
     return alert("❌ Solde insuffisant !");
   }
 
+  // Débit local immédiat
   user.balance -= item.price;
   sessionStorage.setItem("dpstore_user", JSON.stringify(user));
 
+  // Mise à jour de la liste des comptes (persistance locale)
   let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
-  let acc = accounts.find(a => a.email.toLowerCase() === user.email.toLowerCase());
-  if(acc){ acc.balance = user.balance; localStorage.setItem("dpstore_accounts", JSON.stringify(accounts)); }
+  let accIndex = accounts.findIndex(a => a.email === user.email);
+  if(accIndex !== -1){
+    accounts[accIndex].balance = user.balance;
+    localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+  }
 
+  // Sauvegarde commande
   let orders = JSON.parse(localStorage.getItem("orders") || "[]");
-  orders.push({
-    name:item.name,
-    price:item.price,
-    buyer:user.email,
-    date:new Date().toLocaleString()
-  });
+  orders.push({ ...item, date: new Date().toLocaleDateString() });
   localStorage.setItem("orders", JSON.stringify(orders));
 
-  cart.splice(index,1);
-  saveCart(cart);
-  renderCart();
-  alert("✅ Commande confirmée !");
+  // Nettoyage panier
+  cart.splice(index, 1);
+  localStorage.setItem(getCartKey(), JSON.stringify(cart));
+
+  alert("✅ Achat réussi !");
+  
+  // Refresh au lieu de redirection pour garder les données en session
+  updateUI();
 }
 
 function clearCart(){
-  const key = getCartKey();
-  localStorage.removeItem(key);
+  localStorage.removeItem(getCartKey());
   renderCart();
 }
 
-function goBack(){ window.location.href = localStorage.getItem("lastPage") || "produits.html"; }
-
-renderCart();
-updateBalanceUI();
+// Initialisation
+updateUI();
 </script>
 
 </body>
