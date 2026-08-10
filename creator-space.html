@@ -4,199 +4,56 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Creator Space — DPSTORE</title>
-
 <style>
-body{
-    background:black;
-    color:white;
-    font-family:Arial;
-    padding:20px;
-    display:block;
-}
+body{ background:black; color:white; font-family:Arial; padding:20px; }
+.box{ background:#111; padding:20px; border-radius:15px; width:95%; margin:auto; margin-bottom:20px; box-shadow:0 0 10px #00eaff; }
+input, button, select{ width:95%; margin-top:10px; padding:12px; border-radius:10px; border:none; font-size:16px; }
+button{ background:#00eaff; color:black; font-weight:bold; cursor:pointer; }
+h2{ color:#00eaff; text-align:center; }
 
-/* ====== BOX ====== */
-.box{
-    background:#111;
-    padding:20px;
-    border-radius:15px;
-    width:95%;
-    margin:auto;
-    margin-bottom:20px;
-    box-shadow:0 0 20px #00eaff;
-}
+/* Menu 3 points */
+.menu-container { position: absolute; top: 10px; right: 20px; }
+.dropbtn { background: #333; color: white; padding: 10px; cursor: pointer; border-radius: 5px; }
+.dropdown-content { display: none; position: absolute; right: 0; background: #222; min-width: 160px; z-index: 1; border-radius: 10px; }
+.dropdown-content a { color: white; padding: 12px; display: block; text-decoration: none; }
+.dropdown-content a:hover { background: #444; }
 
-/* ====== INPUTS / BUTTONS ====== */
-input, button, select{
-    width:95%;
-    margin-top:10px;
-    padding:12px;
-    border-radius:10px;
-    border:none;
-    font-size:16px;
-}
-button{
-    background:#00eaff;
-    color:black;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-/* ===== TITRES ====== */
-h2{
-    color:#00eaff;
-    text-align:center;
-}
-
-/* ====== REQUEST (recharges) ====== */
-.request{
-    background:#222;
-    padding:12px;
-    border-radius:10px;
-    margin-top:15px;
-    border-left:4px solid #00eaff;
-}
-.request img{
-    width:100%;
-    border-radius:10px;
-    margin-top:10px;
-    border:1px solid #00eaff;
-}
-.btnRow{
-    display:flex;
-    gap:10px;
-    margin-top:10px;
-}
-.btnGreen{
-    background:#00ff88;
-    color:black;
-    font-weight:bold;
-}
-.btnRed{
-    background:#ff4444;
-    color:white;
-    font-weight:bold;
-}
-
-/* STATUS BADGE */
-.status{
-    font-weight:bold;
-    padding:3px 8px;
-    border-radius:5px;
-}
-.status.pending{background:#555;}
-.status.validated{background:#00ff88;color:black;}
-.status.refused{background:#ff4444;}
-
-/* ===== MENU STYLE ===== */
-.selectorBox{
-    width:95%;
-    background:#007bff;
-    padding:15px;
-    border-radius:14px;
-    margin:auto;
-    color:white;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    font-size:18px;
-    cursor:pointer;
-    margin-bottom:10px;
-    box-shadow:0 0 12px #007bff;
-}
-
-.selectorBox img{
-    width:30px;
-    margin-right:10px;
-}
-
-.optionList{
-    width:95%;
-    background:#004ea3;
-    border-radius:12px;
-    margin:auto;
-    margin-bottom:15px;
-    display:none;
-    overflow:hidden;
-    box-shadow:0 0 12px #004ea3;
-}
-
-.optionItem{
-    padding:12px 15px;
-    border-bottom:1px solid rgba(255,255,255,0.15);
-    cursor:pointer;
-}
-.optionItem:hover{
-    background:#0060cc;
-}
-.infoNote{
-    background:#0b2b2b;
-    padding:10px;
-    border-radius:8px;
-    margin-top:8px;
-    color:#9fe7ff;
-}
+.request{ background:#222; padding:12px; border-radius:10px; margin-top:15px; border-left:4px solid #00eaff; }
+.btnRow{ display:flex; gap:10px; margin-top:10px; }
+.btnGreen{ background:#00ff88; color:black; font-weight:bold; }
+.btnRed{ background:#ff4444; color:white; font-weight:bold; }
+.infoNote{ background:#0b2b2b; padding:10px; border-radius:8px; margin-top:8px; color:#9fe7ff; text-align:center; }
 </style>
 </head>
 <body>
 
-<h2>🚀 MODE CREATOR / ADMIN</h2>
-
-<p class="infoNote" id="infoNote">ℹ️ Données en cours de chargement...</p>
-
-<button style="background:#00eaff;color:black;font-weight:bold;padding:6px 14px;border-radius:8px;font-size:14px;margin-bottom:10px;cursor:pointer;width:auto;" onclick="location.href='dp.html'">
-    DP
-</button>
-
-<div class="selectorBox" onclick="toggleMenu()">
-    <div style="display:flex;align-items:center;">
-        <img src="https://cdn-icons-png.flaticon.com/512/833/833524.png">
-        <span id="selectedAction">Ajouter des fonds</span>
+<!-- Menu 3 points -->
+<div class="menu-container">
+    <div class="dropbtn" onclick="document.getElementById('myDropdown').classList.toggle('show')">⋮</div>
+    <div id="myDropdown" class="dropdown-content">
+        <a href="profil.html">⬅️ Retour au profil</a>
+        <a href="offon.html">⚡ Ouvrir OFF/ON</a>
+        <a href="espace.html">🌐 Espace</a>
+        <a href="tmm.html">📦 TMM</a>
     </div>
-    <span>▼</span>
 </div>
 
-<div class="optionList" id="actionMenu">
-    <div class="optionItem" onclick="selectAction('add')">Ajouter des fonds</div>
-    <div class="optionItem" onclick="selectAction('remove')">Retirer des fonds</div>
-</div>
+<h2>🚀 MODE CREATOR / ADMIN</h2>
+<p class="infoNote" id="infoNote">ℹ️ Initialisation...</p>
 
 <div class="box">
-    <h3 id="fundTitle">💰 Ajouter des fonds</h3>
-    <input id="dpInput" placeholder="DP ID (ex : DP-123456)">
+    <h3 id="fundTitle">💰 Gérer les fonds</h3>
+    <input id="dpInput" placeholder="DP ID ou Email de l'utilisateur">
     <input id="amountInput" type="number" placeholder="Montant">
-    <button id="fundBtn" onclick="processFunds()">Ajouter</button>
+    <select id="actionType"><option value="add">Ajouter fonds</option><option value="remove">Retirer fonds</option></select>
+    <button id="fundBtn" onclick="processFunds()">Valider Transaction</button>
 </div>
 
 <div class="box">
-    <h3>🔍 Vérifier un solde</h3>
-    <input id="dpCheck" placeholder="DP ID">
+    <h3>🔍 Vérifier solde (DP ID ou Email)</h3>
+    <input id="dpCheck" placeholder="Entrer DP ID ou Email">
     <button onclick="checkBalance()">Vérifier</button>
-    <p id="checkResult" style="margin-top:10px; font-size:18px;"></p>
-</div>
-
-<div class="box">
-    <h3>👔 Ajouter un employé</h3>
-    <input id="employeeEmail" placeholder="Email de l'employé">
-    <select id="employeeType">
-        <option value="employee">Employé</option>
-        <option value="creator">Créateur</option>
-        <option value="admin">Admin</option>
-    </select>
-    <button onclick="addEmployee()">Ajouter</button>
-</div>
-
-<div class="box">
-    <h3 style="color:#ff4444;">❌ Supprimer un employé</h3>
-    <input id="removeEmployeeEmail" placeholder="Email de l'employé">
-    <button style="background:#ff4444; color:white;" onclick="removeEmployee()">Supprimer</button>
-</div>
-
-<div class="box">
-    <h3 style="color:#ffaa00;">⚙️ Mettre à jour un utilisateur</h3>
-    <input id="updateDP" placeholder="DP ID de l'utilisateur">
-    <input id="updateField" placeholder="Champ à mettre à jour (ex: username, email, role, balance)">
-    <input id="updateValue" placeholder="Nouvelle valeur">
-    <button onclick="updateUser()">Mettre à jour</button>
+    <p id="checkResult" style="margin-top:10px; font-weight:bold;"></p>
 </div>
 
 <div class="box">
@@ -205,220 +62,71 @@ h2{
 </div>
 
 <div class="box">
-    <h3>🔧 Fonctions supplémentaires</h3>
-    <button onclick="findUserByEmail()">Chercher utilisateur par email</button>
-    <button onclick="listAllUsers()">Afficher tous les utilisateurs</button>
-    <button onclick="resetBalance()">Réinitialiser solde utilisateur</button>
-    <button onclick="addCredits()">Ajouter des crédits</button>
-    <button onclick="showTransactions()">Voir historique transactions</button>
-    <button onclick="sendMessage()">Envoyer un message</button>
-    <button onclick="clearOldTransactions()">Archiver anciennes transactions</button>
+    <h3>🔧 Fonctions Admin</h3>
+    <input id="employeeEmail" placeholder="Email pour Rôle">
+    <select id="employeeType"><option value="employee">Employé</option><option value="creator">Créateur</option><option value="admin">Admin</option></select>
+    <button onclick="addEmployee()">Modifier Rôle</button>
 </div>
-
-<button style="background:#005eff; margin-top:20px;" onclick="location.href='verifi.html'">
-🔍 Vérifier tous les DP
-</button>
-
-<button style="background:#00eaff; margin-top:20px;" onclick="location.href='Archi.html'">
-📁 Voir l'historique (Archive)
-</button>
-
-<button style="background:red; margin-top:20px;" onclick="location.href='profil.html'">
-⬅️ Retour au profil
-</button>
-
-<button style="background:orange; margin-top:20px;" onclick="location.href='offon.html'">
-⚡ Ouvrir OFF/ON
-</button>
-
-<button style="background:#00ffaa; margin-top:20px; color:black; font-weight:bold;" onclick="location.href='espace.html'">
-🌐 Aller à l'Espace
-</button>
-
-<button style="background:#ffaa00; margin-top:20px; color:black; font-weight:bold;" onclick="location.href='tmm.html'">
-📦 Aller à TMM
-</button>
-
-<button style="
-    background:#00ff88;
-    color:black;
-    font-weight:bold;
-    padding:8px 16px;
-    border-radius:10px;
-    font-size:16px;
-    cursor:pointer;
-    margin-bottom:15px;
-    box-shadow:0 0 12px #00ff88;
-    transition:0.2s;
-"
-onclick="location.href='admin.html'">
-⚡ Aller au panneau Admin
-</button>
-
-<audio id="soundValidate" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7b8ad29dbb.mp3?filename=correct-2-46134.mp3"></audio>
-<audio id="soundRefuse" src="https://cdn.pixabay.com/download/audio/2021/09/09/audio_9d6f5bf86d.mp3?filename=error-126627.mp3"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
-const firebaseConfig = {
+const db = getFirestore(initializeApp({
   apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
-  authDomain: "dpstore-officie.firebaseapp.com",
   projectId: "dpstore-officie",
-  storageBucket: "dpstore-officie.appspot.com",
-  messagingSenderId: "903943973062",
-  appId: "1:903943973062:web:6501a2ec167adb31258fc7"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+  storageBucket: "dpstore-officie.appspot.com"
+}));
 
 let allUsers = [];
-let allRecharges = [];
-let currentAction="add";
 
-async function loadUsersFromFirestore(){
+async function loadData(){
     const snapshot = await getDocs(collection(db, "users"));
     allUsers = snapshot.docs.map(d=>({id:d.id, data:d.data()}));
-    showInfoNote(`✔ ${allUsers.length} utilisateurs chargés depuis Firestore`);
+    document.getElementById("infoNote").innerText = `✅ ${allUsers.length} utilisateurs chargés`;
 }
 
-function findUserByDP(dpID){
-    return allUsers.find(u => (u.data.dp || u.id) === dpID) || null;
+function findUser(query){
+    return allUsers.find(u => (u.data.dp || u.id) === query || (u.data.email || "").toLowerCase() === query.toLowerCase());
 }
 
 async function processFunds(){
-    const dp = document.getElementById("dpInput").value.trim();
+    const query = document.getElementById("dpInput").value.trim();
     const amount = parseFloat(document.getElementById("amountInput").value);
-    if(!dp || isNaN(amount) || amount<=0){ alert("DP ou montant invalide"); return; }
-
-    const user = findUserByDP(dp);
-    if(!user){ alert("DP introuvable"); return; }
-
-    const newBalance = currentAction==="add" ? (parseFloat(user.data.balance)||0)+amount : (parseFloat(user.data.balance)||0)-amount;
-    if(newBalance<0){ alert("Solde insuffisant"); return; }
-
-    await updateDoc(doc(db,"users",user.id), { balance:newBalance });
-    alert(`✅ Solde mis à jour : ${newBalance}`);
-    loadUsersFromFirestore();
-    document.getElementById("checkResult").innerText = `Solde actuel : ${newBalance}`;
-    playValidateSound();
+    const action = document.getElementById("actionType").value;
+    const user = findUser(query);
+    if(!user) return alert("Utilisateur introuvable");
+    
+    const currentBal = parseFloat(user.data.balance) || 0;
+    const newBal = action === "add" ? currentBal + amount : currentBal - amount;
+    
+    await updateDoc(doc(db, "users", user.id), { balance: newBal });
+    alert("✅ Solde mis à jour : " + newBal);
+    loadData();
 }
 
 async function checkBalance(){
-    const dp = document.getElementById("dpCheck").value.trim();
-    const user = findUserByDP(dp);
-    if(!user){ document.getElementById("checkResult").innerText="❌ DP introuvable"; playRefuseSound(); return; }
-    document.getElementById("checkResult").innerText = `💰 Solde : ${user.data.balance ?? 0}`;
-    playValidateSound();
+    const query = document.getElementById("dpCheck").value.trim();
+    const user = findUser(query);
+    document.getElementById("checkResult").innerText = user ? `💰 Solde : ${user.data.balance ?? 0}` : "❌ Introuvable";
 }
 
-// ===== MODIF addEmployee =====
 async function addEmployee(){
     const email = document.getElementById("employeeEmail").value.trim().toLowerCase();
-    const type = document.getElementById("employeeType").value;
-    if(!email){ alert("Email requis"); return; }
-
-    // Vérifier si l'utilisateur existe
-    const user = allUsers.find(u => (u.data.email||"").toLowerCase() === email);
-    if(!user){
-        alert("❌ Cet utilisateur n'existe pas dans Firestore !");
-        return;
-    }
-
-    // Mettre à jour le rôle
-    await updateDoc(doc(db,"users",user.id), { role: type });
-    alert(`✅ Rôle de ${email} mis à jour : ${type}`);
-    loadUsersFromFirestore();
-    playValidateSound();
+    const role = document.getElementById("employeeType").value;
+    const user = allUsers.find(u => (u.data.email || "").toLowerCase() === email);
+    if(user){ await updateDoc(doc(db, "users", user.id), { role: role }); alert("✅ Rôle mis à jour"); }
+    else alert("❌ Email introuvable");
 }
 
-async function removeEmployee(){
-    const email = document.getElementById("removeEmployeeEmail").value.trim().toLowerCase();
-    if(!email){ alert("Email requis"); return; }
-    const user = allUsers.find(u => (u.data.email||"").toLowerCase()===email);
-    if(!user){ alert("Utilisateur non trouvé"); return; }
-    await updateDoc(doc(db,"users",user.id), { role:"removed" });
-    alert(`❌ Employé supprimé : ${email}`);
-    loadUsersFromFirestore();
-    playRefuseSound();
-}
+// Global scope
+window.processFunds = processFunds;
+window.checkBalance = checkBalance;
+window.addEmployee = addEmployee;
 
-async function updateUser(){
-    const dp = document.getElementById("updateDP").value.trim();
-    const field = document.getElementById("updateField").value.trim();
-    let value = document.getElementById("updateValue").value.trim();
-    const user = findUserByDP(dp);
-    if(!user){ alert("Utilisateur introuvable"); return; }
-    if(field==="balance"||field==="credits"){ value=parseFloat(value); if(isNaN(value)){ alert("Valeur numérique requise"); return; } }
-    await updateDoc(doc(db,"users",user.id), { [field]:value });
-    alert(`✅ ${field} mis à jour pour ${dp}`);
-    loadUsersFromFirestore();
-    playValidateSound();
-}
-
-// ===== RECHARGES =====
-async function loadRechargesFromFirestore(){
-    const snapshot = await getDocs(collection(db,"transactions"));
-    allRecharges = snapshot.docs.map(d=>({id:d.id, data:d.data()}));
-    const list = document.getElementById("rechargeList");
-    list.innerHTML="";
-    allRecharges.forEach(r=>{
-        const d=r.data;
-        const div=document.createElement("div");
-        div.className="request";
-        div.innerHTML=`
-            <p><b>ID:</b> ${r.id} — <b>DP:</b> ${d.dpID || d.dp || '—'}</p>
-            <p><b>Montant:</b> ${d.amount}</p>
-            <div class="btnRow">
-                <button class="btnGreen" onclick="validateRecharge('${r.id}')">Valider</button>
-                <button class="btnRed" onclick="refuseRecharge('${r.id}')">Refuser</button>
-            </div>
-        `;
-        list.appendChild(div);
-    });
-}
-
-async function validateRecharge(id){
-    const r = allRecharges.find(x=>x.id===id); if(!r){ alert("Introuvable"); return; }
-    await updateDoc(doc(db,"transactions",id), { status:"validated" });
-    const user = findUserByDP(r.data.dpID); if(user){ await updateDoc(doc(db,"users",user.id), { balance:(parseFloat(user.data.balance)||0)+parseFloat(r.data.amount) }); }
-    alert("✅ Recharge validée");
-    loadRechargesFromFirestore();
-    playValidateSound();
-}
-async function refuseRecharge(id){
-    await updateDoc(doc(db,"transactions",id), { status:"refused" });
-    alert("❌ Recharge refusée");
-    loadRechargesFromFirestore();
-    playRefuseSound();
-}
-
-// ===== MENU =====
-function toggleMenu(){ document.getElementById("actionMenu").style.display = document.getElementById("actionMenu").style.display==="block"?"none":"block"; }
-function selectAction(type){ currentAction=type; document.getElementById("selectedAction").innerText=type==="add"?"Ajouter des fonds":"Retirer des fonds"; document.getElementById("fundTitle").innerText=type==="add"?"💰 Ajouter des fonds":"💸 Retirer des fonds"; document.getElementById("fundBtn").innerText=type==="add"?"Ajouter":"Retirer"; }
-function showInfoNote(txt,error=false){ const n=document.getElementById("infoNote"); n.innerText=txt; n.style.background=error?"#3a0b0b":"#0b2b2b"; }
-function playValidateSound(){ try{document.getElementById("soundValidate").play()}catch(e){} }
-function playRefuseSound(){ try{document.getElementById("soundRefuse").play()}catch(e){} }
-
-// ===== INIT =====
-await loadUsersFromFirestore();
-await loadRechargesFromFirestore();
-showInfoNote(`✔ Données chargées depuis Firestore (${allUsers.length} utilisateurs)`);
-
-// Rendre fonctions globales pour boutons inline
-window.processFunds=processFunds;
-window.checkBalance=checkBalance;
-window.addEmployee=addEmployee;
-window.removeEmployee=removeEmployee;
-window.updateUser=updateUser;
-window.loadRechargesFromFirestore=loadRechargesFromFirestore;
-window.validateRecharge=validateRecharge;
-window.refuseRecharge=refuseRecharge;
-window.toggleMenu=toggleMenu;
-window.selectAction=selectAction;
-
+await loadData();
 </script>
 
+<style>.show { display: block; }</style>
 </body>
 </html>
