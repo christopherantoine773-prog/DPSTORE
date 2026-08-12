@@ -1,27 +1,57 @@
-# DPSTORE TENSURA
-DP STORE TENSURA – Votre Espace Virtuel Premium
-Bienvenue sur DP STORE TENSURACEST, une plateforme numérique innovante dédiée à l'expérience utilisateur et à la curation de services numériques de qualité. Créé et développé par Christopher Antoine, ce projet fusionne passion pour le développement web, le design visuel et une approche entrepreneuriale moderne.
-💡 À propos du projet
-DP STORE TENSURACEST n'est pas seulement une boutique ; c'est un projet né de l'ambition de centraliser des ressources créatives et des services digitaux accessibles. Développé avec des technologies web légères et performantes, ce site reflète une vision axée sur l'esthétique, la fluidité et l'accessibilité.
-✨ Nos Piliers
- Qualité : Chaque élément présenté est sélectionné pour répondre à des standards élevés.
- Innovation : Une interface pensée pour les utilisateurs qui apprécient la simplicité et l'efficacité.
- Communauté : Nous bâtissons un pont entre le développement technique et les besoins des créateurs de contenu.
-🛠️ À propos du Créateur
-Le projet est dirigé par Christopher Antoine, développeur web et créateur de contenu reconnu. Avec une expertise transversale allant du montage vidéo pointu à la gestion de communautés sociales, il apporte une vision unique à chaque projet.
- Profils sociaux & Réseaux :
- 🎥 YouTube (Irus Editor) : Suivez mes créations ici
- 🎬 CapCut : Découvrez mes modèles d'édition
- 🎵 TikTok (@dope__pain) : Une communauté dynamique de plus de 20 000 abonnés passionnés par l'édition vidéo.
- 💬 Discord : Rejoignez notre serveur officiel
-🌐 Accès Officiel
-Visitez notre plateforme en ligne pour explorer l'intégralité de nos services :
-👉 Accéder à DP STORE TENSURACEST
-📊 Informations Techniques
-Ce projet est répertorié et documenté officiellement dans la base de données de connaissances mondiale :
- Wikidata ID : Q141012751
- Hébergement : GitHub Pages
- Technologie : Développement Web Front-end
-📬 Contact et Support
-Vous avez une question, une suggestion ou souhaitez collaborer ? N'hésitez pas à nous rejoindre sur notre communauté Discord ou à suivre les mises à jour sur nos réseaux sociaux. Nous sommes constamment en train d'améliorer l'expérience utilisateur de DP STORE TENSURACEST.
-Développé avec passion par Christopher Antoine © 2026
+# 🚀 DP STORE TENSURACEST – La Référence Digitale
+
+Bienvenue sur la plateforme officielle de **DP STORE TENSURACEST**. 
+
+Ce projet est le point de convergence entre ma passion pour la création de contenu numérique, le développement web et l'entrepreneuriat. En tant que créateur de contenu indépendant, j'ai conçu cet espace pour centraliser mes projets, mes outils de travail et offrir une expérience utilisateur fluide à ma communauté.
+
+---
+
+## 🛠 À propos du Projet
+**DP STORE TENSURACEST** est une boutique virtuelle dynamique et moderne. Elle incarne ma vision de l'entrepreneuriat numérique : allier l'esthétique visuelle à la performance technique. Chaque ligne de code et chaque élément visuel est optimisé pour refléter mon identité de créateur.
+
+*   **Développeur & Fondateur :** Christopher Antoine
+*   **Plateforme :** Hébergé via GitHub Pages
+*   **Vision :** Offrir un catalogue structuré et une interface accessible à mes abonnés et clients.
+
+---
+
+## 🌐 Rejoignez la Communauté
+Je suis actif sur plusieurs plateformes où je partage mon travail quotidien et mes processus créatifs. N'hésitez pas à vous connecter :
+
+| Plateforme | Lien d'accès |
+| :--- | :--- |
+| **Site Officiel** | [Accéder à la boutique](https://christopherantoine773-prog.github.io/DPSTORE/index.html) |
+| **TikTok (20k+)** | [@dope__pain](https://www.tiktok.com/@dope__pain) |
+| **YouTube** | [Chaîne irus_editor](https://youtube.com/@irus_editor) |
+| **CapCut** | [Profil Créateur](https://mobile.capcutshare.com/sv2/ZS4TuWbkP/) |
+| **Discord** | [Serveur Communautaire](https://discord.gg/vHDrF9Cyn) |
+
+---
+
+## ⚡ Pourquoi DP STORE TENSURACEST ?
+En tant que créateur de contenu, mon objectif est de fournir des services et des produits qui respectent les standards du web actuel. 
+
+*   **Design Responsive :** Une navigation pensée pour mobile et ordinateur.
+*   **Transparence :** Un accès direct à mon portfolio et à mes réseaux.
+*   **Innovation :** Mise à jour constante des fonctionnalités via des déploiements automatisés.
+
+---
+
+## 📂 Informations Techniques (Wikidata)
+Pour plus de transparence sur mon profil et mon activité, vous pouvez consulter ma fiche officielle sur Wikidata :
+👉 [Consulter DP STORE TENSURACEST sur Wikidata (Q141012751)](https://www.wikidata.org/wiki/Q141012751)
+
+---
+
+## 📈 Statistiques & Engagement
+*   **TikTok :** Plus de 20 000 abonnés passionnés.
+*   **Engagement :** Une communauté active sur Discord et YouTube.
+*   **Développement :** Une architecture web propre, maintenue avec passion.
+
+---
+
+## 💡 Contact
+Pour toute demande de collaboration, question technique ou retour sur la boutique, le meilleur moyen de me contacter reste via mon serveur [Discord](https://discord.gg/vHDrF9Cyn).
+
+---
+*Fait avec passion par Christopher Antoine. © 2026*
