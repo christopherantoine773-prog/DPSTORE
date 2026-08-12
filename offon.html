@@ -3,45 +3,363 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OFF/ON — DPSTORE</title>
+<title>DPSTORE | Admin Recharges</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Icônes FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <style>
-body { background:black; color:white; font-family:Arial; text-align:center; padding:30px; }
-button { padding:15px 30px; margin:20px; font-size:18px; border:none; border-radius:10px; cursor:pointer; font-weight:bold; }
-#btnOn { background:green; color:black; }
-#btnOff { background:red; color:white; }
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(160deg, #0f172a, #021220, #001a13);
+    margin: 0;
+    color: #e0ffe9;
+    min-height: 100vh;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background: rgba(0, 20, 10, 0.7);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(0,255,150,0.2);
+    box-shadow: 0 0 25px rgba(0,255,150,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #00ffb3;
+    margin: 0;
+  }
+
+  .back-btn {
+    background: transparent;
+    border: 2px solid #00ffb3;
+    color: #00ffb3;
+    padding: 6px 16px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.25s;
+  }
+
+  .back-btn:hover {
+    background: #00ffb3;
+    color: #000;
+  }
+
+  .container {
+    padding: 30px 20px;
+    max-width: 1000px;
+    margin: auto;
+  }
+
+  /* --- ONGLETS (TABS) --- */
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    border-bottom: 2px solid rgba(0,255,150,0.2);
+    padding-bottom: 10px;
+  }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: 0.3s;
+  }
+  .tab-btn.active, .tab-btn:hover {
+    background: rgba(0,255,150,0.1);
+    color: #00ffb3;
+  }
+
+  /* --- CARTES DE DEMANDES --- */
+  .request-card {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(0,255,179,0.25);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .request-card:hover {
+    border-color: #00ffb3;
+    box-shadow: 0 5px 20px rgba(0,255,179,0.15);
+  }
+
+  .req-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 10px;
+  }
+  .req-header h3 {
+    margin: 0;
+    color: #38bdf8;
+    font-size: 1.2rem;
+  }
+
+  .req-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    font-size: 0.95rem;
+  }
+  .req-details p { margin: 5px 0; color: #cbd5e1; }
+  .req-details strong { color: #00ffb3; }
+  
+  .transcode-box {
+    background: rgba(0,0,0,0.3);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    color: #fcd34d;
+    border: 1px dashed #fcd34d;
+    display: inline-block;
+  }
+
+  /* --- BADGES STATUTS --- */
+  .badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  .badge-attente { background: #f59e0b; color: #fff; }
+  .badge-valide { background: #10b981; color: #fff; }
+  .badge-refuse { background: #ef4444; color: #fff; }
+  .badge-archive { background: #64748b; color: #fff; }
+
+  /* --- BOUTONS ACTIONS --- */
+  .actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+  .btn-action {
+    padding: 8px 15px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    color: #000;
+  }
+  .btn-valider { background: #00ffb3; }
+  .btn-valider:hover { background: #00cc8f; }
+  .btn-refuser { background: #ff5555; color: white; }
+  .btn-refuser:hover { background: #cc4444; }
+  .btn-archiver { background: #94a3b8; color: white; }
+  .btn-archiver:hover { background: #64748b; }
+
+  .empty-msg {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 1.2rem;
+    padding: 50px 0;
+  }
 </style>
 </head>
 <body>
 
-<h2>⚡ Contrôle d'accès Pub</h2>
-<p>Activer ou désactiver l’accès à pub.html</p>
+<header>
+  <button class="back-btn" onclick="window.location.href='index.html'">← Retour</button>
+  <h1>⚙️ Panel Recharges</h1>
+  <div></div>
+</header>
 
-<button id="btnOn">🔓 Activer l'accès</button>
-<button id="btnOff">🔒 Désactiver l'accès</button>
+<div class="container">
+  
+  <!-- ONGLETS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="setFilter('en attente', this)">⏳ En attente</button>
+    <button class="tab-btn" onclick="setFilter('traitée', this)">✅ Traitées</button>
+    <button class="tab-btn" onclick="setFilter('archivé', this)">📦 Archives</button>
+  </div>
 
-<p id="statusText" style="margin-top:20px;font-size:18px;"></p>
+  <div id="requests-container">
+    <!-- Les cartes apparaîtront ici -->
+  </div>
+
+</div>
 
 <script>
-// Initialiser l'état
-function updateStatus(){
-    const status = localStorage.getItem("pub_access") || "OFF";
-    document.getElementById("statusText").textContent = 
-        status === "ON" ? "✅ Accès activé" : "❌ Accès désactivé";
+/* ============================
+   🔒 VÉRIFICATION SÉCURITÉ (ADMIN)
+============================ */
+let currentUser = JSON.parse(sessionStorage.getItem("dpstore_user") || "{}");
+if(!currentUser.role || !["creator","admin"].includes(currentUser.role.toLowerCase())){
+  alert("🚫 Accès refusé ! Administrateurs uniquement.");
+  window.location.href = "index.html";
 }
 
-// Bouton activer
-document.getElementById("btnOn").addEventListener("click", () => {
-    localStorage.setItem("pub_access","ON");
-    updateStatus();
-});
+let currentFilter = 'en attente';
 
-// Bouton désactiver
-document.getElementById("btnOff").addEventListener("click", () => {
-    localStorage.setItem("pub_access","OFF");
-    updateStatus();
-});
+/* ============================
+   🔄 CHARGEMENT DES DONNÉES
+============================ */
+function getAllRequests() {
+  let allRequests = [];
+  
+  // Parcourir tout le localStorage à la recherche des clés "dp_recharges_"
+  for (let i = 0; i < localStorage.length; i++) {
+    let key = localStorage.key(i);
+    
+    if (key.startsWith("dp_recharges_")) {
+      let userRequests = JSON.parse(localStorage.getItem(key) || "[]");
+      
+      // Ajouter chaque demande avec sa clé d'origine et son index pour pouvoir la modifier plus tard
+      userRequests.forEach((req, index) => {
+        req.localKey = key;
+        req.localIndex = index;
+        allRequests.push(req);
+      });
+    }
+  }
+  
+  // Trier par date (les plus récents en premier)
+  return allRequests;
+}
 
-updateStatus();
+/* ============================
+   🎨 AFFICHAGE DES DEMANDES
+============================ */
+function renderRequests() {
+  const container = document.getElementById("requests-container");
+  container.innerHTML = "";
+  
+  let requests = getAllRequests();
+  
+  // Filtrer selon l'onglet actif
+  let filtered = requests.filter(req => {
+    let status = req.status.toLowerCase();
+    if (currentFilter === 'en attente') return status === 'en attente';
+    if (currentFilter === 'traitée') return status === 'validé' || status === 'refusé';
+    if (currentFilter === 'archivé') return status === 'archivé';
+    return false;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-msg">Aucune demande dans cette catégorie.</div>`;
+    return;
+  }
+
+  filtered.forEach(req => {
+    let badgeClass = "badge-attente";
+    if (req.status === "Validé") badgeClass = "badge-valide";
+    if (req.status === "Refusé") badgeClass = "badge-refuse";
+    if (req.status === "Archivé") badgeClass = "badge-archive";
+
+    let card = document.createElement("div");
+    card.className = "request-card";
+    
+    // Génération des boutons selon le statut
+    let actionButtons = "";
+    if (req.status.toLowerCase() === "en attente") {
+      actionButtons = `
+        <button class="btn-action btn-valider" onclick="updateStatus('${req.localKey}', ${req.localIndex}, 'Validé', ${req.amount}, '${req.emailAccount}')"><i class="fa-solid fa-check"></i> Valider</button>
+        <button class="btn-action btn-refuser" onclick="updateStatus('${req.localKey}', ${req.localIndex}, 'Refusé', 0, '${req.emailAccount}')"><i class="fa-solid fa-xmark"></i> Refuser</button>
+      `;
+    } else if (req.status.toLowerCase() !== "archivé") {
+      actionButtons = `
+        <button class="btn-action btn-archiver" onclick="updateStatus('${req.localKey}', ${req.localIndex}, 'Archivé', 0, '${req.emailAccount}')"><i class="fa-solid fa-box-archive"></i> Archiver</button>
+      `;
+    }
+
+    card.innerHTML = `
+      <div class="req-header">
+        <h3>${req.name} <span style="font-size:0.9rem; color:#94a3b8;">(${req.dpID})</span></h3>
+        <span class="badge ${badgeClass}">${req.status}</span>
+      </div>
+      <div class="req-details">
+        <div>
+          <p>Email: <strong>${req.emailAccount}</strong></p>
+          <p>Méthode: <strong>${req.method}</strong></p>
+          <p>Montant: <strong>${req.amount} G</strong></p>
+        </div>
+        <div>
+          <p>Date: ${req.created}</p>
+          <p>Tel: ${req.phone || "Non renseigné"}</p>
+          <div class="transcode-box">${req.transcode}</div>
+        </div>
+      </div>
+      <div class="actions">
+        ${actionButtons}
+      </div>
+    `;
+    
+    container.appendChild(card);
+  });
+}
+
+/* ============================
+   ⚙️ GESTION DES STATUTS ET SOLDE
+============================ */
+function updateStatus(localKey, index, newStatus, amountToAdd, userEmail) {
+  if(!confirm(`Êtes-vous sûr de vouloir marquer cette demande comme : ${newStatus} ?`)) return;
+
+  // 1. Mettre à jour le statut dans la demande
+  let userRequests = JSON.parse(localStorage.getItem(localKey) || "[]");
+  if(userRequests[index]) {
+    userRequests[index].status = newStatus;
+    localStorage.setItem(localKey, JSON.stringify(userRequests));
+  }
+
+  // 2. Si VALIDÉ, on ajoute l'argent au compte global dpstore_accounts
+  if (newStatus === "Validé") {
+    let accounts = JSON.parse(localStorage.getItem("dpstore_accounts") || "[]");
+    let accIndex = accounts.findIndex(a => a.email.toLowerCase() === userEmail.toLowerCase());
+    
+    if (accIndex !== -1) {
+      let currentBalance = parseFloat(accounts[accIndex].balance) || 0;
+      accounts[accIndex].balance = currentBalance + parseFloat(amountToAdd);
+      localStorage.setItem("dpstore_accounts", JSON.stringify(accounts));
+      alert(`✅ Statut mis à jour et ${amountToAdd} G ajoutés au compte de ${userEmail} !`);
+    } else {
+      alert("✅ Statut mis à jour ! (Cependant, le compte n'a pas été trouvé dans la base locale pour ajouter l'argent automatiquement).");
+    }
+  } else {
+    alert(`Statut mis à jour : ${newStatus}`);
+  }
+
+  // Rafraîchir l'affichage
+  renderRequests();
+}
+
+/* ============================
+   🗂️ SYSTÈME D'ONGLETS
+============================ */
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  
+  // Gérer la classe active des boutons
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  
+  renderRequests();
+}
+
+// Lancement initial
+renderRequests();
 </script>
 
 </body>
