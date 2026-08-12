@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Recharge — DPSTORE</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- FontAwesome pour les logos -->
+<!-- Importation des logos FontAwesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
@@ -63,7 +63,7 @@
     font-weight: 700;
   }
 
-  /* --- INFO PAIEMENT --- */
+  /* --- INFO PAIEMENT & CONTACTS --- */
   .payment-info {
     background: rgba(56, 189, 248, 0.1);
     border: 1px solid rgba(56, 189, 248, 0.3);
@@ -79,33 +79,55 @@
     color: #38bdf8;
   }
 
-  /* --- BOUTONS DE CONTACT (ADMIN) --- */
-  .admin-contacts {
+  .admin-notice {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    color: #fde68a;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  /* --- BOUTONS SOCIAUX & PAIEMENT --- */
+  .social-buttons {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     justify-content: center;
     margin-top: 15px;
   }
-  .contact-btn {
+
+  .btn-social {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 14px;
+    padding: 10px 16px;
     border-radius: 8px;
     text-decoration: none;
     font-weight: 600;
     font-size: 0.9rem;
-    color: #fff !important;
+    color: #ffffff !important;
     transition: 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   }
-  .contact-btn.discord { background: #5865F2; }
-  .contact-btn.whatsapp { background: #25D366; }
-  .contact-btn.email { background: #ea4335; }
-  .contact-btn:hover {
-    opacity: 0.9;
-    transform: scale(1.03);
+  .btn-social:hover {
+    transform: translateY(-2px);
   }
+
+  .btn-paypal { background: #0070ba; }
+  .btn-paypal:hover { background: #005ea6; }
+
+  .btn-discord { background: #5865F2; }
+  .btn-discord:hover { background: #4752C4; }
+
+  .btn-whatsapp { background: #25D366; }
+  .btn-whatsapp:hover { background: #1EBE5D; }
+
+  .btn-email { background: #ea4335; }
+  .btn-email:hover { background: #d33828; }
 
   #balanceDisplay {
     color: #fcd34d;
@@ -149,10 +171,6 @@
     font-weight: 600;
     background: rgba(15, 23, 42, 0.5);
     cursor: not-allowed;
-  }
-
-  .hidden {
-    display: none !important;
   }
 
   /* --- BOUTONS --- */
@@ -252,10 +270,26 @@
 
 <div class="container">
   <div class="card">
-    <h2><i class="fa-solid fa-wallet"></i> Recharger mon compte</h2>
+    <h2>💳 Recharger mon compte</h2>
     
+    <!-- Message pour l'admin -->
+    <div class="admin-notice">
+      <i class="fa-solid fa-triangle-exclamation"></i> <b>Information :</b> Si vous souhaitez recharger votre compte directement, contactez l'administrateur ou utilisez les méthodes ci-dessous.
+      <div class="social-buttons">
+        <a href="https://discord.com/channels/1480426047186141266/1536904547132244079" target="_blank" class="btn-social btn-discord">
+          <i class="fa-brands fa-discord"></i> Discord
+        </a>
+        <a href="https://wa.me/13478575829" target="_blank" class="btn-social btn-whatsapp">
+          <i class="fa-brands fa-whatsapp"></i> WhatsApp
+        </a>
+        <a href="mailto:christopherantoine773@gmail.com" class="btn-social btn-email">
+          <i class="fa-solid fa-envelope"></i> Email
+        </a>
+      </div>
+    </div>
+
     <div class="payment-info" id="paymentInfo">
-      Recharge via <b id="methodTitle">Natcash</b><br>
+      Recharge via <b>Natcash</b><br>
       Compte à créditer : <b>Christopher Antoine — 42758154</b>
     </div>
     
@@ -266,8 +300,8 @@
       <label class="small">Méthode de paiement *</label>
       <select id="methodInput" required>
         <option value="Natcash">Natcash</option>
-        <option value="PayPal">PayPal</option>
-        <option value="Autre">Autre méthode...</option>
+        <option value="PayPal">PayPal (Business)</option>
+        <option value="Autre" disabled>Autre méthode (Indisponible pour le moment)</option>
       </select>
 
       <label class="small">Nom complet *</label>
@@ -285,10 +319,8 @@
       <label class="small">Montant désiré *</label>
       <input id="amountInput" type="number" placeholder="Ex: 500" required>
 
-      <div id="transcodeContainer">
-        <label class="small" id="labelTranscode">Transcode Natcash *</label>
-        <input id="transcodeInput" placeholder="Saisir la référence de la transaction" required>
-      </div>
+      <label class="small" id="labelTranscode">Transcode Natcash *</label>
+      <input id="transcodeInput" placeholder="Saisir la référence de la transaction" required>
 
       <div id="errorBox" class="error"></div>
 
@@ -352,34 +384,22 @@ async function loadBalance(){
 }
 await loadBalance();
 
-/* ==================================================
-   🔥 GESTION DES METHODES (INDISPONIBLES SAUF NATCASH)
-   ================================================== */
+/* GESTION DE L'AFFICHAGE SELON LA MÉTHODE */
 const methodInput = document.getElementById("methodInput");
 const paymentInfo = document.getElementById("paymentInfo");
-const transcodeContainer = document.getElementById("transcodeContainer");
-const transcodeInput = document.getElementById("transcodeInput");
-const sendBtn = document.getElementById("sendBtn");
+const labelTranscode = document.getElementById("labelTranscode");
 
 methodInput.addEventListener("change", function() {
-  if (this.value === "Natcash") {
-    paymentInfo.innerHTML = `Recharge via <b>Natcash</b><br>Compte à créditer : <b>Christopher Antoine — 42758154</b>`;
-    transcodeContainer.style.display = "block";
-    transcodeInput.required = true;
-    sendBtn.disabled = false;
-    sendBtn.style.opacity = "1";
+  if (this.value === "PayPal") {
+    // ⚠️ Pense à remplacer TON_LIEN_PAYPAL par ton vrai lien paypal.me
+    paymentInfo.innerHTML = `Recharge via <b>PayPal</b><br>
+    Cliquez sur le bouton ci-dessous pour effectuer le paiement :<br>
+    <a href="https://paypal.me/TON_LIEN_PAYPAL" target="_blank" class="btn-social btn-paypal" style="margin-top:10px;"><i class="fa-brands fa-paypal"></i> Payer via PayPal</a><br>
+    <small>(Sélectionnez "Paiement entre proches" si possible)</small>`;
+    labelTranscode.textContent = "ID de Transaction PayPal *";
   } else {
-    // Si PayPal ou Autre
-    paymentInfo.innerHTML = `⚠️ Cette méthode est <b>indisponible pour le moment</b>.<br>Si vous souhaitez recharger votre compte, contactez directement l'admin :
-      <div class="admin-contacts">
-        <a href="https://discord.com/channels/1480426047186141266/1536904547132244079" target="_blank" class="contact-btn discord"><i class="fa-brands fa-discord"></i> Discord</a>
-        <a href="https://wa.me/13478575829" target="_blank" class="contact-btn whatsapp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
-        <a href="mailto:christopherantoine773@gmail.com" class="contact-btn email"><i class="fa-solid fa-envelope"></i> Email</a>
-      </div>`;
-    transcodeContainer.style.display = "none";
-    transcodeInput.required = false;
-    sendBtn.disabled = true;
-    sendBtn.style.opacity = "0.5";
+    paymentInfo.innerHTML = `Recharge via <b>Natcash</b><br>Compte à créditer : <b>Christopher Antoine — 42758154</b>`;
+    labelTranscode.textContent = "Transcode Natcash *";
   }
 });
 
@@ -388,6 +408,7 @@ function normalizeId(str){
 }
 const key = "dp_recharges_" + normalizeId(user.email);
 
+const sendBtn = document.getElementById("sendBtn");
 const popup = document.getElementById("popup");
 const errorBox = document.getElementById("errorBox");
 const soundOK = document.getElementById("soundOK");
@@ -402,19 +423,15 @@ document.getElementById("payForm").addEventListener("submit", e => {
   e.preventDefault();
 
   const method = methodInput.value;
-  if (method !== "Natcash") {
-    return showError("Veuillez utiliser Natcash ou contacter l'admin directement.");
-  }
-
   const name = document.getElementById("nameInput").value.trim();
   const email = document.getElementById("emailInput").value.trim();
   const amount = document.getElementById("amountInput").value.trim();
-  const transcode = transcodeInput.value.trim();
+  const transcode = document.getElementById("transcodeInput").value.trim();
 
   if(!name) return showError("Le nom est obligatoire.");
   if(!email) return showError("L'email est obligatoire.");
   if(!amount || amount <= 0) return showError("Veuillez entrer un montant valide.");
-  if(!transcode) return showError("Veuillez entrer le transcode Natcash.");
+  if(!transcode) return showError(`Veuillez entrer la référence / transcode.`);
 
   sendBtn.disabled = true;
   sendBtn.textContent = "Envoi en cours...";
