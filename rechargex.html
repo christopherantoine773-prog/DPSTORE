@@ -3,27 +3,220 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>rechargex — DPSTORE</title>
+<title>Recharge — DPSTORE</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-body{margin:0;font-family:Inter,Arial,sans-serif;background:radial-gradient(circle at 20% 30%,#001a0f,#000);color:#eaffea;overflow-x:hidden}
-.header{padding:14px 18px;background:rgba(0,255,120,0.05);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,255,136,0.2)}
-.header a{color:#00ff88;font-weight:600;text-decoration:none;text-shadow:0 0 8px #00ff88}
-.container{max-width:750px;margin:25px auto;padding:20px}
-.card{background:rgba(0,20,10,0.6);padding:20px;border-radius:14px;border:1px solid rgba(0,255,136,0.15);box-shadow:0 0 25px rgba(0,255,120,0.15);backdrop-filter:blur(12px)}
-.card h2{color:#00ff99;text-shadow:0 0 10px #00ff99;font-size:1.4rem;margin:0 0 6px}
-label.small{font-size:0.9rem;color:#9fdca6;margin-top:10px;display:block}
-input{width:100%;padding:12px;margin-top:6px;border-radius:10px;border:1px solid rgba(0,255,120,0.2);background:rgba(0,0,0,0.6);color:#eaffee}
-input:focus{border-color:#00ff99;box-shadow:0 0 12px #00ff99;outline:none}
-input[readonly]{opacity:.7;color:#00ffcc;font-weight:700}
-button{width:100%;padding:14px;margin-top:15px;border-radius:10px;background:linear-gradient(90deg,#00ff88,#00cc66);color:#000;font-weight:800;border:none;cursor:pointer;font-size:1.05rem;box-shadow:0 0 20px #00ff8866}
-button[disabled]{opacity:.5;cursor:not-allowed}
-.error{color:#ffb3b3;padding:8px;margin-top:10px;border-radius:8px;background:rgba(255,0,0,0.06);display:none}
-.popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:0;visibility:hidden;transition:.2s}
-.popup.active{opacity:1;visibility:visible}
-.popup h2{color:#00ff99;margin-bottom:6px}
-.small-note{opacity:0.8;margin-top:8px;font-size:0.95rem;color:#cfeed0}
-#balanceDisplay{color:#00ffb3;font-weight:bold;margin-top:8px;font-size:1.1rem;}
+  /* --- BASE --- */
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #f8fafc;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* --- HEADER --- */
+  .header {
+    padding: 15px 25px;
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .header a {
+    color: #38bdf8;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: 0.2s;
+  }
+  .header a:hover {
+    color: #0ea5e9;
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+  }
+
+  /* --- CONTAINER & CARD --- */
+  .container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+  .card {
+    background: rgba(30, 41, 59, 0.6);
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid #334155;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+  }
+  .card h2 {
+    color: #38bdf8;
+    font-size: 1.5rem;
+    margin: 0 0 15px;
+    font-weight: 700;
+  }
+
+  /* --- INFO PAIEMENT --- */
+  .payment-info {
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    color: #e2e8f0;
+    line-height: 1.5;
+    text-align: center;
+  }
+  .payment-info b {
+    color: #38bdf8;
+  }
+  .qr-code {
+    max-width: 140px;
+    border-radius: 12px;
+    display: block;
+    margin: 10px auto;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  }
+
+  #balanceDisplay {
+    color: #fcd34d; /* Jaune or pour le solde */
+    font-weight: 700;
+    font-size: 1.15rem;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #334155;
+  }
+
+  /* --- FORMULAIRE --- */
+  label.small {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    display: block;
+    font-weight: 500;
+  }
+  
+  input, select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: #f8fafc;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: 0.3s;
+  }
+  input:focus, select:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    outline: none;
+  }
+  input[readonly] {
+    opacity: 0.7;
+    color: #38bdf8;
+    font-weight: 600;
+    background: rgba(15, 23, 42, 0.5);
+    cursor: not-allowed;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  /* --- BOUTONS --- */
+  button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 25px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%);
+    color: white;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    font-size: 1.05rem;
+    transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+  }
+  button:hover:not([disabled]) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.6);
+  }
+  button[disabled] {
+    background: #334155;
+    box-shadow: none;
+    color: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid rgba(56, 189, 248, 0.5);
+    box-shadow: none;
+    color: #38bdf8;
+    margin-top: 15px;
+  }
+  .btn-secondary:hover {
+    background: rgba(56, 189, 248, 0.1);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+  }
+
+  /* --- ERREURS & POPUP --- */
+  .error {
+    color: #fca5a5;
+    padding: 12px;
+    margin-top: 15px;
+    border-radius: 8px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    display: none;
+    font-size: 0.9rem;
+  }
+
+  .popup {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+    z-index: 100;
+  }
+  .popup.active {
+    opacity: 1;
+    visibility: visible;
+  }
+  .popup-content {
+    background: #1e293b;
+    padding: 40px;
+    border-radius: 16px;
+    text-align: center;
+    border: 1px solid #334155;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .popup h2 {
+    color: #38bdf8;
+    margin: 0 0 10px;
+    font-size: 1.8rem;
+  }
+  .popup p {
+    color: #e2e8f0;
+    margin: 0;
+  }
 </style>
 </head>
 <body>
@@ -31,18 +224,31 @@ button[disabled]{opacity:.5;cursor:not-allowed}
 <audio id="soundOK" src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAA…" preload="auto"></audio>
 
 <header class="header">
-  <a href="profil.html">← Retour</a>
+  <a href="profil.html">← Retour au Profil</a>
 </header>
 
 <div class="container">
   <div class="card">
-    <h2>💳 Faire une recharge sur DPSTORE</h2>
-    <p class="small-note">Recharge via <b>Natcash</b> — Compte : <b>Christopher Antoine — 42758154</b></p>
+    <h2>💳 Recharger mon compte</h2>
     
-    <!-- SOLDE -->
-    <p id="balanceDisplay">💰 Solde : ... crédits</p>
+    <div class="payment-info" id="paymentInfo">
+      Recharge via <b>Natcash</b><br>
+      Compte à créditer : <b>Christopher Antoine — 42758154</b>
+    </div>
+    
+    <p id="balanceDisplay">💰 Solde actuel : ... G</p>
 
     <form id="payForm" novalidate>
+
+      <label class="small">Méthode de paiement *</label>
+      <select id="methodInput" required>
+        <option value="Natcash">Natcash</option>
+        <option value="PayPal">PayPal (Business)</option>
+        <option value="Autre">Autre méthode...</option>
+      </select>
+
+      <!-- La petite barre qui s'affiche si on choisit "Autre" -->
+      <input id="otherMethodInput" class="hidden" placeholder="Précisez votre méthode (ex: MonCash, Virement...)" style="margin-top: 10px;">
 
       <label class="small">Nom complet *</label>
       <input id="nameInput" required>
@@ -50,32 +256,32 @@ button[disabled]{opacity:.5;cursor:not-allowed}
       <label class="small">Email *</label>
       <input id="emailInput" type="email" required>
 
-      <!-- 🔥 DP Synchronisé automatique -->
       <label class="small">DP-ID *</label>
       <input id="dpInput" readonly>
 
-      <label class="small">Numéro WhatsApp (optionnel)</label>
+      <label class="small" id="labelPhone">Numéro de téléphone (optionnel)</label>
       <input id="phoneInput">
 
-      <label class="small">Montant (HTG) *</label>
-      <input id="amountInput" type="number" required>
+      <label class="small">Montant désiré *</label>
+      <input id="amountInput" type="number" placeholder="Ex: 500" required>
 
-      <label class="small">Transcode Natcash *</label>
-      <input id="transcodeInput" required>
+      <label class="small" id="labelTranscode">Transcode Natcash *</label>
+      <input id="transcodeInput" placeholder="Saisir la référence de la transaction" required>
 
       <div id="errorBox" class="error"></div>
 
-      <button id="sendBtn">🚀 Envoyer la demande</button>
-
-      <button type="button" onclick="location.href='trx.html'">📄 Voir mes recharges</button>
+      <button id="sendBtn" type="submit">🚀 Envoyer la demande</button>
+      <button type="button" class="btn-secondary" onclick="location.href='trx.html'">📄 Voir l'historique</button>
 
     </form>
   </div>
 </div>
 
 <div class="popup" id="popup">
-  <h2>✅ Demande envoyée</h2>
-  <p style="color:#dfffe1">Ta demande a été ajoutée à tes transactions.</p>
+  <div class="popup-content">
+    <h2>✅ Demande envoyée !</h2>
+    <p>Ta recharge est en cours de vérification.</p>
+  </div>
 </div>
 
 <script type="module">
@@ -96,7 +302,7 @@ const db = getFirestore(app);
 /* 🔐 PROFIL CONNECTÉ */
 let user = JSON.parse(sessionStorage.getItem("dpstore_user") || "null");
 if(!user || !user.email || !user.dp){
-    alert("⚠ Accès refusé : vous devez être connecté.");
+    alert("⚠️ Accès refusé : vous devez être connecté.");
     location.href = "index.html";
 }
 
@@ -118,13 +324,43 @@ async function loadBalance(){
         });
         user.balance = account.balance;
         sessionStorage.setItem("dpstore_user", JSON.stringify(user));
-        document.getElementById("balanceDisplay").textContent = `💰 Solde : ${user.balance} crédits`;
+        document.getElementById("balanceDisplay").textContent = `💰 Solde actuel : ${user.balance} G`;
     }catch(e){
         console.warn("Erreur Firestore:", e);
-        document.getElementById("balanceDisplay").textContent = "💰 Solde : —";
+        document.getElementById("balanceDisplay").textContent = "💰 Solde actuel : —";
     }
 }
 await loadBalance();
+
+/* GESTION DE L'AFFICHAGE SELON LA MÉTHODE DE PAIEMENT */
+const methodInput = document.getElementById("methodInput");
+const otherMethodInput = document.getElementById("otherMethodInput");
+const paymentInfo = document.getElementById("paymentInfo");
+const labelTranscode = document.getElementById("labelTranscode");
+
+methodInput.addEventListener("change", function() {
+  // Cacher le champ "Autre" par défaut
+  otherMethodInput.classList.add("hidden");
+  
+  if (this.value === "PayPal") {
+    // Affichage avec le QR Code fourni
+    paymentInfo.innerHTML = `Recharge via <b>PayPal</b><br>Scannez le QR Code ou envoyez à : <b>TON_EMAIL_PAYPAL@domaine.com</b>
+    <img src="image.png" alt="QR Code PayPal" class="qr-code">
+    <small>(Sélectionnez "Paiement entre proches" si possible)</small>`;
+    labelTranscode.textContent = "ID de Transaction PayPal *";
+    
+  } else if (this.value === "Autre") {
+    // Afficher le champ pour préciser
+    paymentInfo.innerHTML = `Recharge via <b>Autre Méthode</b><br>Veuillez contacter le support si vous n'avez pas les informations de paiement.`;
+    labelTranscode.textContent = "Référence / ID de transaction *";
+    otherMethodInput.classList.remove("hidden");
+    
+  } else {
+    // Retour à Natcash
+    paymentInfo.innerHTML = `Recharge via <b>Natcash</b><br>Compte à créditer : <b>Christopher Antoine — 42758154</b>`;
+    labelTranscode.textContent = "Transcode Natcash *";
+  }
+});
 
 /* Clé unique transactions */
 function normalizeId(str){
@@ -141,33 +377,41 @@ const soundOK = document.getElementById("soundOK");
 function showError(t){
   errorBox.textContent = t;
   errorBox.style.display = "block";
-  setTimeout(()=> errorBox.style.display="none",3000);
+  setTimeout(()=> errorBox.style.display="none", 4000);
 }
 
 document.getElementById("payForm").addEventListener("submit", e => {
   e.preventDefault();
 
-  const name = nameInput.value.trim();
-  const email = emailInput.value.trim();
-  const amount = amountInput.value.trim();
-  const transcode = transcodeInput.value.trim();
+  let method = methodInput.value;
+  // Si c'est "Autre", on récupère ce que l'utilisateur a tapé dans la barre
+  if (method === "Autre") {
+    method = otherMethodInput.value.trim();
+    if (!method) return showError("Veuillez préciser la méthode de paiement utilisée.");
+  }
 
-  if(!name) return showError("Nom obligatoire.");
-  if(!email) return showError("Email obligatoire.");
-  if(!amount) return showError("Montant obligatoire.");
-  if(!transcode) return showError("Transcode obligatoire.");
+  const name = document.getElementById("nameInput").value.trim();
+  const email = document.getElementById("emailInput").value.trim();
+  const amount = document.getElementById("amountInput").value.trim();
+  const transcode = document.getElementById("transcodeInput").value.trim();
+
+  if(!name) return showError("Le nom est obligatoire.");
+  if(!email) return showError("L'email est obligatoire.");
+  if(!amount || amount <= 0) return showError("Veuillez entrer un montant valide.");
+  if(!transcode) return showError(`Veuillez entrer la référence / transcode.`);
 
   sendBtn.disabled = true;
-  sendBtn.textContent = "Envoi...";
+  sendBtn.textContent = "Envoi en cours...";
 
   let list = JSON.parse(localStorage.getItem(key) || "[]");
 
   const newEntry = {
-    name,
-    email,
-    phone: phoneInput.value.trim(),
-    amount,
-    transcode,
+    method: method,
+    name: name,
+    email: email,
+    phone: document.getElementById("phoneInput").value.trim(),
+    amount: amount,
+    transcode: transcode,
     dpID: user.dp, 
     emailAccount: user.email,
     status: "en attente",
@@ -177,13 +421,15 @@ document.getElementById("payForm").addEventListener("submit", e => {
   list.unshift(newEntry);
   localStorage.setItem(key, JSON.stringify(list));
 
-  // 🔥 Déclencher l'événement storage pour mise à jour trx.html
+  // Déclencher l'événement storage pour mise à jour trx.html
   window.dispatchEvent(new StorageEvent('storage', { key, newValue: JSON.stringify(list) }));
 
-  soundOK.play();
+  // Lecture du son si disponible
+  try { soundOK.play(); } catch(e) {}
+  
   popup.classList.add("active");
 
-  setTimeout(() => location.reload(), 1500);
+  setTimeout(() => location.reload(), 2000);
 });
 </script>
 
