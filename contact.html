@@ -4,59 +4,51 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Support & Équipe DPSTORE</title>
-<!-- Importation des logos FontAwesome pour les icônes de contact -->
+<!-- Importation des logos FontAwesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  /* --- FOND ANIMÉ --- */
+  /* --- BASE & STYLE DES AUTRES FICHIERS --- */
   body {
     margin: 0;
-    font-family: "Poppins", sans-serif;
-    color: #e0fff4;
-    background: radial-gradient(circle at center, #020303 0%, #000 90%);
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #f8fafc;
+    min-height: 100vh;
     overflow-x: hidden;
   }
 
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(120deg, rgba(0,255,179,0.05), rgba(0,191,255,0.08));
-    animation: bgmove 10s infinite alternate;
-    z-index: -1;
-  }
-
-  @keyframes bgmove {
-    from { transform: translateX(-5%) rotate(0deg); }
-    to { transform: translateX(5%) rotate(2deg); }
-  }
-
-  /* --- EN-TÊTE --- */
+  /* --- HEADER --- */
   header {
     text-align: center;
     padding: 30px 15px;
-    background: rgba(0,0,0,0.75);
+    background: rgba(30, 41, 59, 0.8);
     backdrop-filter: blur(10px);
-    border-bottom: 2px solid #00ffb3;
-    box-shadow: 0 0 20px rgba(0,255,179,0.3);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   }
 
   header h1 {
     margin: 0;
-    font-size: 1.9rem;
-    color: #00ffb3;
-    letter-spacing: 1px;
-    text-shadow: 0 0 10px #00ffb3;
+    font-size: 1.8rem;
+    color: #38bdf8;
+    font-weight: 700;
   }
 
-  /* --- CONTAINER --- */
+  /* --- CONTAINER & CARD --- */
   .container {
-    max-width: 850px;
-    margin: 50px auto;
-    background: rgba(10, 10, 10, 0.8);
-    border: 1px solid rgba(0,255,179,0.08);
-    border-radius: 18px;
-    box-shadow: 0 0 40px rgba(0,255,179,0.05);
+    max-width: 650px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+
+  .card-box {
+    background: rgba(30, 41, 59, 0.6);
     padding: 30px;
+    border-radius: 16px;
+    border: 1px solid #334155;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
   }
 
   /* --- MEMBRE --- */
@@ -68,16 +60,15 @@
     gap: 15px;
     padding: 18px;
     margin-bottom: 15px;
-    border-bottom: 1px solid rgba(0,255,179,0.1);
-    transition: 0.3s;
     border-radius: 12px;
-    background: linear-gradient(90deg, rgba(0,255,179,0.03), rgba(0,255,179,0.02));
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid #334155;
+    transition: 0.3s;
   }
 
   .member:hover {
-    transform: scale(1.01);
-    background: linear-gradient(90deg, rgba(0,255,179,0.08), rgba(0,255,255,0.05));
-    box-shadow: 0 0 15px rgba(0,255,179,0.2);
+    border-color: #38bdf8;
+    box-shadow: 0 4px 20px rgba(56, 189, 248, 0.15);
   }
 
   .info {
@@ -93,45 +84,38 @@
   }
 
   .name strong {
-    color: #00ffb3;
+    color: #f8fafc;
     font-size: 1.05rem;
   }
 
   .info span {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: #94a3b8;
   }
 
   /* --- BADGE PRO --- */
   .badge {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    background: radial-gradient(circle at 40% 40%, #00c3ff, #006aff);
+    background: #0ea5e9;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 10px rgba(0,191,255,0.8);
-    animation: pulse 2.5s infinite;
+    box-shadow: 0 0 8px rgba(14, 165, 233, 0.6);
   }
 
   .badge::before {
     content: "✓";
     color: white;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: bold;
-  }
-
-  @keyframes pulse {
-    0% { box-shadow: 0 0 6px rgba(0,191,255,0.8); transform: scale(1); }
-    50% { box-shadow: 0 0 18px rgba(0,191,255,0.5); transform: scale(1.08); }
-    100% { box-shadow: 0 0 6px rgba(0,191,255,0.8); transform: scale(1); }
   }
 
   /* --- CONTACTS & LIENS --- */
   .contact {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
     flex-wrap: wrap;
   }
@@ -146,98 +130,96 @@
     font-weight: 600;
     font-size: 0.85rem;
     color: #ffffff !important;
-    transition: 0.3s;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: 0.2s;
   }
   .contact-btn:hover {
     transform: translateY(-2px);
   }
 
   .btn-whatsapp { background: #25D366; }
-  .btn-whatsapp:hover { background: #1EBE5D; box-shadow: 0 0 10px rgba(37,211,102,0.5); }
+  .btn-whatsapp:hover { background: #1EBE5D; }
 
   .btn-discord { background: #5865F2; }
-  .btn-discord:hover { background: #4752C4; box-shadow: 0 0 10px rgba(88,101,242,0.5); }
+  .btn-discord:hover { background: #4752C4; }
 
   .btn-email { background: #ea4335; }
-  .btn-email:hover { background: #d33828; box-shadow: 0 0 10px rgba(234,67,53,0.5); }
+  .btn-email:hover { background: #d33828; }
 
   /* --- ZONE MESSAGE D'AIDE --- */
   .help-box {
-    margin-top: 35px;
-    background: rgba(0,20,15,0.8);
-    padding: 25px;
-    border-radius: 14px;
-    border: 1px solid rgba(0,255,179,0.08);
-    box-shadow: 0 0 20px rgba(0,255,179,0.1);
+    margin-top: 30px;
+    background: rgba(15, 23, 42, 0.5);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #334155;
   }
 
   .help-box h2 {
-    color: #00ffb3;
-    margin-bottom: 10px;
-    font-size: 1.3rem;
-    text-shadow: 0 0 8px rgba(0,255,179,0.5);
+    color: #38bdf8;
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.2rem;
   }
 
   textarea {
     width: 100%;
-    height: 120px;
+    height: 100px;
     box-sizing: border-box;
-    border: 1px solid rgba(0,255,179,0.15);
+    border: 1px solid #334155;
     border-radius: 10px;
-    background: #0b0b0b;
-    color: #eafff8;
+    background: #0f172a;
+    color: #f8fafc;
     padding: 12px;
     resize: none;
-    font-family: "Poppins", sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.95rem;
     transition: 0.3s;
   }
 
   textarea:focus {
     outline: none;
-    border-color: #00ffb3;
-    box-shadow: 0 0 10px rgba(0,255,179,0.3);
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
   }
 
   button.submit-btn {
+    width: 100%;
     margin-top: 15px;
-    background: linear-gradient(90deg, #00ffb3, #00b7a0);
+    background: linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%);
     border: none;
-    color: #000;
-    padding: 12px 20px;
+    color: white;
+    padding: 12px;
     border-radius: 10px;
     font-weight: 700;
     cursor: pointer;
+    font-size: 1rem;
     transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
   }
 
   button.submit-btn:hover {
-    background: linear-gradient(90deg, #00d6a0, #00ffb3);
-    box-shadow: 0 0 10px rgba(0,255,179,0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.6);
   }
 
   .back {
     display: inline-block;
     margin-top: 25px;
-    border: 2px solid #00ffb3;
-    color: #00ffb3;
-    padding: 10px 20px;
-    border-radius: 10px;
+    color: #38bdf8;
     text-decoration: none;
     font-weight: 600;
-    transition: 0.3s;
+    font-size: 0.95rem;
+    transition: 0.2s;
   }
 
   .back:hover {
-    background: #00ffb3;
-    color: #000;
-    box-shadow: 0 0 10px #00ffb3;
+    color: #0ea5e9;
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
   }
 
   .footer {
     text-align: center;
-    color: #00ffb3;
+    color: #94a3b8;
     margin-top: 30px;
     font-size: 0.85rem;
     padding-bottom: 30px;
@@ -250,87 +232,42 @@
   </header>
 
   <div class="container">
+    <div class="card-box">
 
-    <!-- Membre 1 : Admin -->
-    <div class="member">
-      <div class="info">
-        <div class="name"><strong>Christopher Antoine (Admin Principal)</strong><div class="badge"></div></div>
-        <span>christopherantoine773@gmail.com</span>
+      <!-- Ton unique profil configuré avec tes liens précis -->
+      <div class="member">
+        <div class="info">
+          <div class="name"><strong>Christopher Antoine</strong><div class="badge"></div></div>
+          <span>christopherantoine773@gmail.com</span>
+        </div>
+        <div class="contact">
+          <a href="https://wa.me/13478575829" target="_blank" class="contact-btn btn-whatsapp">
+            <i class="fa-brands fa-whatsapp"></i>
+          </a>
+          <a href="https://discord.com/channels/1480426047186141266/1536904547132244079" target="_blank" class="contact-btn btn-discord">
+            <i class="fa-brands fa-discord"></i>
+          </a>
+          <a href="mailto:christopherantoine773@gmail.com" class="contact-btn btn-email">
+            <i class="fa-solid fa-envelope"></i>
+          </a>
+        </div>
       </div>
-      <div class="contact">
-        <a href="https://wa.me/13478575829" target="_blank" class="contact-btn btn-whatsapp">
-          <i class="fa-brands fa-whatsapp"></i> WhatsApp
-        </a>
-        <a href="https://discord.com/channels/1480426047186141266/1536904547132244079" target="_blank" class="contact-btn btn-discord">
-          <i class="fa-brands fa-discord"></i> Discord
-        </a>
-        <a href="mailto:christopherantoine773@gmail.com" class="contact-btn btn-email">
-          <i class="fa-solid fa-envelope"></i> Email
-        </a>
-      </div>
-    </div>
 
-    <!-- Membre 2 -->
-    <div class="member">
-      <div class="info">
-        <div class="name"><strong>Mathieu Lherisson</strong><div class="badge"></div></div>
-        <span>mathieulherisson99@gmail.com</span>
+      <div class="help-box">
+        <h2>Envoyer un message d’aide 💬</h2>
+        <textarea id="helpMessage" placeholder="Décris ton problème ici..."></textarea>
+        <button class="submit-btn" onclick="sendHelp()">Envoyer le message</button>
       </div>
-      <div class="contact">
-        <a href="https://wa.me/50947182512" target="_blank" class="contact-btn btn-whatsapp">
-          <i class="fa-brands fa-whatsapp"></i> WhatsApp
-        </a>
-        <a href="mailto:mathieulherisson99@gmail.com" class="contact-btn btn-email">
-          <i class="fa-solid fa-envelope"></i> Email
-        </a>
-      </div>
-    </div>
 
-    <!-- Membre 3 -->
-    <div class="member">
-      <div class="info">
-        <div class="name"><strong>Pilote Citizen</strong><div class="badge"></div></div>
-        <span>Pilotecitizen@gmail.com</span>
+      <div style="text-align:center;">
+        <a href="produits.html" class="back"><i class="fa-solid fa-arrow-left"></i> Retour aux produits</a>
       </div>
-      <div class="contact">
-        <a href="https://wa.me/50942157689" target="_blank" class="contact-btn btn-whatsapp">
-          <i class="fa-brands fa-whatsapp"></i> WhatsApp
-        </a>
-        <a href="mailto:Pilotecitizen@gmail.com" class="contact-btn btn-email">
-          <i class="fa-solid fa-envelope"></i> Email
-        </a>
-      </div>
-    </div>
 
-    <!-- Membre 4 -->
-    <div class="member">
-      <div class="info">
-        <div class="name"><strong>Ladouceur Lorvynsky</strong><div class="badge"></div></div>
-        <span>Ladouceurlorvynsky@gmail.com</span>
-      </div>
-      <div class="contact">
-        <a href="https://wa.me/50946868307" target="_blank" class="contact-btn btn-whatsapp">
-          <i class="fa-brands fa-whatsapp"></i> WhatsApp
-        </a>
-        <a href="mailto:Ladouceurlorvynsky@gmail.com" class="contact-btn btn-email">
-          <i class="fa-solid fa-envelope"></i> Email
-        </a>
-      </div>
-    </div>
-
-    <div class="help-box">
-      <h2>Envoyer un message d’aide 💬</h2>
-      <textarea id="helpMessage" placeholder="Décris ton problème ici..."></textarea>
-      <button class="submit-btn" onclick="sendHelp()">Envoyer le message</button>
-    </div>
-
-    <div style="text-align:center;">
-      <a href="produits.html" class="back"><i class="fa-solid fa-arrow-left"></i> Retour aux produits</a>
     </div>
   </div>
 
   <div class="footer">
-    © 2026 DPSTORE — Interface Avancée | Tous droits réservés
+    © 2026 DPSTORE — Tous droits réservés
   </div>
 
   <script>
