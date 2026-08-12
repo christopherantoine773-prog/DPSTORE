@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Recharge — DPSTORE</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Importation des logos FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
   /* --- BASE --- */
@@ -61,7 +63,7 @@
     font-weight: 700;
   }
 
-  /* --- INFO PAIEMENT --- */
+  /* --- INFO PAIEMENT & CONTACTS --- */
   .payment-info {
     background: rgba(56, 189, 248, 0.1);
     border: 1px solid rgba(56, 189, 248, 0.3);
@@ -76,16 +78,59 @@
   .payment-info b {
     color: #38bdf8;
   }
-  .qr-code {
-    max-width: 140px;
-    border-radius: 12px;
-    display: block;
-    margin: 10px auto;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+
+  .admin-notice {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    color: #fde68a;
+    text-align: center;
+    line-height: 1.5;
   }
 
+  /* --- BOUTONS SOCIAUX & PAIEMENT --- */
+  .social-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+  }
+
+  .btn-social {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #ffffff !important;
+    transition: 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  }
+  .btn-social:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-paypal { background: #0070ba; }
+  .btn-paypal:hover { background: #005ea6; }
+
+  .btn-discord { background: #5865F2; }
+  .btn-discord:hover { background: #4752C4; }
+
+  .btn-whatsapp { background: #25D366; }
+  .btn-whatsapp:hover { background: #1EBE5D; }
+
+  .btn-email { background: #ea4335; }
+  .btn-email:hover { background: #d33828; }
+
   #balanceDisplay {
-    color: #fcd34d; /* Jaune or pour le solde */
+    color: #fcd34d;
     font-weight: 700;
     font-size: 1.15rem;
     margin-bottom: 20px;
@@ -126,10 +171,6 @@
     font-weight: 600;
     background: rgba(15, 23, 42, 0.5);
     cursor: not-allowed;
-  }
-
-  .hidden {
-    display: none !important;
   }
 
   /* --- BOUTONS --- */
@@ -224,13 +265,29 @@
 <audio id="soundOK" src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAA…" preload="auto"></audio>
 
 <header class="header">
-  <a href="profil.html">← Retour au Profil</a>
+  <a href="profil.html"><i class="fa-solid fa-arrow-left"></i> Retour au Profil</a>
 </header>
 
 <div class="container">
   <div class="card">
     <h2>💳 Recharger mon compte</h2>
     
+    <!-- Message pour l'admin -->
+    <div class="admin-notice">
+      <i class="fa-solid fa-triangle-exclamation"></i> <b>Information :</b> Si vous souhaitez recharger votre compte directement, contactez l'administrateur ou utilisez les méthodes ci-dessous.
+      <div class="social-buttons">
+        <a href="https://discord.com/channels/1480426047186141266/1536904547132244079" target="_blank" class="btn-social btn-discord">
+          <i class="fa-brands fa-discord"></i> Discord
+        </a>
+        <a href="https://wa.me/13478575829" target="_blank" class="btn-social btn-whatsapp">
+          <i class="fa-brands fa-whatsapp"></i> WhatsApp
+        </a>
+        <a href="mailto:christopherantoine773@gmail.com" class="btn-social btn-email">
+          <i class="fa-solid fa-envelope"></i> Email
+        </a>
+      </div>
+    </div>
+
     <div class="payment-info" id="paymentInfo">
       Recharge via <b>Natcash</b><br>
       Compte à créditer : <b>Christopher Antoine — 42758154</b>
@@ -244,11 +301,8 @@
       <select id="methodInput" required>
         <option value="Natcash">Natcash</option>
         <option value="PayPal">PayPal (Business)</option>
-        <option value="Autre">Autre méthode...</option>
+        <option value="Autre" disabled>Autre méthode (Indisponible pour le moment)</option>
       </select>
-
-      <!-- La petite barre qui s'affiche si on choisit "Autre" -->
-      <input id="otherMethodInput" class="hidden" placeholder="Précisez votre méthode (ex: MonCash, Virement...)" style="margin-top: 10px;">
 
       <label class="small">Nom complet *</label>
       <input id="nameInput" required>
@@ -270,8 +324,8 @@
 
       <div id="errorBox" class="error"></div>
 
-      <button id="sendBtn" type="submit">🚀 Envoyer la demande</button>
-      <button type="button" class="btn-secondary" onclick="location.href='trx.html'">📄 Voir l'historique</button>
+      <button id="sendBtn" type="submit"><i class="fa-solid fa-paper-plane"></i> Envoyer la demande</button>
+      <button type="button" class="btn-secondary" onclick="location.href='trx.html'"><i class="fa-solid fa-file-lines"></i> Voir l'historique</button>
 
     </form>
   </div>
@@ -306,12 +360,10 @@ if(!user || !user.email || !user.dp){
     location.href = "index.html";
 }
 
-/* Injection DP et Nom */
 document.getElementById("nameInput").value  = user.username || "";
 document.getElementById("emailInput").value = user.email;
 document.getElementById("dpInput").value    = user.dp;
 
-/* 🔥 Récupération solde Firestore */
 async function loadBalance(){
     try{
         const usersSnap = await getDocs(collection(db,"users"));
@@ -332,43 +384,30 @@ async function loadBalance(){
 }
 await loadBalance();
 
-/* GESTION DE L'AFFICHAGE SELON LA MÉTHODE DE PAIEMENT */
+/* GESTION DE L'AFFICHAGE SELON LA MÉTHODE */
 const methodInput = document.getElementById("methodInput");
-const otherMethodInput = document.getElementById("otherMethodInput");
 const paymentInfo = document.getElementById("paymentInfo");
 const labelTranscode = document.getElementById("labelTranscode");
 
 methodInput.addEventListener("change", function() {
-  // Cacher le champ "Autre" par défaut
-  otherMethodInput.classList.add("hidden");
-  
   if (this.value === "PayPal") {
-    // Affichage avec le QR Code fourni
-    paymentInfo.innerHTML = `Recharge via <b>PayPal</b><br>Scannez le QR Code ou envoyez à : <b>TON_EMAIL_PAYPAL@domaine.com</b>
-    <img src="image.png" alt="QR Code PayPal" class="qr-code">
+    // ⚠️ Pense à remplacer TON_LIEN_PAYPAL par ton vrai lien paypal.me
+    paymentInfo.innerHTML = `Recharge via <b>PayPal</b><br>
+    Cliquez sur le bouton ci-dessous pour effectuer le paiement :<br>
+    <a href="https://paypal.me/TON_LIEN_PAYPAL" target="_blank" class="btn-social btn-paypal" style="margin-top:10px;"><i class="fa-brands fa-paypal"></i> Payer via PayPal</a><br>
     <small>(Sélectionnez "Paiement entre proches" si possible)</small>`;
     labelTranscode.textContent = "ID de Transaction PayPal *";
-    
-  } else if (this.value === "Autre") {
-    // Afficher le champ pour préciser
-    paymentInfo.innerHTML = `Recharge via <b>Autre Méthode</b><br>Veuillez contacter le support si vous n'avez pas les informations de paiement.`;
-    labelTranscode.textContent = "Référence / ID de transaction *";
-    otherMethodInput.classList.remove("hidden");
-    
   } else {
-    // Retour à Natcash
     paymentInfo.innerHTML = `Recharge via <b>Natcash</b><br>Compte à créditer : <b>Christopher Antoine — 42758154</b>`;
     labelTranscode.textContent = "Transcode Natcash *";
   }
 });
 
-/* Clé unique transactions */
 function normalizeId(str){
   return str.toLowerCase().replace(/[^a-z0-9@.-]/g,"_").replace(/@/g,"_at_");
 }
 const key = "dp_recharges_" + normalizeId(user.email);
 
-/* ENVOI DU FORMULAIRE */
 const sendBtn = document.getElementById("sendBtn");
 const popup = document.getElementById("popup");
 const errorBox = document.getElementById("errorBox");
@@ -383,13 +422,7 @@ function showError(t){
 document.getElementById("payForm").addEventListener("submit", e => {
   e.preventDefault();
 
-  let method = methodInput.value;
-  // Si c'est "Autre", on récupère ce que l'utilisateur a tapé dans la barre
-  if (method === "Autre") {
-    method = otherMethodInput.value.trim();
-    if (!method) return showError("Veuillez préciser la méthode de paiement utilisée.");
-  }
-
+  const method = methodInput.value;
   const name = document.getElementById("nameInput").value.trim();
   const email = document.getElementById("emailInput").value.trim();
   const amount = document.getElementById("amountInput").value.trim();
@@ -421,10 +454,8 @@ document.getElementById("payForm").addEventListener("submit", e => {
   list.unshift(newEntry);
   localStorage.setItem(key, JSON.stringify(list));
 
-  // Déclencher l'événement storage pour mise à jour trx.html
   window.dispatchEvent(new StorageEvent('storage', { key, newValue: JSON.stringify(list) }));
 
-  // Lecture du son si disponible
   try { soundOK.play(); } catch(e) {}
   
   popup.classList.add("active");
