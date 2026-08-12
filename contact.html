@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Support & Équipe DPSTORE</title>
+<!-- Importation des logos FontAwesome pour les icônes de contact -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
   /* --- FOND ANIMÉ --- */
   body {
@@ -62,7 +64,10 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
     padding: 18px;
+    margin-bottom: 15px;
     border-bottom: 1px solid rgba(0,255,179,0.1);
     transition: 0.3s;
     border-radius: 12px;
@@ -70,7 +75,7 @@
   }
 
   .member:hover {
-    transform: scale(1.02);
+    transform: scale(1.01);
     background: linear-gradient(90deg, rgba(0,255,179,0.08), rgba(0,255,255,0.05));
     box-shadow: 0 0 15px rgba(0,255,179,0.2);
   }
@@ -92,7 +97,12 @@
     font-size: 1.05rem;
   }
 
-  /* --- BADGE TIKTOK PRO --- */
+  .info span {
+    font-size: 0.9rem;
+    color: #94a3b8;
+  }
+
+  /* --- BADGE PRO --- */
   .badge {
     width: 18px;
     height: 18px;
@@ -118,21 +128,39 @@
     100% { box-shadow: 0 0 6px rgba(0,191,255,0.8); transform: scale(1); }
   }
 
+  /* --- CONTACTS & LIENS --- */
   .contact {
-    text-align: right;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
   }
 
-  .contact a {
-    color: #00ffb3;
+  .contact-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 8px;
     text-decoration: none;
     font-weight: 600;
+    font-size: 0.85rem;
+    color: #ffffff !important;
     transition: 0.3s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  }
+  .contact-btn:hover {
+    transform: translateY(-2px);
   }
 
-  .contact a:hover {
-    color: #00ffff;
-    text-shadow: 0 0 6px #00ffff;
-  }
+  .btn-whatsapp { background: #25D366; }
+  .btn-whatsapp:hover { background: #1EBE5D; box-shadow: 0 0 10px rgba(37,211,102,0.5); }
+
+  .btn-discord { background: #5865F2; }
+  .btn-discord:hover { background: #4752C4; box-shadow: 0 0 10px rgba(88,101,242,0.5); }
+
+  .btn-email { background: #ea4335; }
+  .btn-email:hover { background: #d33828; box-shadow: 0 0 10px rgba(234,67,53,0.5); }
 
   /* --- ZONE MESSAGE D'AIDE --- */
   .help-box {
@@ -147,12 +175,14 @@
   .help-box h2 {
     color: #00ffb3;
     margin-bottom: 10px;
+    font-size: 1.3rem;
     text-shadow: 0 0 8px rgba(0,255,179,0.5);
   }
 
   textarea {
     width: 100%;
     height: 120px;
+    box-sizing: border-box;
     border: 1px solid rgba(0,255,179,0.15);
     border-radius: 10px;
     background: #0b0b0b;
@@ -170,7 +200,7 @@
     box-shadow: 0 0 10px rgba(0,255,179,0.3);
   }
 
-  button {
+  button.submit-btn {
     margin-top: 15px;
     background: linear-gradient(90deg, #00ffb3, #00b7a0);
     border: none;
@@ -182,7 +212,7 @@
     transition: 0.3s;
   }
 
-  button:hover {
+  button.submit-btn:hover {
     background: linear-gradient(90deg, #00d6a0, #00ffb3);
     box-shadow: 0 0 10px rgba(0,255,179,0.4);
   }
@@ -221,60 +251,86 @@
 
   <div class="container">
 
+    <!-- Membre 1 : Admin -->
     <div class="member">
       <div class="info">
-        <div class="name"><strong>Admin</strong><div class="badge"></div></div>
-        <span>Christopherantoins773@gmail.com</span>
+        <div class="name"><strong>Christopher Antoine (Admin Principal)</strong><div class="badge"></div></div>
+        <span>christopherantoine773@gmail.com</span>
       </div>
       <div class="contact">
-        <a href="https://wa.me/50955295255" target="_blank">+509 5529 5255</a>
+        <a href="https://wa.me/13478575829" target="_blank" class="contact-btn btn-whatsapp">
+          <i class="fa-brands fa-whatsapp"></i> WhatsApp
+        </a>
+        <a href="https://discord.com/channels/1480426047186141266/1536904547132244079" target="_blank" class="contact-btn btn-discord">
+          <i class="fa-brands fa-discord"></i> Discord
+        </a>
+        <a href="mailto:christopherantoine773@gmail.com" class="contact-btn btn-email">
+          <i class="fa-solid fa-envelope"></i> Email
+        </a>
       </div>
     </div>
 
+    <!-- Membre 2 -->
     <div class="member">
       <div class="info">
-        <div class="name"><strong>Employé 1</strong><div class="badge"></div></div>
+        <div class="name"><strong>Mathieu Lherisson</strong><div class="badge"></div></div>
         <span>mathieulherisson99@gmail.com</span>
       </div>
       <div class="contact">
-        <a href="https://wa.me/50947182512" target="_blank">+509 47 18 2512</a>
+        <a href="https://wa.me/50947182512" target="_blank" class="contact-btn btn-whatsapp">
+          <i class="fa-brands fa-whatsapp"></i> WhatsApp
+        </a>
+        <a href="mailto:mathieulherisson99@gmail.com" class="contact-btn btn-email">
+          <i class="fa-solid fa-envelope"></i> Email
+        </a>
       </div>
     </div>
 
+    <!-- Membre 3 -->
     <div class="member">
       <div class="info">
-        <div class="name"><strong>Employé 1</strong><div class="badge"></div></div>
+        <div class="name"><strong>Pilote Citizen</strong><div class="badge"></div></div>
         <span>Pilotecitizen@gmail.com</span>
       </div>
       <div class="contact">
-        <a href="https://wa.me/50942157689" target="_blank">+509 42 15 7689</a>
+        <a href="https://wa.me/50942157689" target="_blank" class="contact-btn btn-whatsapp">
+          <i class="fa-brands fa-whatsapp"></i> WhatsApp
+        </a>
+        <a href="mailto:Pilotecitizen@gmail.com" class="contact-btn btn-email">
+          <i class="fa-solid fa-envelope"></i> Email
+        </a>
       </div>
     </div>
 
+    <!-- Membre 4 -->
     <div class="member">
       <div class="info">
-        <div class="name"><strong>Employé 1</strong><div class="badge"></div></div>
+        <div class="name"><strong>Ladouceur Lorvynsky</strong><div class="badge"></div></div>
         <span>Ladouceurlorvynsky@gmail.com</span>
       </div>
       <div class="contact">
-        <a href="https://wa.me/50946868307" target="_blank">+509 46 86 8307</a>
+        <a href="https://wa.me/50946868307" target="_blank" class="contact-btn btn-whatsapp">
+          <i class="fa-brands fa-whatsapp"></i> WhatsApp
+        </a>
+        <a href="mailto:Ladouceurlorvynsky@gmail.com" class="contact-btn btn-email">
+          <i class="fa-solid fa-envelope"></i> Email
+        </a>
       </div>
     </div>
 
     <div class="help-box">
       <h2>Envoyer un message d’aide 💬</h2>
       <textarea id="helpMessage" placeholder="Décris ton problème ici..."></textarea>
-      <button onclick="sendHelp()">Envoyer le message</button>
+      <button class="submit-btn" onclick="sendHelp()">Envoyer le message</button>
     </div>
 
     <div style="text-align:center;">
-      <!-- 🔥 MODIFICATION ICI : va maintenant vers produits.html -->
-      <a href="produits.html" class="back">← Retour aux produits</a>
+      <a href="produits.html" class="back"><i class="fa-solid fa-arrow-left"></i> Retour aux produits</a>
     </div>
   </div>
 
   <div class="footer">
-    © 2025 DPSTORE — Interface Avancée | Tous droits réservés
+    © 2026 DPSTORE — Interface Avancée | Tous droits réservés
   </div>
 
   <script>
@@ -285,7 +341,7 @@
         return;
       }
       const mailto =
-        "mailto:Christopherantoins773@gmail.com?subject=Assistance%20DPSTORE&body=" +
+        "mailto:christopherantoine773@gmail.com?subject=Assistance%20DPSTORE&body=" +
         encodeURIComponent(message);
       window.location.href = mailto;
     }
