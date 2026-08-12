@@ -1,360 +1,453 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Centre de Support & Assistance — DPSTORE</title>
-<!-- Importation des logos FontAwesome -->
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Espace Utilisateurs — DPSTORE</title>
+<!-- Importation Google Fonts et FontAwesome cohérentes avec les autres fichiers -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg-main: #090d16;
-    --bg-card: rgba(15, 23, 42, 0.75);
-    --border-color: rgba(56, 189, 248, 0.15);
-    --border-hover: rgba(56, 189, 248, 0.4);
-    --accent-color: #38bdf8;
-    --accent-gradient: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-  }
 
-  /* --- BASE & DESIGN SYSTEM --- */
-  body {
+<style>
+body{
     margin: 0;
     font-family: 'Inter', sans-serif;
-    background-color: var(--bg-main);
-    background-image: 
-      radial-gradient(circle at 10% 20%, rgba(14, 165, 233, 0.08) 0%, transparent 40%),
-      radial-gradient(circle at 90% 80%, rgba(37, 99, 235, 0.08) 0%, transparent 40%);
-    color: var(--text-main);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #f8fafc;
     min-height: 100vh;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
-  }
-
-  /* --- HEADER --- */
-  header {
-    text-align: center;
-    padding: 40px 20px 30px;
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  header h1 {
-    margin: 0 0 8px 0;
-    font-size: 2rem;
-    font-weight: 700;
-    background: linear-gradient(to right, #38bdf8, #818cf8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    letter-spacing: -0.5px;
-  }
-
-  header p {
-    margin: 0;
-    color: var(--text-muted);
-    font-size: 0.95rem;
-  }
-
-  /* --- CONTAINER & CARDS --- */
-  .container {
-    max-width: 700px;
-    width: 100%;
-    margin: 40px auto;
-    padding: 0 20px;
-    box-sizing: border-box;
-    flex: 1;
-  }
-
-  .glass-card {
-    background: var(--bg-card);
-    padding: 35px;
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(16px);
-    margin-bottom: 24px;
-  }
-
-  .section-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-main);
-    margin-bottom: 16px;
-    display: flex;
     align-items: center;
-    gap: 8px;
-  }
+    overflow-x: hidden;
+}
 
-  .section-title i {
-    color: var(--accent-color);
-  }
-
-  /* --- PROFIL ADMINISTRATEUR --- */
-  .profile-card {
+/* HEADER */
+header{
+    width: 100%;
+    max-width: 1200px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-    padding: 20px;
-    border-radius: 14px;
-    background: rgba(9, 13, 22, 0.6);
-    border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
-  }
-
-  .profile-card:hover {
-    border-color: var(--border-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(56, 189, 248, 0.1);
-  }
-
-  .profile-info {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .avatar-container {
-    position: relative;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: var(--accent-gradient);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: white;
-    box-shadow: 0 0 15px rgba(14, 165, 233, 0.3);
-  }
-
-  .verified-badge {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 16px;
-    height: 16px;
-    background: #10b981;
-    border: 2px solid #090d16;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 9px;
-    color: white;
-  }
-
-  .details h3 {
-    margin: 0 0 4px 0;
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: var(--text-main);
-  }
-
-  .details span {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-  }
-
-  /* --- BOUTONS DE CONTACT --- */
-  .contact-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .btn-contact {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    text-decoration: none;
-    color: white;
-    font-size: 1rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  }
-
-  .btn-contact:hover {
-    transform: translateY(-3px);
-  }
-
-  .btn-whatsapp { background: #25D366; }
-  .btn-whatsapp:hover { box-shadow: 0 6px 15px rgba(37, 211, 102, 0.4); }
-
-  .btn-discord { background: #5865F2; }
-  .btn-discord:hover { box-shadow: 0 6px 15px rgba(88, 101, 242, 0.4); }
-
-  .btn-email { background: #ea4335; }
-  .btn-email:hover { box-shadow: 0 6px 15px rgba(234, 67, 53, 0.4); }
-
-  /* --- ZONE MESSAGE D'AIDE --- */
-  .help-box {
-    margin-top: 25px;
-  }
-
-  textarea {
-    width: 100%;
-    height: 130px;
+    margin-bottom: 30px;
+    padding: 20px 25px;
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     box-sizing: border-box;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    background: rgba(9, 13, 22, 0.8);
-    color: var(--text-main);
-    padding: 14px;
-    resize: none;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-  }
-
-  textarea:focus {
-    outline: none;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-  }
-
-  button.submit-btn {
-    width: 100%;
-    margin-top: 14px;
-    background: var(--accent-gradient);
+}
+header h1{
+    color: #38bdf8;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+header button{
+    padding: 10px 18px;
     border: none;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%);
     color: white;
-    padding: 14px;
-    border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.3);
+    transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+}
+header button:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.6);
+}
+
+/* FILTRE */
+.filter-container{
+    width: 100%;
+    max-width: 1200px;
+    margin-bottom: 30px;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: center;
+    background: rgba(30, 41, 59, 0.5);
+    padding: 15px 20px;
+    border-radius: 14px;
+    border: 1px solid #334155;
+    box-sizing: border-box;
+}
+.filter-container label {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+.filter-container select, .filter-container input{
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: #f8fafc;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    outline: none;
+    transition: 0.3s;
+}
+.filter-container select:focus, .filter-container input:focus{
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+.filter-container input {
+    flex-grow: 1;
+    min-width: 200px;
+}
+
+/* CARDS */
+.cards-container{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.card{
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 16px;
+    padding: 25px;
+    border: 1px solid #334155;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.card:hover{
+    transform: translateY(-5px);
+    border-color: #38bdf8;
+    box-shadow: 0 12px 40px rgba(56, 189, 248, 0.15);
+}
+.card img{
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #38bdf8;
+    display: block;
+    margin: 0 auto 15px auto;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+}
+.card h3{
+    margin: 0 0 10px 0;
+    color: #f8fafc;
+    font-size: 1.15rem;
+}
+.card p{
+    margin: 6px 0;
+    font-size: 0.9rem;
+    color: #94a3b8;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+}
+.card p b {
+    color: #f8fafc;
+}
+.card button{
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+}
+.card button:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5);
+}
+
+.status{
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    margin-top: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.status.user{background: rgba(100, 116, 139, 0.2); color: #94a3b8; border: 1px solid #64748b;}
+.status.employee{background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981;}
+.status.creator{background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b;}
+.status.admin{background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444;}
+
+/* MODAL */
+.modal{
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal-content{
+    background: #1e293b;
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid #334155;
+    width: 90%;
+    max-width: 650px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.modal-content h2{
+    color: #38bdf8;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+}
+.modal-content p{
+    color: #94a3b8;
+    margin: 8px 0;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+}
+.modal-content p b {
+    color: #f8fafc;
+}
+.modal-content button.close{
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-  }
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid #ef4444;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.modal-content button.close:hover {
+    background: #ef4444;
+    color: white;
+}
 
-  button.submit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 25px rgba(14, 165, 233, 0.5);
-  }
+#profileDetails img {
+    border: 2px solid #38bdf8;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+}
 
-  /* --- NAVIGATION RETOUR --- */
-  .navigation-footer {
-    text-align: center;
-    margin-top: 20px;
-  }
-
-  .back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-muted);
-    text-decoration: none;
-    font-weight: 500;
+/* TRANSACTIONS */
+.transaction{
+    background: rgba(15, 23, 42, 0.6);
+    padding: 12px 15px;
+    margin: 8px 0;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    border-left: 4px solid #38bdf8;
     font-size: 0.9rem;
-    transition: all 0.2s ease;
-  }
-
-  .back-link:hover {
-    color: var(--accent-color);
-  }
-
-  /* --- FOOTER GLOBAL --- */
-  footer {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    padding: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.03);
-    background: rgba(9, 13, 22, 0.3);
-  }
+    color: #f8fafc;
+}
+.transaction.in{border-left-color: #10b981;}
+.transaction.out{border-left-color: #ef4444;}
 </style>
 </head>
 <body>
 
-  <header>
-    <h1>DPSTORE Support</h1>
-    <p>Une question ou un problème ? Contactez directement l'administration.</p>
-  </header>
+<header>
+    <h1><i class="fa-solid fa-users-gear"></i> ESPACE UTILISATEURS</h1>
+    <button onclick="location.href='profil.html'"><i class="fa-solid fa-arrow-left"></i> Retour</button>
+</header>
 
-  <div class="container">
-    
-    <!-- Carte unique de contact admin -->
-    <div class="glass-card">
-      <div class="section-title">
-        <i class="fa-solid fa-user-shield"></i> Administrateur Principal
-      </div>
-      
-      <div class="profile-card">
-        <div class="profile-info">
-          <div class="avatar-container">
-            CA
-            <div class="verified-badge"><i class="fa-solid fa-check"></i></div>
-          </div>
-          <div class="details">
-            <h3>Christopher Antoine</h3>
-            <span>christopherantoine773@gmail.com</span>
-          </div>
-        </div>
+<div class="filter-container">
+    <label for="roleFilter">Filtrer par rôle:</label>
+    <select id="roleFilter" onchange="filterUsers()">
+        <option value="all">Tous</option>
+        <option value="user">Utilisateur</option>
+        <option value="employee">Employé</option>
+        <option value="creator">Créateur</option>
+        <option value="admin">Admin</option>
+    </select>
+    <input type="text" id="searchUser" placeholder="Rechercher par nom ou email..." oninput="filterUsers()">
+</div>
 
-        <div class="contact-actions">
-          <a href="https://wa.me/13478575829" target="_blank" class="btn-contact btn-whatsapp" title="WhatsApp">
-            <i class="fa-brands fa-whatsapp"></i>
-          </a>
-          <a href="https://discord.com/channels/1480426047186141266/1536904547132244079" target="_blank" class="btn-contact btn-discord" title="Discord">
-            <i class="fa-brands fa-discord"></i>
-          </a>
-          <a href="mailto:christopherantoine773@gmail.com" class="btn-contact btn-email" title="Email">
-            <i class="fa-solid fa-envelope"></i>
-          </a>
-        </div>
-      </div>
+<div class="cards-container" id="cardsContainer">
+    <p style="text-align:center; color: #94a3b8; grid-column: 1 / -1;">Chargement des utilisateurs...</p>
+</div>
 
-      <!-- Formulaire d'aide rapide -->
-      <div class="help-box">
-        <div class="section-title" style="margin-bottom: 10px;">
-          <i class="fa-solid fa-paper-plane"></i> Envoyer un message rapide
-        </div>
-        <textarea id="helpMessage" placeholder="Rédigez votre message d'assistance ici..."></textarea>
-        <button class="submit-btn" onclick="sendHelp()">
-          <i class="fa-solid fa-share"></i> Envoyer par e-mail
-        </button>
-      </div>
-
+<!-- MODAL PROFIL -->
+<div class="modal" id="profileModal">
+    <div class="modal-content" id="modalContent">
+        <button class="close" onclick="closeModal()">✕</button>
+        <div id="profileDetails"></div>
+        <button id="toggleTransactionsBtn" style="margin-top:20px; width:100%; padding:12px; border:none; border-radius:10px; background:linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%); color:white; font-weight:600; cursor:pointer; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);">📄 Voir Transactions</button>
+        <div id="transactionsList" style="display:none; margin-top:15px;"></div>
     </div>
+</div>
 
-    <div class="navigation-footer">
-      <a href="produits.html" class="back-link">
-        <i class="fa-solid fa-arrow-left"></i> Retour au catalogue des produits
-      </a>
-    </div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
-  </div>
+const firebaseConfig = {
+  apiKey: "AIzaSyAHjL2jDNNbb4P6yIok_GTw8r6FMOyYTiw",
+  authDomain: "dpstore-officie.firebaseapp.com",
+  projectId: "dpstore-officie",
+  storageBucket: "dpstore-officie.appspot.com",
+  messagingSenderId: "903943973062",
+  appId: "1:903943973062:web:6501a2ec167adb31258fc7"
+};
 
-  <footer>
-    © 2026 DPSTORE — Tous droits réservés
-  </footer>
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  <script>
-    function sendHelp() {
-      const message = document.getElementById("helpMessage").value.trim();
-      if (!message) {
-        alert("Veuillez saisir un message avant de l'envoyer.");
+let allUsers = [];
+
+async function loadUsers(){
+    const userCol = collection(db,"users");
+    const snapshot = await getDocs(userCol);
+    allUsers = snapshot.docs.map(docSnap => ({ id: docSnap.id, data: docSnap.data() || {} }));
+    renderUsers(allUsers);
+}
+
+function renderUsers(users){
+    const container = document.getElementById("cardsContainer");
+    container.innerHTML = "";
+    if(users.length === 0){
+        container.innerHTML = "<p style='text-align:center; color: #94a3b8; grid-column: 1 / -1;'>Aucun utilisateur trouvé</p>";
         return;
-      }
-      const mailto =
-        "mailto:christopherantoine773@gmail.com?subject=Assistance%20DPSTORE&body=" +
-        encodeURIComponent(message);
-      window.location.href = mailto;
     }
-  </script>
+    const fragment = document.createDocumentFragment();
+    users.forEach(user => {
+        const data = user.data;
+        const dp = data.dp || user.id;
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+            <img src="${data.photo || 'https://via.placeholder.com/100'}" alt="Photo">
+            <h3>${data.username || "Non défini"}</h3>
+            <p><b>Email:</b> <span>${data.email || "—"}</span></p>
+            <p><b>DP-ID:</b> <span>${dp}</span></p>
+            <p><b>Crédits / Solde:</b> <span>${data.credits ?? 0} / ${data.balance ?? 0}</span></p>
+            <p><b>Créé le:</b> <span>${data.createdAt || "—"}</span></p>
+            <span class="status ${data.role || 'user'}">${data.role || 'user'}</span>
+            <button onclick="viewProfile('${dp}')">Voir Profil</button>
+        `;
+        fragment.appendChild(card);
+    });
+    container.appendChild(fragment);
+}
+
+function filterUsers(){
+    const role = document.getElementById("roleFilter").value;
+    const keyword = document.getElementById("searchUser").value.toLowerCase();
+    let filtered = allUsers;
+
+    if(role !== "all") filtered = filtered.filter(u => (u.data.role || 'user') === role);
+    if(keyword) filtered = filtered.filter(u => 
+        (u.data.username || "").toLowerCase().includes(keyword) || 
+        (u.data.email || "").toLowerCase().includes(keyword)
+    );
+
+    renderUsers(filtered);
+}
+
+window.closeModal = function closeModal(){
+    document.getElementById("profileModal").style.display = "none";
+}
+
+window.viewProfile = async function viewProfile(dp){
+    const userDoc = allUsers.find(u => (u.data.dp || u.id) === dp);
+    if(!userDoc) return alert("Utilisateur introuvable !");
+    const data = userDoc.data;
+
+    const username = data.username || "Non défini";
+    const email = data.email || "—";
+    const role = data.role || "user";
+    const credits = data.credits ?? 0;
+    const balance = data.balance ?? 0;
+    const createdAt = data.createdAt || "—";
+    const photo = data.photo || "https://via.placeholder.com/100";
+
+    const profileDiv = document.getElementById("profileDetails");
+    profileDiv.innerHTML = `
+        <div style="display:flex; align-items:center; gap:20px; margin-bottom:20px;">
+            <img src="${photo}" width="80" height="80" style="border-radius:50%; object-fit:cover;">
+            <div>
+                <h2 style="margin:0 0 5px 0;">${username}</h2>
+                <span class="status ${role}">${role}</span>
+            </div>
+        </div>
+        <p><b>Email:</b> <span>${email}</span></p>
+        <p><b>DP-ID:</b> <span>${dp}</span></p>
+        <p><b>Crédits:</b> <span>${credits}</span></p>
+        <p><b>Solde:</b> <span>${balance}</span></p>
+        <p><b>Créé le:</b> <span>${createdAt}</span></p>
+    `;
+
+    const transDiv = document.getElementById("transactionsList");
+    const toggleBtn = document.getElementById("toggleTransactionsBtn");
+    transDiv.style.display = "none";
+    toggleBtn.textContent = "📄 Voir Transactions";
+
+    toggleBtn.onclick = async () => {
+        if(transDiv.style.display === "none"){
+            transDiv.style.display = "block";
+            toggleBtn.textContent = "📄 Masquer Transactions";
+
+            if(transDiv.innerHTML === "" || transDiv.innerHTML.includes("Chargement")){
+                transDiv.innerHTML = "<p style='color:#94a3b8; text-align:center;'>Chargement des transactions...</p>";
+                try {
+                    const transCol = collection(db, "transactions");
+                    const q = query(transCol, where("dpID", "==", dp));
+                    const snapshot = await getDocs(q);
+                    if(snapshot.empty){
+                        transDiv.innerHTML = "<p style='color:#94a3b8; text-align:center;'>Aucune transaction.</p>";
+                    } else {
+                        transDiv.innerHTML = "";
+                        snapshot.forEach(docSnap => {
+                            const t = docSnap.data();
+                            transDiv.innerHTML += `
+                                <div class="transaction ${t.type || 'in'}">
+                                    <b>${t.type === 'in' ? '+' : '-'}</b> ${t.amount ?? 0} crédits — ${t.reason || 'N/A'} — <small style="color:#94a3b8;">${t.date || '—'}</small>
+                                </div>
+                            `;
+                        });
+                    }
+                } catch(e){
+                    console.error(e);
+                    transDiv.innerHTML = "<p style='color:#f87171; text-align:center;'>Erreur chargement transactions.</p>";
+                }
+            }
+        } else {
+            transDiv.style.display = "none";
+            toggleBtn.textContent = "📄 Voir Transactions";
+        }
+    };
+
+    document.getElementById("profileModal").style.display = "flex";
+}
+
+loadUsers().catch(err=>console.error(err));
+</script>
+
 </body>
 </html>
