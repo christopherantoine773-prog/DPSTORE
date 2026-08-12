@@ -3,159 +3,231 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DPSTORE | Reçus</title>
+<title>DPSTORE | Mes Reçus</title>
 
 <style>
-body {
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(160deg, #000, #021220, #001a13);
-  margin: 0;
-  color: #e0ffe9;
-}
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(160deg, #000, #021220, #001a13);
+    margin: 0;
+    color: #e0ffe9;
+  }
 
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 25px;
-  background: rgba(0, 20, 10, 0.55);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(0,255,150,0.15);
-  box-shadow: 0 0 25px rgba(0,255,150,0.15);
-  position: sticky;
-  top: 0;
-  z-index: 20;
-}
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background: rgba(0, 20, 10, 0.55);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(0,255,150,0.15);
+    box-shadow: 0 0 25px rgba(0,255,150,0.15);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
 
-header h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #00ffb3;
-}
+  header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #00ffb3;
+    margin: 0;
+  }
 
-.back-btn {
-  background: transparent;
-  border: 2px solid #00ffb3;
-  color: #00ffb3;
-  padding: 6px 16px;
-  border-radius: 25px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.25s;
-}
+  .back-btn {
+    background: transparent;
+    border: 2px solid #00ffb3;
+    color: #00ffb3;
+    padding: 6px 16px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.25s;
+  }
 
-.back-btn:hover {
-  background: #00ffb3;
-  color: #000;
-}
+  .back-btn:hover {
+    background: #00ffb3;
+    color: #000;
+    transform: scale(1.05);
+  }
 
-.container {
-  padding: 30px 20px;
-  max-width: 800px;
-  margin: auto;
-}
+  .container {
+    padding: 30px 20px;
+    max-width: 800px;
+    margin: auto;
+  }
 
-.receipt {
-  background: rgba(0,255,179,0.06);
-  border: 1px solid rgba(0,255,179,0.25);
-  border-radius: 16px;
-  margin-bottom: 18px;
-  padding: 20px;
-  box-shadow: 0 0 20px rgba(0,255,179,0.12);
-}
+  .empty-msg {
+    text-align: center;
+    opacity: 0.7;
+    margin-top: 50px;
+    font-size: 1.2rem;
+  }
 
-.receipt strong {
-  color: #00ffb3;
-}
+  .receipt-card {
+    background: rgba(0,255,179,0.06);
+    border: 1px solid rgba(0,255,179,0.25);
+    border-radius: 16px;
+    margin-bottom: 20px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0,255,179,0.12);
+    backdrop-filter: blur(10px);
+    animation: fadeInUp 0.4s ease both;
+  }
 
-footer {
-  text-align: center;
-  padding: 20px;
-  opacity: 0.5;
-  margin-top: 30px;
-}
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 
-.missing {
-  color: #ff5555;
-  font-style: italic;
-  opacity: 0.8;
-}
+  .receipt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0,255,150,0.2);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+  }
+
+  .receipt-header h3 {
+    margin: 0;
+    color: #00ffb3;
+  }
+
+  .receipt-details p {
+    margin: 8px 0;
+    font-size: 0.95rem;
+  }
+
+  .receipt-details strong {
+    color: #00ffb3;
+  }
+
+  /* Badges de statuts dynamiques */
+  .status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #000;
+  }
+
+  .status-await { background: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
+  .status-confirm { background: #00ffb3; box-shadow: 0 0 10px rgba(0, 255, 179, 0.4); }
+  .status-refund { background: #ff5555; box-shadow: 0 0 10px rgba(255, 85, 85, 0.4); color: white;}
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    opacity: 0.5;
+    margin-top: 30px;
+    font-size: 0.9rem;
+  }
 </style>
 </head>
-
 <body>
 
 <header>
   <button class="back-btn" onclick="goBack()">← Retour</button>
-  <h1>📄 Reçus DPSTORE</h1>
-  <div></div>
+  <h1>🧾 Mes Reçus</h1>
+  <div></div> <!-- Espace vide pour centrer le titre -->
 </header>
 
-<div class="container">
-  <h2 style="color:#00ffb3; text-align:center;">Vos commandes validées</h2>
-  <div id="receipts"></div>
+<div class="container" id="receipts-container">
+  <!-- Les reçus s'afficheront ici via JavaScript -->
 </div>
 
 <footer>© 2025 DPSTORE — Tous droits réservés</footer>
 
 <script>
 /* ============================
-   🔥 UTILISATEUR CONNECTÉ
+   🔥 VÉRIFICATION DE L'UTILISATEUR
 ============================ */
-let user = JSON.parse(sessionStorage.getItem("dpstore_user")||"{}");
-if(!user.email && !user.dp){
-  alert("Vous devez être connecté !");
-  window.location.href="index.html";
+function loadUser(){
+  let u = JSON.parse(sessionStorage.getItem("dpstore_user") || "{}");
+  if(!u.email){ 
+    alert("Vous devez être connecté pour voir vos reçus !"); 
+    window.location.href = "index.html"; 
+    throw new Error("Arrêt du script"); 
+  }
+  return u;
 }
 
+let user = loadUser();
+
 /* ============================
-   🔥 CHARGEMENT DES REÇUS
+   🔥 AFFICHAGE DES REÇUS
 ============================ */
-function loadReceipts(){
-  let orders = JSON.parse(localStorage.getItem("orders")||"[]");
-  let myOrders = orders.filter(o => (o.buyer||"").toLowerCase() === (user.email||user.dp||"").toLowerCase());
+function renderReceipts() {
+  const container = document.getElementById("receipts-container");
+  
+  // 1. Récupérer toutes les commandes (les mêmes que l'admin)
+  let allOrders = JSON.parse(localStorage.getItem("orders") || "[]");
 
-  const box = document.getElementById("receipts");
-  box.innerHTML = "";
+  // 2. Filtrer UNIQUEMENT les commandes de l'utilisateur actuel
+  let myOrders = allOrders.filter(o => 
+    o.buyer && o.buyer.toLowerCase() === user.email.toLowerCase()
+  );
 
-  if(myOrders.length===0){
-    box.innerHTML = "<p style='text-align:center; opacity:0.7;'>Aucun reçu pour le moment.</p>";
+  // 3. Inverser l'ordre pour avoir les achats récents en haut
+  myOrders.reverse();
+
+  container.innerHTML = "";
+
+  if(myOrders.length === 0){
+    container.innerHTML = "<div class='empty-msg'>🛍️ Vous n'avez encore rien acheté.<br>Vos reçus apparaîtront ici.</div>";
     return;
   }
 
-  myOrders.forEach(r=>{
-    let extraInfo="";
-    let hasExtra=false;
-    Object.keys(r).forEach(key=>{
-      if(["name","price","date","status","buyer","id"].includes(key)) return;
-      hasExtra=true;
-      extraInfo+=`<p><strong>${key} :</strong> ${r[key]}</p>`;
-    });
-    if(!hasExtra){
-      extraInfo=`<p class="missing">Aucune info supplémentaire enregistrée pour ce produit.</p>`;
+  // 4. Générer l'affichage pour chaque commande
+  myOrders.forEach(order => {
+    // Si l'admin n'a pas encore mis de statut, on met "En attente" par défaut
+    let currentStatus = order.status || "En attente";
+    
+    // Assigner la bonne classe CSS selon le statut
+    let statusClass = "status-await"; // par défaut jaune
+    let statusIcon = "⏳";
+    
+    if (currentStatus === "Validé") {
+      statusClass = "status-confirm";
+      statusIcon = "✅";
+    } else if (currentStatus === "Remboursé") {
+      statusClass = "status-refund";
+      statusIcon = "💸";
     }
 
-    box.innerHTML+=`
-      <div class="receipt">
-        <p><strong>Produit :</strong> ${r.name}</p>
-        <p><strong>Prix :</strong> ${r.price} G</p>
+    let div = document.createElement("div");
+    div.className = "receipt-card";
+    
+    // Créer la liste des infos supplémentaires s'il y en a (comme dans l'admin)
+    let extraInfo = "";
+    Object.keys(order).forEach(key => {
+      if(["name","price","date","status","buyer","id","dp","meta"].includes(key)) return;
+      extraInfo += `<p><strong>${key} :</strong> ${order[key]}</p>`;
+    });
+
+    div.innerHTML = `
+      <div class="receipt-header">
+        <h3>${order.name}</h3>
+        <span class="status-badge ${statusClass}">${statusIcon} ${currentStatus}</span>
+      </div>
+      <div class="receipt-details">
+        <p><strong>Prix payé :</strong> ${order.price} G</p>
+        <p><strong>Date d'achat :</strong> ${order.date}</p>
         ${extraInfo}
-        <p><strong>Date :</strong> ${r.date}</p>
-        <p><strong>Status :</strong> ${r.status}</p>
       </div>
     `;
+    
+    container.appendChild(div);
   });
 }
 
-/* ============================
-   🔥 NAVIGATION
-============================ */
-function goBack(){ window.location.href="cart.html"; }
+function goBack(){ 
+  window.location.href = "panier.html"; // Ou profil.html selon ton choix
+}
 
-/* ============================
-   🔥 INIT
-============================ */
-loadReceipts();
+// Lancer l'affichage au chargement de la page
+renderReceipts();
 </script>
 
 </body>
