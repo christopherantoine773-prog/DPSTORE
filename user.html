@@ -1,241 +1,360 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Messagerie — DPSTORE</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Centre de Support & Assistance — DPSTORE</title>
+<!-- Importation des logos FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-body{
-    background:#0a0f14;
-    color:#e0f7fa;
-    font-family:'Inter',Arial,sans-serif;
-    margin:0;
-}
+  :root {
+    --bg-main: #090d16;
+    --bg-card: rgba(15, 23, 42, 0.75);
+    --border-color: rgba(56, 189, 248, 0.15);
+    --border-hover: rgba(56, 189, 248, 0.4);
+    --accent-color: #38bdf8;
+    --accent-gradient: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+  }
 
-.container{
-    width:90%;
-    max-width:600px;
-    margin:40px auto;
-    background:rgba(0,30,30,0.5);
-    border-radius:20px;
-    box-shadow:0 0 25px rgba(0,255,200,0.3);
-    display:flex;
-    flex-direction:column;
-    height:80vh;
-    overflow:hidden;
-    border:2px solid #00ffe0;
-}
+  /* --- BASE & DESIGN SYSTEM --- */
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    background-image: 
+      radial-gradient(circle at 10% 20%, rgba(14, 165, 233, 0.08) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(37, 99, 235, 0.08) 0%, transparent 40%);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
 
-.header{
-    padding:20px;
-    border-bottom:1px solid #333;
-    text-align:center;
-    font-weight:bold;
-    font-size:22px;
-    background:linear-gradient(90deg,#001a1f,#004d4d);
-    border-top-left-radius:20px;
-    border-top-right-radius:20px;
-    text-shadow:0 0 8px #00ffe0;
-}
+  /* --- HEADER --- */
+  header {
+    text-align: center;
+    padding: 40px 20px 30px;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-color);
+  }
 
-#messages{
-    flex:1;
-    padding:20px;
-    overflow-y:auto;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    scrollbar-width: thin;
-    scrollbar-color: #00ffe0 #111;
-}
-#messages::-webkit-scrollbar{
-    width:8px;
-}
-#messages::-webkit-scrollbar-track{
-    background:#111;
-    border-radius:8px;
-}
-#messages::-webkit-scrollbar-thumb{
-    background:#00ffe0;
-    border-radius:8px;
-}
+  header h1 {
+    margin: 0 0 8px 0;
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(to right, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+  }
 
-.message{
-    max-width:70%;
-    padding:12px 16px;
-    border-radius:20px;
-    word-wrap:break-word;
-    position:relative;
-    transition:0.2s;
-}
+  header p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
 
-.message.user{
-    align-self:flex-end;
-    background:linear-gradient(135deg,#00bfff,#0080ff);
-    color:black;
-    border-bottom-right-radius:0;
-    box-shadow:0 0 15px #00bfff;
-}
+  /* --- CONTAINER & CARDS --- */
+  .container {
+    max-width: 700px;
+    width: 100%;
+    margin: 40px auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+    flex: 1;
+  }
 
-.message.admin{
-    align-self:flex-start;
-    background:linear-gradient(135deg,#444,#222);
-    color:white;
-    border-bottom-left-radius:0;
-    box-shadow:0 0 15px #00ff99;
-}
+  .glass-card {
+    background: var(--bg-card);
+    padding: 35px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(16px);
+    margin-bottom: 24px;
+  }
 
-.sender{
-    font-size:12px;
-    font-weight:bold;
-    margin-bottom:4px;
-    display:block;
-    color:#fdf100;
-    text-shadow:0 0 4px #fdf100;
-}
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-.timestamp{
-    font-size:10px;
-    color:#aaa;
-    margin-top:4px;
-    text-align:right;
-}
+  .section-title i {
+    color: var(--accent-color);
+  }
 
-#inputArea{
-    display:flex;
-    border-top:1px solid #333;
-    background:#111;
-    padding:10px;
-    gap:10px;
-}
+  /* --- PROFIL ADMINISTRATEUR --- */
+  .profile-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+    border-radius: 14px;
+    background: rgba(9, 13, 22, 0.6);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+  }
 
-#messageInput{
-    flex:1;
-    padding:14px;
-    border:none;
-    border-radius:20px;
-    background:#222;
-    color:white;
-    font-size:16px;
-    outline:none;
-    box-shadow:inset 0 0 10px #00ffe0;
-    transition:0.2s;
-}
-#messageInput:focus{
-    box-shadow:inset 0 0 15px #00ffe0;
-}
+  .profile-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(56, 189, 248, 0.1);
+  }
 
-#sendBtn{
-    padding:14px 24px;
-    border:none;
-    background:linear-gradient(135deg,#00ffe0,#00aa88);
-    color:black;
-    font-weight:bold;
-    border-radius:20px;
-    cursor:pointer;
-    transition:0.2s;
-    box-shadow:0 0 10px #00ffe0;
-}
-#sendBtn:hover:not(:disabled){
-    box-shadow:0 0 25px #00ffe0, 0 0 50px #00ffe0 inset;
-}
-#sendBtn:disabled{
-    background:grey;
-    cursor:not-allowed;
-    box-shadow:none;
-}
+  .profile-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .avatar-container {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--accent-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 0 15px rgba(14, 165, 233, 0.3);
+  }
+
+  .verified-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    background: #10b981;
+    border: 2px solid #090d16;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: white;
+  }
+
+  .details h3 {
+    margin: 0 0 4px 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+
+  .details span {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  /* --- BOUTONS DE CONTACT --- */
+  .contact-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .btn-contact {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+
+  .btn-contact:hover {
+    transform: translateY(-3px);
+  }
+
+  .btn-whatsapp { background: #25D366; }
+  .btn-whatsapp:hover { box-shadow: 0 6px 15px rgba(37, 211, 102, 0.4); }
+
+  .btn-discord { background: #5865F2; }
+  .btn-discord:hover { box-shadow: 0 6px 15px rgba(88, 101, 242, 0.4); }
+
+  .btn-email { background: #ea4335; }
+  .btn-email:hover { box-shadow: 0 6px 15px rgba(234, 67, 53, 0.4); }
+
+  /* --- ZONE MESSAGE D'AIDE --- */
+  .help-box {
+    margin-top: 25px;
+  }
+
+  textarea {
+    width: 100%;
+    height: 130px;
+    box-sizing: border-box;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: rgba(9, 13, 22, 0.8);
+    color: var(--text-main);
+    padding: 14px;
+    resize: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+  }
+
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+  }
+
+  button.submit-btn {
+    width: 100%;
+    margin-top: 14px;
+    background: var(--accent-gradient);
+    border: none;
+    color: white;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  button.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(14, 165, 233, 0.5);
+  }
+
+  /* --- NAVIGATION RETOUR --- */
+  .navigation-footer {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+
+  .back-link:hover {
+    color: var(--accent-color);
+  }
+
+  /* --- FOOTER GLOBAL --- */
+  footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+    background: rgba(9, 13, 22, 0.3);
+  }
 </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">💬 Support DPSTORE</div>
-    <div id="messages"></div>
-    <div id="inputArea">
-        <input type="text" id="messageInput" placeholder="Écrire un message..." />
-        <button id="sendBtn" onclick="sendMessage()">Envoyer</button>
+  <header>
+    <h1>DPSTORE Support</h1>
+    <p>Une question ou un problème ? Contactez directement l'administration.</p>
+  </header>
+
+  <div class="container">
+    
+    <!-- Carte unique de contact admin -->
+    <div class="glass-card">
+      <div class="section-title">
+        <i class="fa-solid fa-user-shield"></i> Administrateur Principal
+      </div>
+      
+      <div class="profile-card">
+        <div class="profile-info">
+          <div class="avatar-container">
+            CA
+            <div class="verified-badge"><i class="fa-solid fa-check"></i></div>
+          </div>
+          <div class="details">
+            <h3>Christopher Antoine</h3>
+            <span>christopherantoine773@gmail.com</span>
+          </div>
+        </div>
+
+        <div class="contact-actions">
+          <a href="https://wa.me/13478575829" target="_blank" class="btn-contact btn-whatsapp" title="WhatsApp">
+            <i class="fa-brands fa-whatsapp"></i>
+          </a>
+          <a href="https://discord.com/channels/1480426047186141266/1536904547132244079" target="_blank" class="btn-contact btn-discord" title="Discord">
+            <i class="fa-brands fa-discord"></i>
+          </a>
+          <a href="mailto:christopherantoine773@gmail.com" class="btn-contact btn-email" title="Email">
+            <i class="fa-solid fa-envelope"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Formulaire d'aide rapide -->
+      <div class="help-box">
+        <div class="section-title" style="margin-bottom: 10px;">
+          <i class="fa-solid fa-paper-plane"></i> Envoyer un message rapide
+        </div>
+        <textarea id="helpMessage" placeholder="Rédigez votre message d'assistance ici..."></textarea>
+        <button class="submit-btn" onclick="sendHelp()">
+          <i class="fa-solid fa-share"></i> Envoyer par e-mail
+        </button>
+      </div>
+
     </div>
-</div>
 
-<script>
-// Vérification sessionStorage
-let account = JSON.parse(sessionStorage.getItem("dpstore_user"));
-if(!account || !account.email){
-    alert("⚠ Vous devez être connecté !");
-    location.href="index.html";
-}
+    <div class="navigation-footer">
+      <a href="produits.html" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Retour au catalogue des produits
+      </a>
+    </div>
 
-// Charger tickets
-let tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
+  </div>
 
-// Chaque utilisateur a un ticket unique
-let ticket = tickets.find(t => t.userEmail === account.email);
-if(!ticket){
-    ticket = { 
-        userEmail: account.email, 
-        username: account.username, 
-        dp: account.dp || "—", 
-        messages: [], 
-        status:"open",
-        unread: false
-    };
-    tickets.push(ticket);
-    localStorage.setItem("dpstore_tickets", JSON.stringify(tickets));
-}
+  <footer>
+    © 2026 DPSTORE — Tous droits réservés
+  </footer>
 
-// Affichage messages
-function loadMessages(){
-    const container = document.getElementById("messages");
-    container.innerHTML="";
-
-    tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
-    ticket = tickets.find(t => t.userEmail === account.email);
-    if(!ticket) return;
-
-    ticket.messages.forEach(msg=>{
-        const div = document.createElement("div");
-        div.classList.add("message");
-        div.classList.add(msg.senderType === "user" ? "user" : "admin");
-
-        div.innerHTML = `
-            <span class="sender">${msg.senderType === "user" ? "Vous" : msg.role || "Admin"}</span>
-            ${msg.text}
-            <div class="timestamp">${msg.date}</div>
-        `;
-        container.appendChild(div);
-    });
-
-    container.scrollTop = container.scrollHeight;
-    document.getElementById("sendBtn").disabled = ticket.status === "closed";
-}
-
-// Envoyer un message utilisateur
-function sendMessage(){
-    const input = document.getElementById("messageInput");
-    const text = input.value.trim();
-    if(!text) return;
-
-    ticket.messages.push({
-        senderType: "user",
-        text: text,
-        date: new Date().toLocaleString(),
-        role: "Utilisateur"
-    });
-
-    ticket.unread = true; // Nouveau message non lu pour admin
-    localStorage.setItem("dpstore_tickets", JSON.stringify(tickets));
-    input.value="";
-    loadMessages();
-}
-
-// Rafraîchissement automatique toutes les 2s pour recevoir les réponses admin
-setInterval(()=>{
-    tickets = JSON.parse(localStorage.getItem("dpstore_tickets") || "[]");
-    loadMessages();
-}, 2000);
-
-loadMessages();
-</script>
-
+  <script>
+    function sendHelp() {
+      const message = document.getElementById("helpMessage").value.trim();
+      if (!message) {
+        alert("Veuillez saisir un message avant de l'envoyer.");
+        return;
+      }
+      const mailto =
+        "mailto:christopherantoine773@gmail.com?subject=Assistance%20DPSTORE&body=" +
+        encodeURIComponent(message);
+      window.location.href = mailto;
+    }
+  </script>
 </body>
 </html>
